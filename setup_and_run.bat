@@ -38,6 +38,7 @@ REM ===== Upgrade pip and install dependencies =====
 echo Installing / upgrading required packages ...
 python -m pip install --upgrade pip
 python -m pip install --upgrade streamlit pandas pyyaml
+python -m pip install --upgrade filelock
 
 REM ===== Run the Streamlit app =====
 echo Launching Streamlit app ...
