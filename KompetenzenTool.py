@@ -7,7 +7,7 @@ from typing import Dict, List
 import datetime, yaml, streamlit as st, pandas as pd
 from filelock import FileLock, Timeout                     #  ← NEU
 
-from competence_data import COMPETENCES
+from competence_data import COMPETENCES, SUBJECTS
 import ui_components as ui
 
 # -------- Ablageort -------------------------------------------------------
@@ -50,7 +50,7 @@ if result:
     lock      = FileLock(lock_path, timeout=5)   # 5 s warten, dann Fehler
 
     try:
-        with lock:                               # ← kritischer Abschnitt
+        with lock:
             data = yaml_load(file_path)
 
             # Struktur anlegen
@@ -60,7 +60,14 @@ if result:
                     data[subject].get(topic, []), comps
                 )
 
-            yaml_save(file_path, data)
+            # ----- Reihenfolge nach SUBJECT_ORDER -----------------
+            ordered = OrderedDict()
+            for subj in SUBJECTS:           # gewünschte Reihenfolge
+                if subj in data:
+                    ordered[subj] = data[subj]
+
+            yaml_save(file_path, dict(ordered))
+            
 
         st.sidebar.success(f"✅ Gespeichert in **{file_name}**")
 
