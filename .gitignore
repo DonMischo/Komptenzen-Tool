@@ -1,0 +1,12 @@
+# Ignore all files with the specified name.
+# Scope is all repo folders.
+
+.git/
+.venv/*
+__pycache__/
+Lehrpläne/
+other-files/
+saved/*
+
+
+
