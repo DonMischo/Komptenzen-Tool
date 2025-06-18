@@ -26,22 +26,20 @@ SUBJECTS = [
 COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
         "Deutsch": {
             "5/6": {
-                "Hör- / Hör-Sehverstehen": [
+                "Lese- / Hörverstehen": [
                     "Ich kann Hör- und Hör-Seh-Texte zu vertrauten Themen verstehen und das Thema sowie Kernaussagen wiedergeben.",  # :contentReference[oaicite:0]{index=0}
                     "Ich kann Inhalte global, selektiv und detailliert erfassen und sprachliche + nicht-sprachliche Mittel in ihrer Wirkung benennen.",  # :contentReference[oaicite:1]{index=1}
                     "Ich kann die Absicht des Sprechers erkennen.",  # :contentReference[oaicite:2]{index=2}
-                ],
-                "Leseverstehen": [
                     "Ich kann altersgemäße Sach- und literarische Texte sinnerfassend lesen und zentrale Informationen ordnen.",  # :contentReference[oaicite:3]{index=3}
                     "Ich kann Textsorten unterscheiden und ihre Funktion erklären.",  # :contentReference[oaicite:4]{index=4}
                     "Ich kann Texte flüssig und ausdrucksvoll vorlesen.",  # :contentReference[oaicite:5]{index=5}
                 ],
-                "Sprechen": [
+                "Texte produzieren - Sprechen": [
                     "Ich kann in Gesprächen Informationen austauschen und meine Meinung einfach begründet äußern.",  # :contentReference[oaicite:6]{index=6}
                     "Ich kann Erlebnisse frei erzählen und kurze Vorträge halten.",  # :contentReference[oaicite:7]{index=7}
                     "Ich kann Rollen spielen und Texte szenisch darstellen.",  # :contentReference[oaicite:8]{index=8}
                 ],
-                "Schreiben": [
+                "Texte produzieren - Schreiben": [
                     "Ich kann Berichte, Beschreibungen und Geschichten adressatengerecht verfassen.",  # :contentReference[oaicite:9]{index=9}
                     "Ich kann Texte planen, gliedern und sprachlich überarbeiten – auch mit Rechtschreib­hilfen.",  # :contentReference[oaicite:10]{index=10}
                 ],
@@ -52,19 +50,17 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                 ],
             },
             "7/8": {
-                "Hör- / Hör-Sehverstehen": [
+                "Lese- / Hörverstehen": [
                     "Ich kann Hör- und Hör-Seh-Texte zu weniger vertrauten Themen mit teilweise komplexer Sprache verstehen.",  # :contentReference[oaicite:14]{index=14}
                     "Ich kann Thema, Kernaussagen und Details detailliert wiedergeben sowie die Kommunikations­absicht deuten.",  # :contentReference[oaicite:15]{index=15}
-                ],
-                "Leseverstehen": [
                     "Ich kann Texte mit komplexerer Struktur verstehen, zentrale Inhalte erschließen und Textintention, Funktion und Wirkung erläutern.",  # :contentReference[oaicite:16]{index=16}
                     "Ich kann literarische Texte analysieren und Sachtexte kritisch auswerten.",  # :contentReference[oaicite:17]{index=17}
                 ],
-                "Sprechen": [
+                "Texte produzieren - Sprechen": [
                     "Ich kann Gespräche führen, meinen Standpunkt begründet vertreten und Diskussionen leiten.",  # :contentReference[oaicite:18]{index=18}
                     "Ich kann Kurzvorträge und Referate adressaten­gerecht halten und Rollen gestaltend vortragen.",  # :contentReference[oaicite:19]{index=19}
                 ],
-                "Schreiben": [
+                "Texte produzieren - Schreiben": [
                     "Ich kann argumentierende, appellierende und gestaltende Texte selbstständig verfassen.",  # :contentReference[oaicite:20]{index=20}
                     "Ich kann formalisierte Texte wie Briefe oder Protokolle normgerecht schreiben und Texte strukturiert überarbeiten.",  # :contentReference[oaicite:21]{index=21}
                 ],
@@ -127,29 +123,32 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
         },
         "Englisch": {
             "5/6": {
-                "Hörverstehen": [
-                    "Ich kann bekannte Wörter und einfache Sätze verstehen, die sich auf mich, meine Familie oder auf konkrete Dinge aus meinem Alltag beziehen.",
+                "Lese- / Hörverstehen": [
+                    "Ich kann bekannte Wörter und einfache Sätze verstehen, die sich auf mich, meine Familie oder konkrete Dinge in meinem Alltag beziehen.",
                     "Ich kann Hauptinformationen von alltäglichen Gesprächen, Vorträgen und medialen Beiträgen erfassen.",
-                ],
-                "Leseverstehen": [
+                    "Ich kann eine gewisse Anzahl an Wörtern und einfachen Sätzen verstehen, die Themen wie Wohnung, Schule, Speisen, Tiere, Freizeit oder Alltagsaktivitäten betreffen.",
                     "Ich kann Arbeitsanweisungen verstehen und umsetzen.",
-                    "Ich kann einfache Texte lesen und ihnen Detailinformationen zu Themen wie Wetter, Urlaub, Wochenende, Schule, Freizeit, Nachbarschaft und Tieren entnehmen.",
+                    "Ich kann einfache bzw. kurze Texte lesen und ihnen Detailinformationen zu Themen wie Wetter, Urlaub, Wochenende, Schule, Freizeit, Nachbarschaft oder Tieren entnehmen.",
+                    "Ich kann erste englische Operatoren identifizieren und anwenden.",
+                    "Ich kann kurze, einfache Briefe, E-Mails oder Blogs verstehen.",
                 ],
                 "Schreiben": [
                     "Ich kann kurze Informationen, Mitteilungen, Gedanken und Texte schreiben.",
                     "Ich kann einen Brief in der einfachen Vergangenheit (Simple Past) schreiben.",
+                    "Ich kann einfache Sätze schreiben.",
+                    "Ich kann einen Steckbrief über mich verfassen.",
                 ],
                 "Sprechen": [
                     "Ich kann mich in vertrauten Routinesituationen verständigen.",
-                    "Ich kann mich vorstellen, einfache Fragen stellen und beantworten.",
+                    "Ich kann mich vorstellen und Informationen über mich vermitteln.",
+                    "Ich kann einfache Fragen stellen und beantworten.",
                     "Ich kann vorbereitete Präsentationen zu vertrauten Themen vortragen.",
                     "Ich kann Tiere beschreiben.",
+                    "Ich kann englische Texte mit guter Aussprache vorlesen.",
                 ],
-                "Wortschatz": [
+                "Wortschatz und Sprachmittlung": [
                     "Ich kann mir Vokabeln merken und korrekt in Sätzen anwenden.",
                     "Ich kann neue Vokabeln richtig schreiben.",
-                ],
-                "Sprachmittlung": [
                     "Ich kann Vokabeln korrekt übersetzen.",
                     "Ich kann sprachliche Äußerungen und kurze Texte sinngemäß übertragen.",
                 ],
@@ -158,23 +157,44 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann Aussagesätze im Simple Past bilden.",
                     "Ich kenne Fragewörter und kann Fragesätze im Simple Past bilden.",
                     "Ich kann regelmäßige und unregelmäßige Verben unterscheiden und in Sätzen anwenden.",
+                    "Ich kann Formen der Verben „be“, „have got“ und „can“ bilden.",
+                    "Ich kann Verben verkürzen (Contractions) anwenden.",
+                    "Ich kann das Simple Present korrekt anwenden (inklusive -s nach he/she/it).",
+                    "Ich kann Fragen und Verneinungen bilden.",
                 ],
-            }
+            },
+            "7/8": {
+                "Sprechen": [
+                    "Ich kann mich auf Englisch zu Alltagsthemen mit persönlichem Bezug äußern.",
+                    "Ich kann Dialoge führen, indem ich meine Meinung einfach ausdrücken, Fragen stellen sowie bei Missverständnissen nachfragen kann.",
+                ],
+                "Hör-/ Seh-/ Leseverständnis": [
+                    "Ich habe Audiodateien und Videos zu Inhalten der britischen Landeskunde verfolgt und mein Hörverständnis durch dazugehörige Vokabelübungen und Verständnisfragen schrittweise entwickelt.",
+                    "Ich habe vielfältige Texte und Aufgaben zur britischen Landeskunde gelesen.",
+                    "Ich habe den Text »Away from Home« gelesen und Verständnisfragen dazu beantwortet.",
+                ],
+                "Schreiben": [
+                    "Ich kann auf Englisch eine E-Mail verfassen und mich schriftlich zu Alltagsthemen wie Schule, Hobbys, Freizeit und Familie schriftlich äußern.",
+                ],
+                "Wortschatz und Grammatik": [
+                    "Ich habe meinen Wortschatz erweitert und komplexere Ausdrücke gelernt.",
+                    "Ich kann in meinen Äußerungen Sätze mit because, when und if bilden.",
+                    "Ich habe die Strukturen Present Perfect und Relativsätze kennengelernt.",
+                ],
+            },
         },
         "Wahlpflichtbereich - Französisch": {
             "7/8": {
-                "Texte rezipieren – Hör- / Hör-Sehverstehen": [
+                "Hör-/ Seh-/ Leseverstehen": [
                     "Ich kann vertraute Wörter und einfache Sätze verstehen, die sich auf mich selbst, meine Familie oder konkrete Dinge in meiner Umgebung beziehen.",
-                ],
-                "Texte rezipieren – Leseverstehen": [
                     "Ich kann kurze, einfache Texte lesen und ihnen Detailinformationen entnehmen.",
                 ],
-                "Texte produzieren – Sprechen": [
+                "Sprechen": [
                     "Ich kenne die französischen Ausspracheregeln.",
                     "Ich kann mich auf einfache Art verständigen und ein kurzes Kontaktgespräch führen.",
                     "Ich kann einfache Fragen stellen und beantworten, sofern es sich um vertraute Dinge handelt.",
                 ],
-                "Texte produzieren – Schreiben": [
+                "Schreiben": [
                     "Ich kann eine kurze, einfache Postkarte oder E-Mail schreiben und dabei Auskunft über meine Person geben.",
                     "Ich kann mir neue Vokabeln merken und orthographisch korrekt wiedergeben.",
                 ],
@@ -188,23 +208,21 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
         },
         "Wahlpflichtbereich - Spanisch": {
             "7/8": {
-                "Texte rezipieren – Hör- / Hör-Sehverstehen": [
+                "Hör-/ Seh-/ Leseverstehen": [
                     "Ich kann Äußerungen zu vertrauten Themen verstehen und wesentliche Aussagen sowie Detailinformationen entnehmen.",
-                ],
-                "Texte rezipieren – Leseverstehen": [
                     "Ich kann Texte zu vertrauten Themen verstehen und dabei wesentliche Aussagen sowie Detailinformationen entnehmen.",
                     "Ich kann die Bedeutung vertrauter oder bildlich unterstützter Wörter und einfacher Sätze erschließen.",
                 ],
-                "Texte produzieren – Sprechen": [
+                "Sprechen": [
                     "Ich kann in Gesprächen Informationen über mich, meine Umgebung, meine Familie und meine Freunde übermitteln.",
                     "Ich kann mein Viertel und Orte in meinem Viertel vorstellen.",
                     "Ich kann einen situationsadäquaten Wortschatz verwenden und sprachliche Strukturen funktional einsetzen.",
                 ],
-                "Texte produzieren – Schreiben": [
+                "Schreiben": [
                     "Ich kann kurze Texte über mich, meine Umgebung, meine Familie und meine Freunde mit einem passenden Wortschatz verfassen.",
                     "Ich kann in vorgefertigten Texten sinnvolle Ergänzungen vornehmen.",
                 ],
-                "Verfügung über Sprachmittel (Wortschatz & Grammatik)": [
+                "Wortschatz und Grammatik)": [
                     "Ich verfüge über Wortschatz zu: persönliche Daten, Familie, unmittelbare Umgebung, Zahlen bis 20, Haustiere, Orte in der Stadt, Ortsangaben.",
                     "Ich kann regelmäßige Verben auf -ar, -er, -ir im Präsens konjugieren sowie die unregelmäßigen Verben ser, estar, ir und tener verwenden.",
                     "Ich kann bestimmte und unbestimmte Artikel korrekt einsetzen, den Plural bilden und Adjektive angleichen.",
