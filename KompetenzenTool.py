@@ -3,4 +3,4 @@ from student_loader import sync_students
 
 sync_students()
 
-result = ui.run_ui()     # kein YAML-Argument mehr
+result = ui.run_ui()
