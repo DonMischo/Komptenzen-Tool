@@ -37,7 +37,9 @@ if errorlevel 1 (
 REM ===== Upgrade pip and install dependencies =====
 echo Installing / upgrading required packages ...
 python -m pip install --upgrade pip
-python -m pip install --upgrade streamlit pandas pyyaml
+python -m pip install --upgrade streamlit 
+python -m pip install --upgrade pandas 
+python -m pip install --upgrade pyyaml
 python -m pip install --upgrade filelock
 python -m pip install --upgrade aiosqlite
 python -m pip install --upgrade "sqlalchemy>=1.4,<2.0"
