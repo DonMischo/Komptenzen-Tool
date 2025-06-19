@@ -15,9 +15,10 @@ from db_helpers  import (                                 # DB-Hilfen
     save_selections,
     get_subjects,
     get_blocks,
-    get_customs,
-    add_custom,
-    delete_custom,
+    get_classes,
+    get_custom_competences,
+    add_custom_competence,
+    delete_custom_competence,
 )
 from helpers import unique_key as _unique_key
 from helpers import safe_rerun
@@ -37,11 +38,9 @@ def run_competence_ui () -> Dict:
     ordered_subjects = [s for s in SUBJECTS if s in db_subjects] + [
         s for s in db_subjects if s not in SUBJECTS
     ]
+    classes  = get_classes()
 
-    classroom = st.sidebar.selectbox(
-        "Klasse", ["5a","5b","5c","6a","6b","6c","7a","7b","7c"],
-        key=_unique_key("class_select"),
-    )
+    classroom = st.sidebar.selectbox("Klasse wählen",  classes,  key="stu_class")
     
     subject = st.sidebar.selectbox(
         "Fach", ordered_subjects, key=_unique_key("subject_select")
@@ -94,7 +93,7 @@ def run_competence_ui () -> Dict:
                 # ----- Custom-Kompetenzen ------------------------
                 st.markdown("**Eigene Ergänzungen**")
                 class_id = _get_or_create_class_id(classroom, ses)   # helper in db_helpers
-                customs = get_customs(topic_id, class_id, ses)
+                customs = get_custom_competences(topic_id, class_id, ses)
                 for cc in customs:
                     col_ck, col_del = st.columns([10,1])
                     col_ck.checkbox(
@@ -102,7 +101,7 @@ def run_competence_ui () -> Dict:
                         key=_unique_key("cust", classroom, subject, topic_name, cc.id),
                     )
                     if col_del.button("🗑", key=_unique_key("del", cc.id)):
-                        delete_custom(cc.id, ses)
+                        delete_custom_competence(cc.id, ses)
                         safe_rerun()
 
                 # ----- Neue Kompetenz hinzufügen ----------------
@@ -117,7 +116,7 @@ def run_competence_ui () -> Dict:
                     )
                     col_save, col_cancel = st.columns(2)
                     if col_save.button("💾 Speichern", key=_unique_key("save", topic_id)):
-                        add_custom(topic_id, class_id, new_txt, ses)
+                        add_custom_competence(topic_id, class_id, new_txt, ses)
                         st.session_state.pop(f"add_{topic_id}")
                         safe_rerun()
                     if col_cancel.button("✖ Abbrechen", key=_unique_key("canc", topic_id)):
