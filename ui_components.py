@@ -1,97 +1,71 @@
 # ui_components.py
-# ------------------------------------------------------------
-# Alle Streamlit-Widgets & UI-Logik an einem Ort
-# ------------------------------------------------------------
-from __future__ import annotations
-from typing import Dict, List, Tuple
-import re
-import streamlit as st
+# ----------------------------------------------------------------
+from __future__ import annotations         # (falls schon vorhanden ok)
 
+from typing import Dict, List               #  ← HINZUFÜGEN
+import time, streamlit as st
+from db_helpers import load_topic_rows, save_selections, get_subjects, get_blocks
+from helpers import unique_key as _unique_key    # deine Key-Funktion
+from competence_data import SUBJECTS
 
+# ---------- Auto-Refresh alle 10 s ------------------------------
+if "last_refresh" not in st.session_state:
+    st.session_state.last_refresh = time.time()
+if time.time() - st.session_state.last_refresh > 10:
+    st.session_state.last_refresh = time.time()
+    st.experimental_rerun()
 
-# ------------------------------------------------------------
-#  Hilfsfunktionen  →  für eindeutige Widget-Keys
-# ------------------------------------------------------------
-def _safe(s: str) -> str:
-    """Nicht-alphanumerische Zeichen ersetzen (für Streamlit-Keys)."""
-    return re.sub(r"\W+", "_", s)
-
-def _unique_key(*parts: str, idx: int | None = None) -> str:
-    """Erzeugt einen garantiert einmaligen Schlüssel."""
-    key = "_".join(_safe(p) for p in parts)
-    return f"{key}_{idx}" if idx is not None else key
+def run_ui() -> Dict:
+    # ----- Sidebar ------------------------------------------------
+    subjects = get_subjects()
+    # Reihenfolge aus competence_data übernehmen
+    ordered_subjects = (
+        [s for s in SUBJECTS if s in subjects] +      # zuerst genau die, die in SUBJECTS stehen
+        [s for s in subjects if s not in SUBJECTS]    # Rest (evtl. neue Fächer) anhängen
+    )
+    subject = st.sidebar.selectbox(
+        "Fach",
+        ordered_subjects,
+        index=0,
+        key=_unique_key("subject_select"),
+    )
     
-    
-def run_ui(competences: Dict) -> Dict:
-    # ---------- SIDEBAR ----------
-    st.sidebar.header("Einstellungen")
-    subjects = list(competences.keys())
-    subject  = st.sidebar.selectbox("Fach wählen", subjects, index=0)
-
     classroom = st.sidebar.selectbox(
-        "Klasse wählen",
-        ["5a", "5b", "5c", "6a", "6b", "6c", "7a", "7b", "7c"],
-        index=0,
+        "Klasse", ["5a","5b","5c","6a","6b","6c","7a","7b","7c"], index=0
     )
-    year  = int(classroom[0])
-    block = st.sidebar.selectbox(
-        "Kompetenz-Block wählen",
-        ["5/6"] if year <= 6 else ["7/8", "5/6"],
-        index=0,
-    )
+    year = int(classroom[0])
+
+    blocks = get_blocks(subject) or ["5/6"]
+    if year <= 6 and "5/6" in blocks:
+        blocks = ["5/6"]
+    block = st.sidebar.selectbox("Block", blocks, index=0)
+
     st.sidebar.markdown("---")
 
-    # ---------- DATEN holen ----------
-    subj_dict  = competences.get(subject, {})
-    block_dict = subj_dict.get(block, {})
-    if not block_dict:
+    # ---------- Daten aus DB lesen -------------------------------
+    rows = load_topic_rows(classroom, subject, block)
+    if not rows:
         st.info("Für diese Kombination sind noch keine Kompetenzen hinterlegt.")
         return {}
 
-    st.title("📋 Kompetenzen auswählen")
-    selected: Dict[str, List[str]] = {}
+    # rows → gruppieren nach Topic
+    current_topic, buffer, changed = None, [], []
+    for cid, topic, text, sel in rows:
+        if topic != current_topic:
+            if current_topic is not None:
+                st.markdown("---")
+            st.subheader(topic)
+            current_topic = topic
 
-    # ---------- SPEZIAL-FALL „Werkstätten“ ----------
-    if subject == "Werkstätten":
-        st.markdown("### Werkstätten wählen")
-        for topic in block_dict.keys():        # z.B. Technisches Werken, Musik …
-            key = _unique_key(subject, block, topic)
-            checked = st.checkbox(topic, value=True, key=key)
-            if checked:
-                # wir tragen eine Dummy-Liste ein, damit das Format gleich bleibt
-                selected[topic] = ["Werkstatt gewählt"]
-    # ---------- NORMALFALL ----------
-    else:
-        for topic, comp_list in block_dict.items():
-            with st.expander(topic, expanded=False):
-                # Select-All nur, wenn nicht Werkstätten
-                sel_all_key = _unique_key("selall", subject, block, topic)
-                sel_all     = st.checkbox("Alle auswählen / abwählen",
-                                          key=sel_all_key)
+        ck = st.checkbox(text, value=sel,
+                         key=_unique_key(classroom, subject, topic, cid))
+        if ck != sel:                     # Status geändert
+            changed.append((cid, ck))
 
-                # Kinder-Checkboxen EINMALIG setzen, wenn sel_all wechselt
-                trig_key = sel_all_key + "_trig"
-                if st.session_state.get(trig_key) != sel_all:
-                    for idx, _ in enumerate(comp_list):
-                        child_key = _unique_key(subject, block, topic, idx=idx)
-                        st.session_state[child_key] = sel_all
-                    st.session_state[trig_key] = sel_all
+    # ----- Save-Button ------------------------------------------
+    if st.button("💾 Speichern"):
+        save_selections(classroom, changed)
+        st.success("Gespeichert.")
 
-                # eigentliche Kompetenzen
-                tmp: List[str] = []
-                for idx, c in enumerate(comp_list):
-                    ck = _unique_key(subject, block, topic, idx=idx)
-                    if st.checkbox(c, key=ck):
-                        tmp.append(c)
-                if tmp:
-                    selected[topic] = tmp
-
-    # ---------- SPEICHERN-Button ----------
-    if st.sidebar.button("💾 Auswahl speichern"):
-        if not selected:
-            st.sidebar.warning("Bitte erst etwas anhaken …")
-            return {}
-        st.sidebar.success("Auswahl übernommen!")
-        return {"class":   classroom, "subject": subject, "block": block, "data": selected}
-
-    return {}
+    # für Aufrufer:
+    return {"class": classroom, "subject": subject, "block": block}

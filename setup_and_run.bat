@@ -39,7 +39,13 @@ echo Installing / upgrading required packages ...
 python -m pip install --upgrade pip
 python -m pip install --upgrade streamlit pandas pyyaml
 python -m pip install --upgrade filelock
+python -m pip install --upgrade aiosqlite
+python -m pip install --upgrade "sqlalchemy>=1.4,<2.0"
 
+
+pip install sqlalchemy aiosqlite
+python manage_db.py init
+python manage_db.py populate
 REM ===== Run the Streamlit app =====
 echo Launching Streamlit app ...
 streamlit run "%APP%"
