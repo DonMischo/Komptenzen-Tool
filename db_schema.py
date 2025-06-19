@@ -20,6 +20,7 @@ class Subject(Base):
 
     topics = relationship("Topic", back_populates="subject",
                           cascade="all, delete-orphan")
+    student_links = relationship("StudentSubject", back_populates="subject", cascade="all, delete-orphan")
 
 class Topic(Base):
     __tablename__ = "topics"
@@ -31,6 +32,7 @@ class Topic(Base):
     subject      = relationship("Subject", back_populates="topics")
     competences  = relationship("Competence", back_populates="topic",
                                 cascade="all, delete-orphan")
+    grades       = relationship("Grade", back_populates="topic", cascade="all, delete-orphan")
     __table_args__ = (UniqueConstraint("subject_id", "name", "block"),)
 
 class Competence(Base):
@@ -54,7 +56,6 @@ class ClassCompetence(Base):
     competence_id  = Column(Integer, ForeignKey("competences.id"), primary_key=True)
     selected       = Column(Boolean, default=False, nullable=False)
 
-    # Beziehungen (optional)
     school_class  = relationship("SchoolClass")
     competence    = relationship("Competence")
 
@@ -101,8 +102,25 @@ class CustomCompetence(Base):
     topic_id  = Column(Integer, ForeignKey("topics.id"), nullable=False)
     topic     = relationship("Topic", backref="customs")
     class_id = Column(Integer, ForeignKey("classes.id")) # optional: nur für eine Klasse speichern
-    
+
 # Student data
+
+class Grade(Base):
+    __tablename__ = "grades"
+    id         = Column(Integer, primary_key=True)
+    value      = Column(String(8), nullable=True)          # z. B. „1“, „2-“, „✔︎“
+    student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
+    topic_id   = Column(Integer, ForeignKey("topics.id"),   nullable=False)
+
+    # Beziehungen (optional, nur für bequemes ORM-Navigieren)
+    student = relationship("Student", back_populates="grades")
+    topic   = relationship("Topic",   back_populates="grades")
+
+    __table_args__ = (
+        # pro Schüler & Topic nur eine Note (ansonsten Update in persist_grade_matrix)
+        UniqueConstraint("student_id", "topic_id", name="uq_grade_student_topic"),
+    )
+
 class Student(Base):
     __tablename__ = "students"
 
@@ -123,11 +141,51 @@ class Student(Base):
     report_text = Column(String, default="")
     remarks     = Column(String, default="")
 
+    grades = relationship("Grade", back_populates="student", cascade="all, delete-orphan")
+    subjects = relationship(
+        "StudentSubject",
+        back_populates="student",
+        cascade="all, delete-orphan",
+    )
     def __repr__(self) -> str:      # nur für Debug-Ausgaben
         return f"<Student {self.last_name}, {self.first_name} ({self.school_class.name})>"
+
+class StudentSubject(Base):
+    __tablename__ = "student_subject"
+
+    id         = Column(Integer, primary_key=True)
+    student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
+    subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=False)
+
+    niveau     = Column(String, nullable=True)
+
+    # --- Beziehungen korrigiert --------------------------
+    student = relationship("Student", back_populates="subjects")
+    subject = relationship("Subject", back_populates="student_links")
+    # ------------------------------------------------------
+
+    __table_args__ = (UniqueConstraint("student_id", "subject_id"),)
+
+# set default classes
+DEFAULT_CLASSES = [
+    "5a", "5b", "5c",
+    "6a", "6b", "6c",
+    "7a", "7b", "7c",
+]
+
+def ensure_default_classes() -> None:
+    """legt 5a … 7c an, falls noch nicht vorhanden"""
+    with Session(ENGINE) as ses:
+        existing = {c.name for c in ses.query(SchoolClass.name)}
+        for cname in DEFAULT_CLASSES:
+            if cname not in existing:
+                ses.add(SchoolClass(name=cname))
+        ses.commit()
 
 # ---------- Hilfsfunktionen --------------------
 def init_db(drop: bool = False):
     if drop and DB_PATH.exists():
         DB_PATH.unlink()
     Base.metadata.create_all(ENGINE)
+    ensure_default_classes()
+
