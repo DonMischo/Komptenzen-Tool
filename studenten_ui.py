@@ -56,10 +56,9 @@ def run_student_ui() -> None:
 
     # ---------- Daten laden -------------------------------------------
     with Session(ENGINE) as ses:
-        students: List[Any] = get_students_by_class(class_sel, ses)     # Student-Objekte
-        topics_raw = get_topics_by_subject(subject_sel, ses)
-        topic_ids   = [_unique_key(subject_sel, t, idx=i)                       # → garantiert eindeutig
-               for i, t in enumerate(topics_raw)]
+        students = get_students_by_class(class_sel, ses)     # Student-Objekte
+        topics_raw = get_topics_by_subject(subject_sel, ses, class_name=class_sel)
+        topic_ids  = [_unique_key(subject_sel, t, idx=i) for i, t in enumerate(topics_raw)]
 
         if not students:
             st.warning(f"Keine Schüler für {class_sel} in der Datenbank.")
@@ -89,5 +88,6 @@ def run_student_ui() -> None:
     # ---------- Speichern-Button --------------------------------------
     if st.button("💾 Änderungen speichern"):
         with Session(ENGINE) as ses:
-            persist_grade_matrix(class_sel, subject_sel, edited_df, ses)
-        st.success("Noten wurden gespeichert!")
+            persist_grade_matrix(class_sel, subject_sel, edited, ses)
+        st.success("Noten & Niveau wurden gespeichert!")
+        safe_rerun()          # UI aktualisieren

@@ -17,10 +17,14 @@ add_custom(...) / delete_custom(...) -> eigene Kompetenzen ändern
 from __future__ import annotations
 from typing import List, Tuple
 
-from sqlalchemy import select, update, delete
+from sqlalchemy import select, update, delete, distinct, func
 from sqlalchemy.orm import Session
 
+from helpers import unique_key as _uk     # damit wir die IDs wiederfinden
+
+
 import pandas as pd
+import numpy as np
 
 from db_schema import (
     ENGINE,
@@ -109,21 +113,31 @@ def get_students_by_class(class_name: str, ses: Session) -> list[Student]:
     )
     return list(ses.scalars(stmt))
 
-def get_topics_by_subject(subject_name: str, ses: Session) -> list[str]:
+def get_topics_by_subject(subject: str, ses: Session, class_name: str | None = None) -> list[str]:
     """
-    Liefert die Topics (z. B. „Geometrie“, „Leseverstehen“) eines Faches.
-    Vollständig SQLAlchemy-2-Style: select … .scalars().all()
+    Liefert die Topic-Namen eines Fachs – EINMALIG pro Name.
+    Wenn class_name angegeben ist, kommen nur Topics zurück,
+    zu denen in dieser Klasse mindestens EINE Kompetenz ausgewählt wurde.
     """
-    subj_id = _get_subject_id(subject_name, ses)
-    if subj_id is None:
-        return []
-
     stmt = (
-        select(Topic.name)
-        .where(Topic.subject_id == subj_id)
-        # .order_by(Topic.name)
+        select(distinct(Topic.name))
+        .join(Subject)
+        .where(Subject.name == subject)
+        .order_by(Topic.name)
     )
-    return list(ses.scalars(stmt))  # → List[str]
+
+    # optional: nur Topics mit ausgewählten Kompetenzen dieser Klasse
+    if class_name:
+        cl = _get_or_create_class(ses, class_name)
+        stmt = (
+            stmt.join(Competence)
+                .join(ClassCompetence,
+                      (ClassCompetence.class_id == cl.id) &
+                      (ClassCompetence.competence_id == Competence.id) &
+                      (ClassCompetence.selected == True))   # noqa: E712
+        )
+
+    return [name for (name,) in ses.execute(stmt).all()]
 
 def get_subjects() -> List[str]:
     """Alphabetisch sortierte Fachliste."""
@@ -371,68 +385,96 @@ def fetch_grade_matrix(
     return pd.DataFrame(rows)
 
 def persist_grade_matrix(
-    class_name: str,
-    subject_name: str,
-    df: pd.DataFrame,
-    ses: Session,
-):
-    subj_id = _get_subject_id(subject_name, ses)
-    if subj_id is None:
-        return
+        class_name   : str,
+        subject_name : str,
+        df           : "pd.DataFrame",
+        ses          : Session
+) -> None:
+    """
+    Speichert Niveau + alle Topic-Noten aus dem data_editor-DataFrame.
 
-    topics = [
-        c for c in df.columns if c not in ("Nachname", "Vorname", "Niveau")
-    ]
+    DataFrame-Aufbau:
+        Nachname | Vorname | Niveau | <topic_id_1> | <topic_id_2> | …
+    """
+    import pandas as pd
 
-    # Name-Zuordnung
-    students = {
-        (s.last_name, s.first_name): s
-        for s in get_students_by_class(class_name, ses)
+    cl = _get_or_create_class(ses, class_name)
+
+    # ------------------------ Hilfstabellen ------------------------
+    # Topic-ID (DataFrame-Spalte)  →  echte Topic-Objekte
+    topic_map: dict[str, Topic] = {
+        _uk(subject_name, t.name, idx=i): t
+        for i, t in enumerate(
+            ses.query(Topic)
+               .join(Subject)
+               .filter(Subject.name == subject_name)
+               .order_by(Topic.name)
+               .all()
+        )
+    }
+    # Student-Name → Student-Objekt
+    stu_map: dict[tuple[str, str], Student] = {
+        (s.last_name, s.first_name): s for s in cl.students
     }
 
-    # Topic-Name → ID
-    stmt = (
-        select(Topic.id, Topic.name)
-        .where(
-            (Topic.subject_id == subj_id)
-            & (Topic.name.in_(topics))
-        )
-    )
-    topic_ids = {name: tid for tid, name in ses.execute(stmt)}
-
+    # ------------------------- Iteration ---------------------------
     for _, row in df.iterrows():
         key = (row["Nachname"], row["Vorname"])
-        stu = students.get(key)
+        stu = stu_map.get(key)
         if stu is None:
+            # Sicherheitsnetz: Schüler fehlt? -> überspringen
             continue
 
-        # Niveau
-        set_niveau(stu.id, subj_id, str(row["Niveau"]).strip(), ses)
+        # — Niveau (pro Schüler × Fach) —
+        niveau = row["Niveau"] or None
+        link = (
+            ses.query(StudentSubject)
+               .filter_by(student_id=stu.id)
+               .join(Subject)
+               .filter(Subject.name == subject_name)
+               .first()
+        )
+        if link is None:
+            subj = ses.query(Subject).filter_by(name=subject_name).one()
+            link = StudentSubject(student=stu, subject=subj, niveau=niveau)
+            ses.add(link)
+        else:
+            link.niveau = niveau
 
-        # Noten
-        for tp in topics:
-            tid = topic_ids.get(tp)
-            if tid is None:
-                continue
-            note = str(row[tp]).strip()
-            stmt_g = (
-                select(Grade)
-                .where(
-                    (Grade.student_id == stu.id)
-                    & (Grade.topic_id == tid)
-                )
+        # — Einzelnoten (pro Topic) —
+        for col_id, value in row.items():
+            if col_id not in topic_map:
+                continue                     # Nachname / Vorname / Niveau
+
+            topic  = topic_map[col_id]
+
+            # 1) leer?
+            is_empty = (
+                value is None
+                or (isinstance(value, float) and np.isnan(value))
+                or (isinstance(value, str) and not value.strip())
             )
-            grade = ses.scalars(stmt_g).first()
-            if grade is None:
-                if note:
-                    ses.add(
-                        Grade(
-                            student_id=stu.id,
-                            topic_id=tid,
-                            value=note,
-                        )
-                    )
+
+            grade = (
+                ses.query(Grade)
+                   .filter_by(student_id=stu.id, topic_id=topic.id)
+                   .first()
+            )
+
+            if is_empty:
+                if grade:
+                    ses.delete(grade)
+                continue
+
+            # 2) speichern / updaten
+            val = str(value).strip()
+            if grade:
+                grade.value = val
             else:
-                grade.value = note
+                ses.add(Grade(
+                    student_id = stu.id,
+                    topic_id   = topic.id,
+                    value      = val,
+                ))
 
     ses.commit()
