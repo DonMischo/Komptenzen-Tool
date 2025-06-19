@@ -21,6 +21,7 @@ SUBJECTS = [
     "Evangelische Religionslehre",
     "Sport",
     "Werkstätten",
+    "Mitarbeit und Verhalten",
 ]
 
 COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
@@ -708,6 +709,24 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                 ], # :contentReference[oaicite:3]{index=3}
                 "Sport": [
                     "Werkstatt",
+                ], # :contentReference[oaicite:4]{index=4}
+            },
+        },
+        "Mitarbeit und Verhalten": {
+            "5/6": {
+                "Mitarbeit": [
+                    "Mitarbeit",
+                ], # :contentReference[oaicite:1]{index=1}
+                "Verhalten": [
+                    "Verhalten",
+                ], # :contentReference[oaicite:2]{index=2}
+            },
+            "7/8": {
+                "Mitarbeit": [
+                    "Mitarbeit",
+                ], # :contentReference[oaicite:3]{index=3}
+                "Verhalten": [
+                    "Verhalten",
                 ], # :contentReference[oaicite:4]{index=4}
             },
         },
