@@ -26,6 +26,8 @@ from db_schema import (
     Competence,
     SchoolClass,
     ClassCompetence,
+    CustomCompetence,
+    SchoolClass
 )
 
 # ------------------------------------------------------------------
@@ -40,6 +42,21 @@ def _get_or_create_class(session: Session, name: str) -> SchoolClass:
         session.flush()  # erzeugt ID
     return cl
 
+def _get_or_create_class_id(name: str, ses: Session) -> int:
+    """
+    Liefert die ID der Klasse 'name'.
+    Existiert sie nicht, wird sie angelegt.
+    """
+    obj = (
+        ses.query(SchoolClass)
+           .filter_by(name=name.strip())
+           .first()
+    )
+    if obj is None:
+        obj = SchoolClass(name=name.strip())
+        ses.add(obj)
+        ses.commit()          # damit ID erzeugt wird
+    return obj.id
 
 # ------------------------------------------------------------------
 # Öffentliche API-Funktionen
@@ -159,3 +176,30 @@ def toggle_topic(class_name: str, topic_id: int, value: bool) -> None:
                     )
                 )
         ses.commit()
+
+# For custom competences
+def get_customs(topic_id: int, class_id: int, ses: Session):
+    """Lade alle eigenen Kompetenzen für Topic *und* Klasse."""
+    return (
+        ses.query(CustomCompetence)
+           .filter_by(topic_id=topic_id, class_id=class_id)
+           .order_by(CustomCompetence.id)
+           .all()
+    )
+
+def add_custom(topic_id: int, class_id: int, text: str, ses: Session) -> None:
+    """Neue eigene Kompetenz anlegen (Topic + Klasse)."""
+    txt = text.strip()
+    if txt:
+        ses.add(
+            CustomCompetence(
+                topic_id = topic_id,
+                class_id = class_id,
+                text     = txt,
+            )
+        )
+        ses.commit()
+
+def delete_custom(custom_id: int, ses: Session) -> None:
+    ses.query(CustomCompetence).filter_by(id=custom_id).delete()
+    ses.commit()

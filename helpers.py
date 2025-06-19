@@ -4,6 +4,7 @@
 
 import re
 import uuid
+import streamlit as st
 
 def unique_key(*parts: str, idx: int | None = None) -> str:
     """
@@ -23,3 +24,15 @@ def unique_key(*parts: str, idx: int | None = None) -> str:
 def _safe(s) -> str:                    # Typ weglassen oder Any
     """Ersetzt Nicht-Alphanumerisches, damit der Key gültig bleibt."""
     return re.sub(r"\W+", "_", str(s))   # ← cast auf String
+    
+    
+def safe_rerun() -> None:
+    """Kompatibler Seiten-Reload für alte + neue Streamlit-Versionen."""
+    if hasattr(st, "experimental_rerun"):          # v1.2 …
+        st.experimental_rerun()
+    elif hasattr(st, "rerun"):                     # v1.26 …
+        st.rerun()
+    else:                                          # sehr alte Version
+        # primitive Notlösung: Hinweis + Stop
+        st.warning("Bitte Seite manuell neu laden (F5)")
+        st.stop()

@@ -92,6 +92,16 @@ def populate_from_dict(comp_dict: Dict, session: Session) -> None:
 
     session.commit()
     
+class CustomCompetence(Base):
+    __tablename__ = "custom_competences"
+
+    id        = Column(Integer, primary_key=True)
+    text      = Column(String, nullable=False)
+
+    topic_id  = Column(Integer, ForeignKey("topics.id"), nullable=False)
+    topic     = relationship("Topic", backref="customs")
+    class_id = Column(Integer, ForeignKey("classes.id")) # optional: nur für eine Klasse speichern
+    
 # Student data
 class Student(Base):
     __tablename__ = "students"
