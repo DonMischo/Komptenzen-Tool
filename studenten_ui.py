@@ -58,7 +58,7 @@ def run_student_ui() -> None:
     with Session(ENGINE) as ses:
         students = get_students_by_class(class_sel, ses)     # Student-Objekte
         topics_raw = get_topics_by_subject(subject_sel, ses, class_name=class_sel)
-        topic_ids  = [_unique_key(subject_sel, t, idx=i) for i, t in enumerate(topics_raw)]
+        topic_ids  = [_unique_key(subject_sel, t) for t in topics_raw]
 
         if not students:
             st.warning(f"Keine Schüler für {class_sel} in der Datenbank.")

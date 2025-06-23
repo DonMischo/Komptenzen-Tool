@@ -403,14 +403,13 @@ def persist_grade_matrix(
     # ------------------------ Hilfstabellen ------------------------
     # Topic-ID (DataFrame-Spalte)  →  echte Topic-Objekte
     topic_map: dict[str, Topic] = {
-        _uk(subject_name, t.name, idx=i): t
-        for i, t in enumerate(
-            ses.query(Topic)
-               .join(Subject)
-               .filter(Subject.name == subject_name)
-               .order_by(Topic.name)
-               .all()
-        )
+        _uk(subject_name, t.name): t          # same key formula as in UI
+        for t in (
+              ses.query(Topic)                # includes topics that are *not* in the table
+                     .join(Subject)
+                     .filter(Subject.name == subject_name)
+                     .order_by(Topic.name)
+           )
     }
     # Student-Name → Student-Objekt
     stu_map: dict[tuple[str, str], Student] = {
