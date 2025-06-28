@@ -345,7 +345,7 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann sichere Passwörter erstellen und die Folgen unsicherer Passwörter beurteilen.",  # :contentReference[oaicite:2]{index=2}
                 ],
                 "Algorithmen in Informatikprojekten": [
-                    "Ich kann Abläufe analysieren und daraus einfache Algorithmen in einer grafischen Programmier­umgebung (z. B. Scratch) umsetzen.",  # :contentReference[oaicite:3]{index=3}
+                    "Ich kann Abläufe analysieren und daraus einfache Algorithmen in einer grafischen Programmierumgebung (z. B. Scratch) umsetzen.",  # :contentReference[oaicite:3]{index=3}
                     "Ich kann Programmparameter verändern und beobachten, wie sich der Ablauf ändert.",  # :contentReference[oaicite:4]{index=4}
                     "Ich kann Wiederholungsstrukturen einsetzen, um wiederkehrende Sequenzen zu verkürzen.",  # :contentReference[oaicite:5]{index=5}
                 ],
