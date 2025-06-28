@@ -1,0 +1,41 @@
+Collecting weasyprint
+  Downloading weasyprint-65.1-py3-none-any.whl (298 kB)
+     -------------------------------------- 298.0/298.0 kB 2.3 MB/s eta 0:00:00
+Collecting jinja2
+  Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+     -------------------------------------- 134.9/134.9 kB 2.0 MB/s eta 0:00:00
+Collecting pydyf
+  Downloading pydyf-0.11.0-py3-none-any.whl (8.1 kB)
+Collecting cffi
+  Downloading cffi-1.17.1-cp310-cp310-win_amd64.whl (181 kB)
+     -------------------------------------- 181.3/181.3 kB 2.2 MB/s eta 0:00:00
+Collecting tinycss2
+  Downloading tinycss2-1.4.0-py3-none-any.whl (26 kB)
+Collecting cssselect2
+  Downloading cssselect2-0.8.0-py3-none-any.whl (15 kB)
+Collecting pyphen
+  Downloading pyphen-0.17.2-py3-none-any.whl (2.1 MB)
+     ---------------------------------------- 2.1/2.1 MB 2.8 MB/s eta 0:00:00
+Collecting pillow
+  Downloading pillow-11.2.1-cp310-cp310-win_amd64.whl (2.7 MB)
+     ---------------------------------------- 2.7/2.7 MB 2.8 MB/s eta 0:00:00
+Collecting fonttools
+  Downloading fonttools-4.58.4-cp310-cp310-win_amd64.whl (2.2 MB)
+     ---------------------------------------- 2.2/2.2 MB 2.8 MB/s eta 0:00:00
+Collecting tinyhtml5
+  Downloading tinyhtml5-2.0.0-py3-none-any.whl (39 kB)
+Collecting MarkupSafe>=2.0
+  Downloading MarkupSafe-3.0.2-cp310-cp310-win_amd64.whl (15 kB)
+Collecting pycparser
+  Downloading pycparser-2.22-py3-none-any.whl (117 kB)
+     -------------------------------------- 117.6/117.6 kB 1.7 MB/s eta 0:00:00
+Collecting webencodings>=0.4
+  Downloading webencodings-0.5.1-py2.py3-none-any.whl (11 kB)
+Collecting brotli>=1.0.1
+  Downloading Brotli-1.1.0-cp310-cp310-win_amd64.whl (357 kB)
+     -------------------------------------- 357.3/357.3 kB 2.8 MB/s eta 0:00:00
+Collecting zopfli>=0.1.4
+  Downloading zopfli-0.2.3.post1-cp310-cp310-win_amd64.whl (99 kB)
+     ---------------------------------------- 99.3/99.3 kB 1.9 MB/s eta 0:00:00
+Installing collected packages: webencodings, brotli, zopfli, tinyhtml5, tinycss2, pyphen, pydyf, pycparser, pillow, MarkupSafe, fonttools, jinja2, cssselect2, cffi, weasyprint
+Successfully installed MarkupSafe-3.0.2 brotli-1.1.0 cffi-1.17.1 cssselect2-0.8.0 fonttools-4.58.4 jinja2-3.1.6 pillow-11.2.1 pycparser-2.22 pydyf-0.11.0 pyphen-0.17.2 tinycss2-1.4.0 tinyhtml5-2.0.0 weasyprint-65.1 webencodings-0.5.1 zopfli-0.2.3.post1

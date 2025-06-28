@@ -1,0 +1,21 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{xltabular,makecell,xcolor}
+%\setlength\cellspacetoplimit{1.5mm}
+%\setlength\cellspacebottomlimit{1.5mm}
+
+\newcolumntype{Y}{>{\centering\arraybackslash}X}% centred, stretchable
+\newcolumntype{Cbl}{>{\centering\arraybackslash\cellcolor{teal!70}\color{white}}X}
+
+\begin{document}
+	
+	\begin{xltabular}{\textwidth}{|Cbl|*{4}{Y|}}
+		\textbf{Fach} &
+		\makecell{sehr gut\\erfüllt} &
+		\makecell{gut\\erfüllt} &
+		\makecell{teilweise\\erfüllt} &
+		\makecell{nicht\\erfüllt}\\\hline%
+		% … more rows …
+	\end{xltabular}
+	
+\end{document}

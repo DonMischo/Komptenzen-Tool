@@ -1,0 +1,148 @@
+\newcommand{\schoolReportDay}{27.06.2025}
+
+\makeatletter
+\def\nobreakhline{%
+	\noalign{\ifnum0=`}\fi
+	\penalty\@M
+	\futurelet\@let@token\LT@@nobreakhline}
+\def\LT@@nobreakhline{%
+	\ifx\@let@token\hline
+	\global\let\@gtempa\@gobble
+	\gdef\LT@sep{\penalty\@M\vskip\doublerulesep}% <-- change here
+	\else
+	\global\let\@gtempa\@empty
+	\gdef\LT@sep{\penalty\@M\vskip-\arrayrulewidth}% <-- change here
+	\fi
+	\ifnum0=`{\fi}%
+	\multispan\LT@cols
+	\unskip\leaders\hrule\@height\arrayrulewidth\hfill\cr
+	\noalign{\LT@sep}%
+	\multispan\LT@cols
+	\unskip\leaders\hrule\@height\arrayrulewidth\hfill\cr
+	\noalign{\penalty\@M}%
+	\@gtempa}
+\makeatother
+
+
+\newcommand\competencyLevel{
+	\begin{tabularx}{\linewidth}{|X|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|}
+		\hline
+		\textbf{Kompetenzfelder und Lernziele der Fachbereiche} & \rot{\parbox{2.7cm}{\thead{sehr gut erfüllt}}} & \rot{\thead{gut erfüllt}} & \rot{\thead{teilweise}} & \rot{\thead{nicht erfüllt}} \\
+		\hline
+	\end{tabularx}
+}
+
+\newcommand{\gradeOne}{& $\boxtimes$ & $\Box$ & $\Box$ & $\Box$\\}
+\newcommand{\gradeTwo}{& $\Box$ & $\boxtimes$ & $\Box$ & $\Box$\\}
+\newcommand{\gradeThree}{& $\Box$ & $\Box$ & $\boxtimes$ & $\Box$\\}
+\newcommand{\gradeFour}{& $\Box$ & $\Box$ & $\Box$ & $\boxtimes$\\}
+\newcommand{\gradeNotGiven}{& \multicolumn{4}{c|}{nicht erteilt}\\}
+\newcommand{\gradeComesWithSecondHalfYear}{& \multicolumn{4}{c|}{wird im 2. Halbjahr belegt}\\}
+\newcommand{\gradeDefault}{&  &  &  & \\}
+\newcommand{\gradeSkip}{& $\Box$ & $\Box$ & $\Box$ & $\Box$\\}
+
+
+\newcommand\levelRow[1]{\multicolumn{5}{|c|}{#1}\\\hline}
+\newcommand{\levelOne}{\levelRow{\centering Du hast vorwiegend auf {\color{greenEnglish} Anforderungsebene 1} gearbeitet.}}
+\newcommand{\levelTwo}{\levelRow{\centering Du hast vorwiegend auf {\color{blue} Anforderungsebene 2} gearbeitet.}}
+\newcommand{\levelThree}{\levelRow{\centering Du hast vorwiegend auf {\color{red} Anforderungsebene 3} gearbeitet.}}
+\newcommand{\levelSeven}{\levelRow{\centering bis Klasse 7 ohne Anforderungsebene}}
+\newcommand{\levelEight}{\levelRow{\centering bis Klasse 8 ohne Anforderungsebene}}
+\newcommand{\levelNine}{\levelRow{\centering bis Klasse 9 ohne Anforderungsebene}}
+\newcommand{\noLevel}{}
+\newcommand{\compText}[1]{\multicolumn{5}{|p{0.975\linewidth}|}{#1}\\\hline}
+
+
+% #1 ... competence
+% #2 ... grade
+\newcommand\competencyMajorSubject[2]{\makecell[{{>{\parindent0em}p{\linewidth}}}]{#1} #2}
+
+% #1 ... subject
+% #2 ... competencies
+% #3 ... level
+\newcommand\competencyTableMajorSubject[3]{
+	\renewcommand{\arraystretch}{1.5}
+	\begin{xltabular}{\linewidth}{|K{X}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|}
+		\nobreakhline
+		\multicolumn{5}{|>{\columncolor{egelightblue}}l|}{\textit{\textbf{#1}}}\\
+		\nobreakhline
+		#2
+		#3\\
+	\end{xltabular}\vspace{2pt}
+}
+
+\newcommand\competencyTableMajorSubjectWord[2]{
+	\renewcommand{\arraystretch}{1.5}
+	\begin{xltabular}{\linewidth}{|K{X}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|}
+		\nobreakhline
+		\multicolumn{5}{|>{\columncolor{egelightblue}}l|}{\textit{\textbf{#1}}}\\
+		\nobreakhline
+		\multicolumn{5}{|>K{X}|}{#2}\\
+	\end{xltabular}\vspace{2pt}
+}
+
+% argument is the page threshold until a newline should be added
+\newcommand\newOptionalNewPage[1]{
+	\ifnum #1>\value{page}
+		\newpage
+		\thispagestyle{plain}
+		\phantom{~}
+	\fi
+}
+
+\newcommand{\newpagedefs}{
+	\newpage
+	\newgeometry{headheight=90pt,top=7cm,
+		bottom=2cm, 
+		inner=2cm,
+		outer=2cm}
+	\setlength{\headsep}{-0.4cm}
+	\pagestyle{fancy}
+}
+
+\newcommand{\newpagedefsLastPage}{
+	\newpage
+	\newgeometry{top=2cm,
+		bottom=2cm, 
+		inner=2cm,
+		outer=2cm}
+	\pagestyle{fancy}
+}
+
+\newcommand\formatText[1]{
+	\noexpandarg
+	\StrBefore{#1}{\\}[\studentIntro]
+	\StrBehind{#1}{\\}[\certText]
+	{\Large\setstretch{1.10}\textbf{\LARGE\studentIntro\vspace{.5em}\\}\nowidow[11]\noclub[11]\certText\par}
+}
+
+%%\newcommand*\formatTable[1]{%
+%%	\IfSubStr{#1}{\hline}{
+%%		\StrCount{#1}{\hline}[\occur]%
+%%		\StrBefore[\occur]{#1}{\hline}[\strBefore]
+%%		\StrBehind[\occur]{#1}{\hline}[\lastHline]}
+%%		{\strBefore} 
+%%%		\StrSubstitute{\lastHline}{\hline}{\nobreakhline} 
+%%%		\\
+%%	}
+%%}
+%
+%\newcommand*\formatTable[1]{%
+%	\IfSubStr{#1}{\hline}
+%	{
+%		\StrCount{#1}{\hline}[\occur]
+%		\StrBefore[\occur]{#1}{\hline}
+%	}{}
+%}
+
+\pagestyle{fancy}
+
+\fancypagestyle{mypagestyle}{%
+	\chead{\competencyLevel}
+	\cfoot{\small\raggedright\textit{Legende}:	Anforderungsebene Grün = Hauptschule ( AE I ), Anforderungsebene Blau = Realschule ( AE II ), Anforderungsebene Rot = Gymnasium ( AE III ),	n.b. = nicht bewertet}
+}
+
+\renewcommand{\headrulewidth}{0pt}
+
+\widowpenalty10000
+\clubpenalty10000

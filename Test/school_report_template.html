@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Schulbericht</title>
+	  <style>
+		@page {
+		  size: A4;
+		  margin: 2cm;
+		}
+
+		html, body {
+		  font-family: "DejaVu Sans", sans-serif;
+		  color: #000;
+		  margin: 0;
+		  padding: 0;
+		  height: 100%;
+		}
+
+		.page-frame {
+		  border: 3px solid rgb(0, 99, 142);
+		  height: 100%;
+		  padding: 1cm;
+		  box-sizing: border-box;
+		  display: flex;
+		  flex-direction: column;
+		  justify-content: space-between;
+		}
+
+		.top-logo {
+		  text-align: center;
+		  margin-top: 1cm;
+		}
+
+		.top-logo img {
+		  width: 90%;
+		}
+
+		.title-block {
+		  text-align: center;
+		  margin-top: 2.5cm;
+		}
+
+		.title-block h1 {
+		  font-size: 36pt;
+		  font-weight: bold;
+		  margin-bottom: 1.2cm;
+		}
+
+		.title-block h2 {
+		  font-size: 24pt;
+		  font-weight: normal;
+		  margin: 0.5cm 0;
+		}
+
+		.student-info {
+		  text-align: center;
+		  font-size: 16pt;
+		  margin-top: 3cm;
+		}
+
+		.student-info table {
+		  margin: 0 auto;
+		  font-size: 16pt;
+		  line-height: 1.8;
+		}
+
+		.bottom-logo {
+		  text-align: center;
+		  margin-bottom: 1cm;
+		}
+
+		.bottom-logo img {
+		  width: 40%;
+		}
+
+	  </style>
+	</head>
+<body>
+  <div class="page-frame">
+    <div class="top-logo">
+      <img src="{{ image_top }}" alt="Top Logo">
+    </div>
+
+    <div class="title-block">
+      <h1>Zeugnis</h1>
+      <h2>Evangelische Gemeinschaftsschule Erfurt</h2>
+      <h2>Schuljahr {{ school_year }}</h2>
+    </div>
+
+    <div class="student-info">
+      <table>
+        <tr><td><strong>Klasse:</strong></td><td>{{ classRoom }}</td></tr>
+        <tr><td><strong>Name:</strong></td><td>{{ full_name }}</td></tr>
+        <tr><td></td><td>geb.: {{ date_of_birth }}</td></tr>
+      </table>
+    </div>
+
+    <div class="bottom-logo">
+      <img src="{{ image_bottom }}" alt="Footer Logo">
+    </div>
+  <div style="page-break-after: always;"></div>
+ </div>
+    <div class="section">
+        <p>Lieber {{ first_name }},</p>
+        <p>{{ personal_text | safe }}</p>
+    </div>
+
+    {% for subject in subjects %}
+    <div class="section">
+        <h3>{{ subject.name }}</h3>
+        {% for area in subject.areas %}
+        <table class="competence-table checkboxes">
+            <tr>
+                <th><p><strong>{{ area.title }}</strong></p></th>
+                <th>Sehr gut erfüllt</th>
+                <th>Gut erfüllt</th>
+                <th>Teilweise erfüllt</th>
+                <th>Nicht erfüllt</th>
+            </tr>
+            {% for item in area.competences %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td>{% if item.level == 1 %}☑{% else %}☐{% endif %}</td>
+                <td>{% if item.level == 2 %}☑{% else %}☐{% endif %}</td>
+                <td>{% if item.level == 3 %}☑{% else %}☐{% endif %}</td>
+                <td>{% if item.level == 4 %}☑{% else %}☐{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <div class="section">
+        <h3>Mitarbeit und Verhalten</h3>
+        <table class="competence-table checkboxes">
+            <tr><td>Mitarbeit</td>
+                <td>{% if participation == 1 %}☑{% else %}☐{% endif %}</td>
+                <td>{% if participation == 2 %}☑{% else %}☐{% endif %}</td>
+                <td>{% if participation == 3 %}☑{% else %}☐{% endif %}</td>
+            </tr>
+            <tr><td>Verhalten</td>
+                <td>{% if behavior == 1 %}☑{% else %}☐{% endif %}</td>
+                <td>{% if behavior == 2 %}☑{% else %}☐{% endif %}</td>
+                <td>{% if behavior == 3 %}☑{% else %}☐{% endif %}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>Versäumnisse: {{ days_absent }} Tage (davon {{ days_unexcused }} unentschuldigt)</p>
+        <p>{{ location }}, den {{ report_date }}</p>
+
+        <div class="signatures">
+            <div>KlassenleiterIn</div>
+            <div>SchulleiterIn</div>
+            <div>Erziehungsberechtigte/r</div>
+        </div>
+    </div>
+</body>
+</html>

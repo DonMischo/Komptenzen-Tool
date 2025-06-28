@@ -7,7 +7,7 @@ __pycache__/
 Lehrpläne/
 other-files/
 saved/*
-test/
+test/.venv/
 
 
 

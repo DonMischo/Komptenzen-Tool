@@ -1,0 +1,83 @@
+% ----------------------------------------------------
+%  Minified, LuaLaTeX-friendly preamble for “Zeugnis”
+% ----------------------------------------------------
+\documentclass[12pt,a4paper]{article}
+
+% ---------------- Page layout & colours -------------
+\usepackage[top=2cm,bottom=2cm,
+inner=2cm,outer=2cm]{geometry}
+
+\usepackage[table]{xcolor}
+\definecolor{egeblue}{RGB}{0,99,142}
+\definecolor{egelightblue}{RGB}{66,144,179}
+\definecolor{greenEnglish}{rgb}{0,0.5,0}
+
+% ---------------- Language --------------------------
+\usepackage[german]{babel}      % LuaLaTeX handles UTF-8 natively
+
+% ---------------- Fonts -----------------------------
+\usepackage{fontspec}           % modern font loader
+\setmainfont{Latin Modern Sans}        % or any installed font
+%\setsansfont{Helvetica Neue}            % replaces \usepackage{helvet}
+%\setsansfont{Latin Modern Sans}
+\usepackage{amsmath,amssymb}
+%\usepackage{unicode-math}       % full Unicode maths
+%\setmathfont{Latin Modern Math}
+
+% If you need one single sans-serif default:
+% \renewcommand*\familydefault{\sfdefault}
+
+% ---------------- Micro-typography ------------------
+\usepackage{microtype}          % protrusion & font expansion
+\usepackage{selnolig}           % fixes spurious ligatures
+
+% ---------------- Headings, spacing -----------------
+\usepackage{titlesec}
+\usepackage{setspace}           % \singlespacing, etc.
+\usepackage{ragged2e}
+\usepackage{enumitem}
+
+% ---------------- Lua helpers -----------------------
+\usepackage{luacode}
+
+% ---------------- Graphics / header / footer --------
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+
+% ---------------- Tables & boxes --------------------
+\usepackage{array,tabularx,xltabular}
+%\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}
+\usepackage[column=K]{cellspace}
+
+\usepackage{makecell,colortbl,booktabs,multirow}
+
+\usepackage{nowidow}            % prevents widows/orphans
+
+% convenient column types
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcolumntype{J}[1]{>{\justifying\arraybackslash}p{#1}}
+\newcolumntype{v}[1]{>{\raggedright\hspace{0em}}p{#1}}
+\newcommand*\rot{\rotatebox{90}}
+%\renewcommand\theadalign{l}
+\renewcommand\theadfont{\bfseries\footnotesize}
+
+% ---------------- Maths & symbols -------------------
+\usepackage{amsmath,amssymb}
+
+% ---------------- Strikeout, underline --------------
+\usepackage[normalem]{ulem}      % keep \emph italic, enable \sout
+
+% ---------------- Misc helpers ----------------------
+\usepackage{xstring,etoolbox}
+
+% If you still need a *specific* Unicode symbol that your fonts
+% don’t contain, you can define it once, e.g.:
+% \newunicodechar{⟨}{\ensuremath\langle}
+
+% ----------------------------------------------------
+\setlength{\parindent}{0pt}
+\newcommand{\tableGradeWidth}{.080\linewidth}
+\newcommand{\tableGradeWidthLevel}{.06\linewidth}

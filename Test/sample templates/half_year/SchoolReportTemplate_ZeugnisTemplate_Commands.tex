@@ -1,0 +1,88 @@
+\newcommand{\schoolReportDay}{31.01.2025}
+
+\newcommand\nobreakhline{\hline}
+
+\newcommand\competencyLevel{
+	\begin{tabularx}{\linewidth}{|X|C{\tableGradeWidthLevel}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|}
+		\hline
+		\textbf{Lernziele\,/\,Kompetenzen des Fachbereiches} & \rot{\parbox{3cm}{\thead{Anforderungs-\\ebene}}} & \rot{\thead{sehr gut erfüllt}} & \rot{\thead{gut erfüllt}} & \rot{\thead{teilweise}} & \rot{\thead{nicht erfüllt}} \\
+		\hline
+	\end{tabularx}
+}
+
+\newcommand{\gradeOne}{& $\boxtimes$ & $\Box$ & $\Box$ & $\Box$\\}
+\newcommand{\gradeTwo}{& $\Box$ & $\boxtimes$ & $\Box$ & $\Box$\\}
+\newcommand{\gradeThree}{& $\Box$ & $\Box$ & $\boxtimes$ & $\Box$\\}
+\newcommand{\gradeFour}{& $\Box$ & $\Box$ & $\Box$ & $\boxtimes$\\}
+\newcommand{\gradeNotGiven}{& \multicolumn{4}{p{0.28\linewidth}|}{\centering nicht erteilt}\\}
+\newcommand{\gradeComesWithSecondHalfYear}{& \multicolumn{4}{c|}{wird im 2. Halbjahr belegt}\\}
+\newcommand{\gradeDefault}{&  &  &  & \\}
+\newcommand{\gradeSkip}{& $\Box$ & $\Box$ & $\Box$ & $\Box$\\}
+
+
+\newcommand\levelRow[1]{\multicolumn{6}{|c|}{\formatMajorLevel{#1}}\\\hline}
+\newcommand\levelCell[1]{\multicolumn{1}{m{\tableGradeWidthLevel}|}{\tiny\centering #1}}
+\newcommand{\levelOne}{\normalsize \color{greenEnglish} grün}
+\newcommand{\levelTwo}{\normalsize \color{blue} blau}
+\newcommand{\levelThree}{\normalsize \color{red} rot}
+\newcommand{\levelSeven}{bis Klasse 7 ohne Niveau}
+\newcommand{\levelEight}{bis Klasse 8 ohne Niveau}
+\newcommand{\levelNine}{bis Klasse 9 ohne Niveau}
+\newcommand{\noLevel}{}
+\newcommand{\compText}[1]{\multicolumn{5}{|p{0.95\linewidth}|}{#1}\\\hline}
+
+%\setlength{\extrarowheight}{0pt}
+\newcommand\competencyMajorSubject[2]{\makecell[{{>{\parindent0em}p{\linewidth}}}]{#1} & #2}
+\newcommand\competencyMinorSubject[3]{\makecell[{{{>{\parindent0em}p\linewidth}}}]{#1} & \levelCell{#3} #2}
+
+\newcommand\formatMajorLevel[1]{%
+	\ifthenelse{\isin{\levelOne}{#1}}
+	{Du hast überwiegend auf Anforderungsebene {#1} gearbeitet.}%
+	{}%
+	\ifthenelse{\isin{\levelTwo}{#1}}
+	{Du hast überwiegend auf Anforderungsebene {#1} gearbeitet.}%
+	{}%
+	\ifthenelse{\isin{\levelThree}{#1}}
+	{Du hast überwiegend auf Anforderungsebene {#1} gearbeitet.}%
+	{}%
+}
+
+\newcommand\competencyTableMajorSubject[3]{\small
+	\renewcommand{\arraystretch}{1.5}
+	\begin{tabularx}{\linewidth}{|K{X}|C{\tableGradeWidthLevel}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|}
+		\hline
+		\multicolumn{6}{|>{\columncolor{egelightblue}}l|}{\textit{\textbf{#1}}} \\
+		\hline
+		#2
+		\levelRow{#3}
+	\end{tabularx}\vspace{2pt}
+}
+\newcommand\competencyTable[2]{\small
+	\begin{tabularx}{\linewidth}{|K{X}|C{\tableGradeWidthLevel}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|}
+		\hline
+		\multicolumn{6}{|>{\columncolor{egelightblue}}l|}{\textit{\textbf{#1}}} \\
+		\hline
+		#2
+	\end{tabularx}\vspace{2pt}
+}
+
+
+\newcommand{\newpagedefs}{
+	\newpage
+	\newgeometry{headheight=106pt,top=7cm,
+		bottom=2cm, 
+		inner=2cm,
+		outer=2cm}
+	\setlength{\headsep}{-0.4cm}
+	\pagestyle{fancy}
+}
+
+
+\pagestyle{fancy}
+\chead{\competencyLevel}
+
+\fancypagestyle{mypagestyle}{%
+	\chead{\competencyLevel}
+	\cfoot{\small\raggedright\textit{Legende}:	Anforderungsebene Grün = Hauptschule ( AE I ), Anforderungsebene Blau = Realschule ( AE II ), Anforderungsebene Rot = Gymnasium ( AE III ),	n.b. = nicht bewertet}
+}
+\renewcommand{\headrulewidth}{0pt}

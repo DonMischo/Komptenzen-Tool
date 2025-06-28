@@ -1,0 +1,315 @@
+% --------------------------------------------------------------
+%  Simple LuaLaTeX template – “Zeugnis”
+%  Reads data from   student_data.lua   (see sample next to this file)
+%  and produces a 2‑page A4 report similar to the HTML version.
+% --------------------------------------------------------------
+
+% --- Preamble -------------------------------------------------
+%\input{SchoolReportTemplate_ZeugnisTemplate_Packages.tex}
+
+% ----------------------------------------------------
+%  Minified, LuaLaTeX-friendly preamble for “Zeugnis”
+% ----------------------------------------------------
+\documentclass[12pt,a4paper]{article}
+
+% ---------------- Page layout & colours -------------
+\usepackage[top=2cm,bottom=2cm,
+inner=2cm,outer=2cm]{geometry}
+
+\usepackage[table]{xcolor}
+\definecolor{egeblue}{RGB}{0,99,142}
+\definecolor{egelightblue}{RGB}{66,144,179}
+\definecolor{greenEnglish}{rgb}{0,0.5,0}
+
+% ---------------- Language --------------------------
+\usepackage[german]{babel}      % LuaLaTeX handles UTF-8 natively
+
+% ---------------- Fonts -----------------------------
+\usepackage{fontspec}           % modern font loader
+\setmainfont{Latin Modern Sans}        % or any installed font
+%\setsansfont{Helvetica Neue}            % replaces \usepackage{helvet}
+%\setsansfont{Latin Modern Sans}
+\usepackage{amsmath,amssymb}
+%\usepackage{unicode-math}       % full Unicode maths
+%\setmathfont{Latin Modern Math}
+
+% If you need one single sans-serif default:
+% \renewcommand*\familydefault{\sfdefault}
+
+% ---------------- Micro-typography ------------------
+\usepackage{microtype}          % protrusion & font expansion
+\usepackage{selnolig}           % fixes spurious ligatures
+
+% ---------------- Headings, spacing -----------------
+\usepackage{titlesec}
+\usepackage{setspace}           % \singlespacing, etc.
+\usepackage{ragged2e}
+\usepackage{enumitem}
+
+% ---------------- Lua helpers -----------------------
+\usepackage{luacode}
+
+% ---------------- Graphics / header / footer --------
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+
+% ---------------- Tables & boxes --------------------
+\usepackage{array,tabularx,xltabular}
+%\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}
+\usepackage[column=K]{cellspace}
+
+\usepackage{makecell,colortbl,booktabs,multirow}
+
+\usepackage{nowidow}            % prevents widows/orphans
+
+% convenient column types
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcolumntype{J}[1]{>{\justifying\arraybackslash}p{#1}}
+\newcolumntype{v}[1]{>{\raggedright\hspace{0em}}p{#1}}
+\newcommand*\rot{\rotatebox{90}}
+%\renewcommand\theadalign{l}
+\renewcommand\theadfont{\bfseries\footnotesize}
+
+% ---------------- Maths & symbols -------------------
+\usepackage{amsmath,amssymb}
+
+% ---------------- Strikeout, underline --------------
+\usepackage[normalem]{ulem}      % keep \emph italic, enable \sout
+
+% ---------------- Misc helpers ----------------------
+\usepackage{xstring,etoolbox}
+
+% If you still need a *specific* Unicode symbol that your fonts
+% don’t contain, you can define it once, e.g.:
+% \newunicodechar{⟨}{\ensuremath\langle}
+
+% ----------------------------------------------------
+\setlength{\parindent}{0pt}
+\newcommand{\tableGradeWidth}{.080\linewidth}
+\newcommand{\tableGradeWidthLevel}{.06\linewidth}
+
+
+%\usepackage{cellspace}            % adds top/bottom padding
+% -----------------------------------------------------------------
+% 2 — vertical padding = 1.5 mm
+\setlength\cellspacetoplimit{1.5mm}
+\setlength\cellspacebottomlimit{1.5mm}
+% Activate padding in *every* tabular-like env:
+% -----------------------------------------------------------------
+% 3 — column helpers
+%\newcolumntype{Y}{>{\centering\arraybackslash}m{18mm}} % 18 mm wide, centred *vertically & horizontally*
+\newcommand*\theadcell[1]{\makecell[c]{#1}}
+\newcommand{\schoolReportDay}{27.06.2025}
+%\input{SchoolReportTemplate_ZeugnisTemplate_Commands.tex}
+
+% --- Lua helpers ----------------------------------------------
+%\begin{luacode*}
+%	-- Load student data table
+%	dofile("student_data.lua")
+%	
+%	-- Escape TeX‑special characters coming from Lua strings
+%	 function tex_escape(str)
+%	 return (str
+%		:gsub("([%%#$&{}_\\])", "\\%1")   -- escape % # $ & _ { } \
+%		:gsub("\n", "\\\\"))              -- newline → \\
+%  	 end
+%	
+%	-- Convenience for checkbox columns (1‑4)
+%	function checkbox(level, col)
+%	return (level == col) and "$\\boxtimes$" or "$\\Box$"
+%	end
+%\end{luacode*}
+
+\newcommand{\headcol}[2]{\cellcolor{#1}\color{white}\bfseries #2}
+
+
+% --- Document --------------------------------------------------
+\begin{document}
+	
+	% ---------- Title page ----------------------------------------
+%	\include{Zeugnis_titlepage.tex}
+	\pagestyle{plain}
+%\fcolorbox{egeblue}{white}{
+%	\begin{minipage}[t][.98\textheight][t]{.97\textwidth}
+%		\begin{center}\vspace{1cm}
+%			\includegraphics[width=.9\linewidth]{Logotop_mit_ESM_zeugnis}
+%		\end{center}
+%		\vspace{3cm}
+%		\begin{center}\setstretch{1.5}
+%			\textbf{\Huge Zeugnis}\\
+%			\textbf{\LARGE ~\\
+%				Evangelische Gemeinschaftsschule Erfurt\\\vspace{2cm}
+%				\directlua{tex.sprint(student.part_of_year)} \directlua{tex.sprint(student.school_year)}}
+%		\end{center}\vspace{3cm}
+%		\begin{center}\LARGE
+%			\begin{tabular}{ll}
+%				\textbf{Klasse:} &  \directlua{tex.sprint(student.classRoom)}\vspace{1cm}\\
+%				\textbf{Name:} &   \directlua{tex.sprint(student.first_name)} \directlua{tex.sprint(student.last_name)}\\%
+%				& geb.: \directlua{tex.sprint(student.date_of_birth)}\\%
+%			\end{tabular}
+%		\end{center}
+%		\vfill
+%		\begin{center}
+%			\includegraphics[width=0.4\linewidth]{Stiftung}
+%		\end{center}
+%		\vspace{1cm}
+%	\end{minipage}
+%}%
+
+	
+	\newpage
+	
+	% ---------- Personal text -------------------------------------
+%	Lieber \directlua{tex.sprint(student.first_name)},\\
+%	\directlua{tex.sprint(student.personal_text)}
+%	\newpage
+%	\vspace{1em}
+	
+%	% ---------- Subjects & competences ----------------------------
+%\begin{luacode*}	
+%	for _, subj in ipairs(student.subjects) do
+%		tex.print("\\section*{", tex_escape(subj.name), "}")		
+%		for _, area in ipairs(subj.areas) do
+%			tex.print("\\textbf{", tex_escape(area.title), "}\\\\\n")
+%			
+%			-- table header
+%			tex.print("\\begin{longtable}{|p{9cm}|c|c|c|c|}\\hline\n",
+%				"Kompetenz & Sehr gut & Gut & Teilweise & Nicht~erfüllt \\\\\\ \\hline\\endhead\n")
+%				
+%				for _, comp in ipairs(area.competences) do
+%				local lvl = comp.level or 0                       -- nil-safe
+%				tex.print(tex_escape(comp.description), " & ",
+%				checkbox(lvl,1)," & ", checkbox(lvl,2)," & ",
+%				checkbox(lvl,3)," & ", checkbox(lvl,4),
+%				" \\\\\\ \\hline\n")
+%			end
+%			
+%			tex.print("\\end{longtable}\n\\vspace{1em}\n")
+%		end
+%	end
+%\end{luacode*}
+
+%\begin{luacode*}	
+%	for _, subj in ipairs(student.subjects) do
+%		tex.print("\\renewcommand{\\arraystretch}{1.5}")
+%		tex.print("\\begin{xltabular}{\\linewidth}{|X|C{\\tableGradeWidth}|C{\\tableGradeWidth}|C{\\tableGradeWidth}|C{\\tableGradeWidth}|}")
+%			tex.print("\\nobreakhline")
+%			tex.print("\\multicolumn{5}{|>{\\columncolor{egelightblue}}l|}{\\textit{\\textbf{" .. subj.name .. "}}}\\\\")
+%			tex.print("\\nobreakhline")
+%		for _, area in ipairs(subj.areas) do
+%			for _, comp in ipairs(area.competences) do
+%				local lvl = comp.level or 0                       -- nil-safe
+%				tex.print(tex_escape(comp.description), " & ",
+%				checkbox(lvl,1)," & ", checkbox(lvl,2)," & ",
+%				checkbox(lvl,3)," & ", checkbox(lvl,4),
+%				"\\\\")
+%			end
+%
+%		end
+%		tex.print("\\end{xltabular}")
+%	end
+%\end{luacode*}
+
+
+%\begin{xltabular}{\textwidth}{|
+%		>{\raggedright\arraybackslash\cellcolor{teal!70}\color{white}\bfseries}X
+%		|Y|Y|Y|Y|}
+%	\hline
+%	Fach &
+%	\theadcell{sehr gut\\erfüllt} &
+%	\theadcell{gut\\erfüllt} &
+%	\theadcell{teilweise\\erfüllt} &
+%	\theadcell{nicht\\erfüllt} \\\hline%
+%	%  …body of the table…
+%	Deutsch      &   &   &   &   \\\hline%
+%	Mathematik   &   &   &   &   \\\hline%
+%\end{xltabular}
+
+
+
+%		
+%			tex.print("\\textbf{", tex_escape(area.title), "}\\\\\n")
+%			
+%			-- table header
+%			tex.print("\\begin{longtable}{|p{9cm}|c|c|c|c|}\\hline\n",
+%				"Kompetenz & Sehr gut & Gut & Teilweise & Nicht~erfüllt \\\\\\ \\hline\\endhead\n")
+%				
+%				
+%			
+%			tex.print("\\end{longtable}\n\\vspace{1em}\n")
+%		end
+
+
+%	\nobreakhline
+%	#2
+%	#3
+%\end{xltabular}\vspace{2pt}
+
+
+%	
+%	% ---------- Participation / behaviour -------------------------
+
+%\include{Zeugnis_back.tex}
+%\newpagedefsLastPage
+\thispagestyle{plain}
+
+\fcolorbox{egeblue}{white}{%
+	\begin{minipage}[t][.99\textheight][t]{.97\textwidth}
+%		% ---------- remarks ---------------------------------------
+		\textbf{Bemerkungen:}\par\vspace{.5em}%
+		\directlua{tex.print(tex_escape(student.comment))}\par
+		
+		\vfill
+		
+%		% ---------- absence block ---------------------------------
+%		\begin{tabularx}{\linewidth}{lX}
+%			Versäumnisse: &
+%			\directlua{tex.print(student.absenceDaysTotal)}~Tage
+%			(davon \directlua{tex.print(student.absenceDaysUnauthorized)}~Tage
+%			unentschuldigt) \\[.3em]
+%			& \directlua{tex.print(student.absenceHoursTotal)}~Stunden
+%			(davon \directlua{tex.print(student.absenceHoursUnauthorized)}~Stunden
+%			unentschuldigt)\\%
+%		\end{tabularx}
+		\vspace{3cm}\par
+		Erfurt, den \schoolReportDay
+%		
+%		% ---------- signatures 1 ---------------------------------
+		\vspace{2.5cm}\par
+		\begin{tabularx}{\linewidth}{C{.4\linewidth} Y C{.4\linewidth}}
+			\rule{\linewidth}{1pt} & & \rule{\linewidth}{1pt}\\%
+			{\centering KlassenleiterIn} & & {\centering KlassenleiterIn}\\%
+		\end{tabularx}		
+%		% ---------- signatures 2 ---------------------------------
+%		\vspace{2.5cm}\par
+%		\begin{tabularx}{\linewidth}{C{.4\linewidth}Y C{.4\linewidth}}
+%			\rule{\linewidth}{1pt} & & \\[-.7ex]
+%			{\centering SchulleiterIn} & {\tiny Siegel} & \\%
+%		\end{tabularx}		
+%		% ---------- signatures 3 ---------------------------------
+%		\vspace{2.5cm}\par
+%		\begin{tabularx}{\linewidth}{C{.4\linewidth}X C{.4\linewidth}}
+%			\rule{\linewidth}{1pt} & & \rule{\linewidth}{1pt}\\%
+%			{\centering Erziehungsberechtigte} & &	{\centering SchülerIn}\\%
+%		\end{tabularx}		
+%		\vfill		
+%		% ---------- legal notice ---------------------------------
+%		{\footnotesize
+%			\textbf{Rechtsbehelf:}\\
+%			Gegen die Versetzungsentscheidung kann innerhalb eines Monats nach
+%			Bekanntgabe des Zeugnisses Widerspruch erhoben werden. Der Widerspruch
+%			ist bei der Evangelischen Gemeinschaftsschule Erfurt,
+%			Eugen-Richter-Straße 22, 99085 Erfurt schriftlich oder zur Niederschrift
+%			zu erheben.\\[3em]
+%			\begin{tabularx}{\linewidth}{C{.6\linewidth}}
+%				\rule{\linewidth}{1pt} \\[-.3ex]
+%				{\centering Kenntnisnahme der Sorgeberechtigten}\\%
+%			\end{tabularx}
+%		}
+	\end{minipage}%
+}%
+	
+\end{document}

@@ -1,0 +1,65 @@
+\newpagedefsLastPage
+\thispagestyle{plain}
+
+\fcolorbox{egeblue}{white}{%
+	\begin{minipage}[t][.99\textheight][t]{.97\textwidth}
+		% ---------- remarks ---------------------------------------
+		\textbf{Bemerkungen:}\par\vspace{.5em}%
+		\directlua{tex.print(tex_escape(student.comment))}\par
+		
+		\vfill
+		
+		% ---------- absence block ---------------------------------
+		\begin{tabularx}{\linewidth}{@{}lX@{}}
+			Versäumnisse: &
+			\directlua{tex.print(student.absenceDaysTotal)}~Tage
+			(davon \directlua{tex.print(student.absenceDaysUnauthorized)}~Tage
+			unentschuldigt) \\[.3em]
+			&%
+			\directlua{tex.print(student.absenceHoursTotal)}~Stunden
+			(davon \directlua{tex.print(student.absenceHoursUnauthorized)}~Stunden
+			unentschuldigt)\\%
+		\end{tabularx}
+		
+		\vspace{3cm}\par
+		Erfurt, den \schoolReportDay
+		
+		% ---------- signatures 1 ---------------------------------
+		\vspace{2.5cm}\par
+		\begin{tabularx}{\linewidth}{C{.4\linewidth}X C{.4\linewidth}}
+			\rule{\linewidth}{1pt} & & \rule{\linewidth}{1pt} \\
+			{\centering KlassenleiterIn} & & {\centering KlassenleiterIn}\\%
+		\end{tabularx}
+		
+		% ---------- signatures 2 ---------------------------------
+		\vspace{2.5cm}\par
+		\begin{tabularx}{\linewidth}{C{.4\linewidth}Y C{.4\linewidth}}
+			\rule{\linewidth}{1pt} & & \\[-.7ex]
+			{\centering SchulleiterIn} & {\tiny Siegel} & \\%
+		\end{tabularx}
+		
+		% ---------- signatures 3 ---------------------------------
+		\vspace{2.5cm}\par
+		\begin{tabularx}{\linewidth}{C{.4\linewidth}X C{.4\linewidth}}
+			\rule{\linewidth}{1pt} & & \rule{\linewidth}{1pt} \\
+			{\centering Erziehungsberechtigte} & &
+			{\centering SchülerIn}\\%
+		\end{tabularx}
+		
+		\vfill
+		
+		% ---------- legal notice ---------------------------------
+		{\footnotesize
+			\textbf{Rechtsbehelf:}\\
+			Gegen die Versetzungsentscheidung kann innerhalb eines Monats nach
+			Bekanntgabe des Zeugnisses Widerspruch erhoben werden. Der Widerspruch
+			ist bei der Evangelischen Gemeinschaftsschule Erfurt,
+			Eugen-Richter-Straße 22, 99085 Erfurt schriftlich oder zur Niederschrift
+			zu erheben.\\[3em]
+			\begin{tabularx}{\linewidth}{C{.6\linewidth}}
+				\rule{\linewidth}{1pt} \\[-.3ex]
+				{\centering Kenntnisnahme der Sorgeberechtigten}\\%
+			\end{tabularx}
+		}
+	\end{minipage}%
+}%

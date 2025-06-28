@@ -1,0 +1,98 @@
+\input{SchoolReportTemplate_ZeugnisTemplate_Packages.tex}
+
+\pagenumbering{gobble}
+\setlength\parindent{0pt}
+\setlength\cellspacetoplimit{5pt}
+\setlength\cellspacebottomlimit{5pt}
+
+\newcommand{\tableGradeWidth}{.050\linewidth}
+\newcommand{\tableGradeWidthLevel}{.060\linewidth}
+\newcommand{\tableLineBreak}{\vspace{.2em}\newline}
+
+
+\input{SchoolReportTemplate_ZeugnisTemplate_Commands.tex}
+
+\begin{document}
+	\pagestyle{plain}
+	\fcolorbox{egeblue}{white}{
+		\begin{minipage}[t][.98\textheight][t]{.97\textwidth}
+			\begin{center}\vspace{1cm}
+				\includegraphics[width=.9\linewidth]{Logotop_mit_ESM_zeugnis}
+			\end{center}
+			\vspace{3cm}
+			\begin{center}\setstretch{1.5}
+				\textbf{\Huge Zeugnis}\\
+				\textbf{\LARGE ~\\
+					Evangelische Gemeinschaftsschule Erfurt\\\vspace{2cm}
+					#partOfYear #schoolYear}
+			\end{center}\vspace{3cm}
+			\begin{center}\LARGE
+				\begin{tabular}{ll}
+					\textbf{Klasse:} &  #schoolClass\vspace{1cm}\\
+					\textbf{Name:} &  #givenName #surName\\
+					& geb.: #birthDay
+				\end{tabular}
+			\end{center}
+			\vfill
+			\begin{center}
+				\includegraphics[width=0.4\linewidth]{Stiftung}
+			\end{center}
+			\vspace{1cm}
+		\end{minipage}
+	}%
+
+	\newpage
+	\formatText{#certificateText}
+
+%	\newOptionalNewPage{4}
+	\newpagedefs
+
+#tables
+
+%	\thispagestyle{mypagestyle}
+	\newOptionalNewPage{11}
+	\newOptionalNewPage{11}
+	\newOptionalNewPage{11}
+	\newpagedefsLastPage
+	\thispagestyle{plain}
+	\fcolorbox{egeblue}{white}{
+		\begin{minipage}[h][.99\textheight][t]{.97\textwidth}
+			\textbf{Bemerkungen:}\vspace{.5em}\\
+			#comment	
+			
+			\vfill
+			\begin{tabularx}{\linewidth}{@{}lX}
+				Versäumnisse: & #absenceDaysTotal  Tage (davon #absenceDaysUnauthorized Tage unentschuldigt) \\
+				&  #absenceHoursTotal Stunden (davon #absenceHoursUnauthorized Stunden unentschuldigt) \\
+			\end{tabularx}
+			\vspace{3cm}\\
+			Erfurt, den \schoolReportDay
+			\vspace{2.5cm}\\
+			\begin{tabularx}{\linewidth}{C{.4\linewidth}XC{.4\linewidth}}
+				\rule{\linewidth}{1pt} &  & \rule{\linewidth}{1pt} \\
+				\centering KlassenleiterIn &  & KlassenleiterIn \\
+			\end{tabularx}
+			\vspace{2.5cm}\\
+			\begin{tabularx}{\linewidth}{C{.4\linewidth}YC{.4\linewidth}}
+				\rule{\linewidth}{1pt} &  &  \\
+				\centering SchuleiterIn & \tiny Siegel & \\
+			\end{tabularx}
+			\vspace{2.5cm}\\
+			\begin{tabularx}{\linewidth}{C{.4\linewidth}XC{.4\linewidth}}
+				\rule{\linewidth}{1pt} &  & \rule{\linewidth}{1pt} \\
+				\centering Erziehungsberechtigte &  & SchülerIn \\
+			\end{tabularx}
+			\vfill
+			{\footnotesize \textbf{Rechtsbehelf:}\\
+				Gegen die Versetzungsentscheidung kann innerhalb eines Monats nach Bekanntgabe des Zeugnisses Wider-spruch erhoben werden. Der Widerspruch ist bei der Evangelischen Gemeinschaftsschule Erfurt, Eugen-Richter-Straße 22, 99085 Erfurt schriftlich oder zur Niederschrift zu erheben.\\\vspace{1em}
+				\begin{tabularx}{\linewidth}{C{.6\linewidth}}
+					\vspace{2em}\rule{\linewidth}{1pt} \\
+					\centering Kenntnisnahme der Sorgeberechtigten \\
+				\end{tabularx}
+			}
+		\end{minipage}
+	}%
+%	\newpage
+%	\thispagestyle{plain}
+%	\phantom{~}
+\end{document}
