@@ -1,0 +1,20 @@
+\documentclass{article}
+\usepackage[table]{xcolor}
+\usepackage{tabularray}
+\UseTblrLibrary{booktabs}  % ← this should now work
+
+\makeatletter
+\newcommand{\tblrversion}{Tabularray version: \tblr@version}
+\makeatother
+
+\begin{document}
+	
+	
+	\begin{tblr}{
+			hlines, vlines, booktabs,
+			colspec = {Q[l,m,wd=5cm]  *{4}{Q[c,wd=8mm]}},
+			row{1} = {font = \bfseries\itshape\footnotesize},
+		}
+		Subject & A & B & C & D \\
+	\end{tblr}
+\end{document}

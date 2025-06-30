@@ -1,0 +1,341 @@
+This is LuaHBTeX, Version 1.22.0 (MiKTeX 25.4) (format=lualatex 2025.6.30)  30 JUN 2025 13:41
+ restricted system commands enabled.
+**Zeugnis_minimal_tblr_test.tex
+(./Zeugnis_minimal_tblr_test.tex
+LaTeX2e <2025-06-01> patch level 1
+L3 programming layer <2025-06-09>
+Lua module: luaotfload 2024-12-03 v3.29 Lua based OpenType font support
+Lua module: lualibs 2023-07-13 v2.76 ConTeXt Lua standard libraries.
+Lua module: lualibs-extended 2023-07-13 v2.76 ConTeXt Lua libraries -- extended 
+collection.
+luaotfload | conf : Root cache directory is "C:/Users/m.poehle16/AppData/Local/M
+iKTeX/luatex-cache/generic/names".
+luaotfload | init : Loading fontloader "fontloader-2023-12-28.lua" from kpse-res
+olved path "C:/Program Files/MiKTeX/tex/luatex/luaotfload/fontloader-2023-12-28.
+lua".
+Lua-only attribute luaotfload@noligature = 1
+luaotfload | init : Context OpenType loader version 3.134
+Inserting `luaotfload.node_processor' in `pre_linebreak_filter'.
+Inserting `luaotfload.node_processor' in `hpack_filter'.
+Inserting `luaotfload.glyph_stream' in `glyph_stream_provider'.
+Inserting `luaotfload.define_font' in `define_font'.
+Lua-only attribute luaotfload_color_attribute = 2
+luaotfload | conf : Root cache directory is "C:/Users/m.poehle16/AppData/Local/M
+iKTeX/luatex-cache/generic/names".
+Inserting `luaotfload.harf.strip_prefix' in `find_opentype_file'.
+Inserting `luaotfload.harf.strip_prefix' in `find_truetype_file'.
+Removing  `luaotfload.glyph_stream' from `glyph_stream_provider'.
+Inserting `luaotfload.harf.glyphstream' in `glyph_stream_provider'.
+Inserting `luaotfload.harf.finalize_vlist' in `post_linebreak_filter'.
+Inserting `luaotfload.harf.finalize_hlist' in `hpack_filter'.
+Inserting `luaotfload.cleanup_files' in `wrapup_run'.
+Inserting `luaotfload.harf.finalize_unicode' in `finish_pdffile'.
+Inserting `luaotfload.glyphinfo' in `glyph_info'.
+Lua-only attribute luaotfload.letterspace_done = 3
+Inserting `luaotfload.aux.set_sscale_dimens' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.set_font_index' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.patch_cambria_domh' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.fixup_fontdata' in `luaotfload.patch_font_unsafe'.
+Inserting `luaotfload.aux.set_capheight' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.set_xheight' in `luaotfload.patch_font'.
+Inserting `luaotfload.rewrite_fontname' in `luaotfload.patch_font'.
+Inserting `tracingstacklevels' in `input_level_string'. ("C:/Program Files/MiKT
+eX/tex/latex/base/article.cls"
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+("C:/Program Files/MiKTeX/tex/latex/base/size10.clo"
+File: size10.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
+luaotfload | db : Font names database loaded from C:/Users/m.poehle16/AppData/Lo
+cal/MiKTeX/luatex-cache/generic/names/luaotfload-names.luc.gz)
+\c@part=\count273
+\c@section=\count274
+\c@subsection=\count275
+\c@subsubsection=\count276
+\c@paragraph=\count277
+\c@subparagraph=\count278
+\c@figure=\count279
+\c@table=\count280
+\abovecaptionskip=\skip49
+\belowcaptionskip=\skip50
+\bibindent=\dimen147
+)
+("C:/Program Files/MiKTeX/tex/latex/xcolor/xcolor.sty"
+Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
+
+("C:/Program Files/MiKTeX/tex/latex/graphics-cfg/color.cfg"
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: luatex.def on input line 274.
+
+("C:/Program Files/MiKTeX/tex/latex/graphics-def/luatex.def"
+File: luatex.def 2024/04/13 v1.2e Graphics/color driver for luatex
+)
+("C:/Program Files/MiKTeX/tex/latex/graphics/mathcolor.ltx")
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1349.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1353.
+Package xcolor Info: Model `RGB' extended on input line 1365.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1367.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
+)
+(C:/Users/m.poehle16/AppData/Roaming/MiKTeX/tex/latex/colortbl/colortbl.sty
+Package: colortbl 2024/10/29 v1.0k Color table columns (DPC)
+
+("C:/Program Files/MiKTeX/tex/latex/tools/array.sty"
+Package: array 2025/06/08 v2.6j Tabular extension package (FMi)
+\col@sep=\dimen148
+\ar@mcellbox=\box53
+\extrarowheight=\dimen149
+\NC@list=\toks17
+\extratabsurround=\skip51
+\backup@length=\skip52
+\ar@cellbox=\box54
+)
+\everycr=\toks18
+\minrowclearance=\skip53
+\rownum=\count281
+)
+("C:/Program Files/MiKTeX/tex/latex/tabularray/tabularray.sty"
+Package: tabularray 2025-03-11 v2025A Typeset tabulars and arrays with LaTeX3
+
+(C:/Users/m.poehle16/AppData/Roaming/MiKTeX/tex/latex/ninecolors/ninecolors.sty
+Package: ninecolors 2022-02-13 v2022D Select colors with proper color contrast
+("C:/Program Files/MiKTeX/tex/latex/l3packages/xparse/xparse.sty"
+("C:/Program Files/MiKTeX/tex/latex/l3kernel/expl3.sty"
+Package: expl3 2025-06-09 L3 programming layer (loader) 
+
+("C:/Program Files/MiKTeX/tex/latex/l3backend/l3backend-luatex.def"
+File: l3backend-luatex.def 2025-06-09 L3 backend support: PDF output (LuaTeX)
+\l__color_backend_stack_int=\count282
+Inserting `l3color' in `luaotfload.parse_color'.))
+Package: xparse 2024-08-16 L3 Experimental document command parser
+))
+\l__tblr_a_int=\count283
+\l__tblr_c_int=\count284
+\l__tblr_r_int=\count285
+\l__tblr_d_dim=\dimen150
+\l__tblr_h_dim=\dimen151
+\l__tblr_o_dim=\dimen152
+\l__tblr_p_dim=\dimen153
+\l__tblr_q_dim=\dimen154
+\l__tblr_r_dim=\dimen155
+\l__tblr_s_dim=\dimen156
+\l__tblr_t_dim=\dimen157
+\l__tblr_v_dim=\dimen158
+\l__tblr_w_dim=\dimen159
+\l__tblr_a_box=\box55
+\l__tblr_b_box=\box56
+\l__tblr_c_box=\box57
+\l__tblr_d_box=\box58
+\c@tblrcount=\count286
+\c@colnum=\count287
+\c@rowcount=\count288
+\c@colcount=\count289
+\abovesep=\dimen160
+\belowsep=\dimen161
+\leftsep=\dimen162
+\rightsep=\dimen163
+\gTblrLevelInt=\count290
+\g__tblr_data_row_key_count_int=\count291
+\g__tblr_data_column_key_count_int=\count292
+\g__tblr_data_cell_key_count_int=\count293
+\g__tblr_array_int=\count294
+\l__tblr_key_count_int=\count295
+\l__tblr_key_quotient_int=\count296
+\l__tblr_key_quotient_two_int=\count297
+\l__tblr_key_remainder_int=\count298
+\g__tblr_data_str_value_count_int=\count299
+\lTblrChildTotalInt=\count300
+\lTblrChildHtotalInt=\count301
+\lTblrChildVtotalInt=\count302
+\l__child_diff_h_int=\count303
+\l__child_diff_v_int=\count304
+\l__child_sign_h_int=\count305
+\l__child_sign_v_int=\count306
+\l__child_step_int=\count307
+\lTblrDefaultHruleWidthDim=\dimen164
+\lTblrDefaultVruleWidthDim=\dimen165
+\l__tblr_split_balance_int=\count308
+\l__tblr_strut_dp_dim=\dimen166
+\l__tblr_strut_ht_dim=\dimen167
+\g__tblr_cell_wd_dim=\dimen168
+\g__tblr_cell_ht_dim=\dimen169
+\g__tblr_cell_head_dim=\dimen170
+\g__tblr_cell_foot_dim=\dimen171
+\l__tblr_measured_cell_box=\box59
+\g__tblr_last_box=\box60
+\l__tblr_temp_box=\box61
+\l__tblr_column_target_dim=\dimen172
+\l__tblr_hfuzz_dim=\dimen173
+\l__tblr_caption_box=\box62
+\l__tblr_caption_left_box=\box63
+\lTblrRowHeadInt=\count309
+\lTblrRowFootInt=\count310
+\l__tblr_row_head_box=\box64
+\l__tblr_row_foot_box=\box65
+\l__tblr_row_head_foot_dim=\dimen174
+\lTblrTableWidthDim=\dimen175
+\l__tblr_table_firsthead_box=\box66
+\l__tblr_table_middlehead_box=\box67
+\l__tblr_table_lasthead_box=\box68
+\l__tblr_table_firstfoot_box=\box69
+\l__tblr_table_middlefoot_box=\box70
+\l__tblr_table_lastfoot_box=\box71
+\l__tblr_remain_height_dim=\dimen176
+\l__tblr_long_from_int=\count311
+\l__tblr_long_to_int=\count312
+\l__tblr_curr_i_int=\count313
+\l__tblr_prev_i_int=\count314
+\lTblrTablePageInt=\count315
+\l__tblr_table_head_box=\box72
+\l__tblr_table_foot_box=\box73
+\l__tblr_table_head_foot_dim=\dimen177
+\l__tblr_table_head_body_foot_dim=\dimen178
+\l__tblr_table_box=\box74
+\lTblrRowFirstInt=\count316
+\lTblrRowLastInt=\count317
+\l__tblr_table_hlines_box=\box75
+\l__tblr_hline_box=\box76
+\l__tblr_row_box=\box77
+\l__tblr_col_o_wd_dim=\dimen179
+\l__tblr_col_b_wd_dim=\dimen180
+\l__tblr_hline_leftskip_dim=\dimen181
+\l__tblr_hline_rightskip_dim=\dimen182
+\l__tblr_row_ht_dim=\dimen183
+\l__tblr_row_dp_dim=\dimen184
+\l__tblr_row_abovesep_dim=\dimen185
+\l__tblr_row_belowsep_dim=\dimen186
+\l__tblr_row_vlines_box=\box78
+\l__tblr_vline_box=\box79
+\l__tblr_cell_box=\box80
+\l__tblr_row_upper_dim=\dimen187
+\l__tblr_row_lower_dim=\dimen188
+\l__tblr_row_vpace_dim=\dimen189
+\l__tblr_vline_aboveskip_dim=\dimen190
+\l__tblr_vline_belowskip_dim=\dimen191
+\lTblrCellRowSpanInt=\count318
+\lTblrCellColSpanInt=\count319
+\l__tblr_cell_wd_dim=\dimen192
+\l__tblr_cell_ht_dim=\dimen193
+\lTblrCellAboveBorderWidthDim=\dimen194
+\lTblrCellBelowBorderWidthDim=\dimen195
+\lTblrCellLeftBorderWidthDim=\dimen196
+\lTblrCellRightBorderWidthDim=\dimen197
+\l__tblr_diag_box=\box81
+\l__tblr_cell_inner_wd_dim=\dimen198
+\l__tblr_cell_inner_dp_dim=\dimen199
+\l__tblr_cell_hanchor_dim=\dimen256
+\l__tblr_last_cell_table_ht_dim=\dimen257
+\l__tblr_last_cell_table_dp_dim=\dimen258
+\l__tblr_last_vline_wd_dim=\dimen259
+\l__tblr_tikz_node_box=\box82
+)
+(C:/Users/m.poehle16/AppData/Roaming/MiKTeX/tex/latex/booktabs/booktabs.sty
+Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
+\heavyrulewidth=\dimen260
+\lightrulewidth=\dimen261
+\cmidrulewidth=\dimen262
+\belowrulesep=\dimen263
+\belowbottomsep=\dimen264
+\aboverulesep=\dimen265
+\abovetopsep=\dimen266
+\cmidrulesep=\dimen267
+\cmidrulekern=\dimen268
+\defaultaddspace=\dimen269
+\@cmidla=\count320
+\@cmidlb=\count321
+\@aboverulesep=\dimen270
+\@belowrulesep=\dimen271
+\@thisruleclass=\count322
+\@lastruleclass=\count323
+\@thisrulewidth=\dimen272
+)
+("C:/Program Files/MiKTeX/tex/latex/etoolbox/etoolbox.sty"
+Package: etoolbox 2025/02/11 v2.5l e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count324
+)
+(./Zeugnis_minimal_tblr_test.aux)
+\openout1 = Zeugnis_minimal_tblr_test.aux
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 10.
+LaTeX Font Info:    ... okay on input line 10.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 10.
+LaTeX Font Info:    ... okay on input line 10.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 10.
+LaTeX Font Info:    ... okay on input line 10.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 10.
+LaTeX Font Info:    ... okay on input line 10.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 10.
+LaTeX Font Info:    ... okay on input line 10.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 10.
+LaTeX Font Info:    ... okay on input line 10.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 10.
+LaTeX Font Info:    ... okay on input line 10.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 10.
+LaTeX Font Info:    ... okay on input line 10.
+
+("C:/Program Files/MiKTeX/tex/context/base/mkii/supp-pdf.mkii"
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count325
+\scratchdimen=\dimen273
+\scratchbox=\box83
+\nofMPsegments=\count326
+\nofMParguments=\count327
+\everyMPshowfont=\toks19
+\MPscratchCnt=\count328
+\MPscratchDim=\dimen274
+\MPnumerator=\count329
+\makeMPintoPDFobject=\count330
+\everyMPtoPDFconversion=\toks20
+)
+
+! Package tabularray Error: Unknown inner key name 'booktabs'.
+
+Type <return> to continue.
+ ...                                              
+                                                  
+l.19 	\end
+          {tblr}
+
+LaTeX does not know anything more about this error, sorry.
+
+Try typing <return> to proceed.
+If that doesn't work, type X <return> to quit.
+
+
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <7> on input line 19.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 19.
+
+
+[1
+
+{C:/Users/m.poehle16/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
+(./Zeugnis_minimal_tblr_test.aux)
+ ***********
+LaTeX2e <2025-06-01> patch level 1
+L3 programming layer <2025-06-09>
+ ***********
+)
+
+Here is how much of LuaTeX's memory you used:
+ 4706 strings out of 470205
+ 100000,662416 words of node,token memory allocated
+ 416 words of node memory still in use:
+   3 hlist, 1 vlist, 1 rule, 2 glue, 3 kern, 1 glyph, 4 attribute, 50 glue_spec,
+ 4 attribute_list, 1 write nodes
+   avail lists: 2:326,3:14,4:10,5:23,6:12,7:368,8:1,9:309,11:4
+ 33038 multiletter control sequences out of 65536+600000
+ 28 fonts using 1740119 bytes
+ 88i,7n,101p,377b,606s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<c:/program files/miktex/fonts/opentype/public/lm/lmroman10-regular.otf><c:/prog
+ram files/miktex/fonts/opentype/public/lm/lmroman10-bolditalic.otf>
+Output written on Zeugnis_minimal_tblr_test.pdf (1 page, 6577 bytes).
+
+PDF statistics: 20 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 131072)
+ 1 words of extra memory for PDF output out of 10000 (max. 100000000)
+

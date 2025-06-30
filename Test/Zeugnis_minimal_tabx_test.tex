@@ -1,21 +1,32 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass{article}
 
-\usepackage{xltabular,makecell,xcolor}
-%\setlength\cellspacetoplimit{1.5mm}
-%\setlength\cellspacebottomlimit{1.5mm}
+% ----------------- packages you already use -----------------
+\usepackage{array,   colortbl, makecell}
+\usepackage{tabularx,xltabular}    % ← X columns + page breaks
+\usepackage[table]{xcolor}         % ← cell colours
 
-\newcolumntype{Y}{>{\centering\arraybackslash}X}% centred, stretchable
-\newcolumntype{Cbl}{>{\centering\arraybackslash\cellcolor{teal!70}\color{white}}X}
+% ----------------- helper settings --------------------------
+\definecolor{egelightblue}{RGB}{219,233,255}
+
+\newlength{\tableGradeWidth}
+\setlength{\tableGradeWidth}{18mm} % just for the demo
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X} % helper
+\setlength\tabcolsep{5pt} % default spacing
 
 \begin{document}
 	
-	\begin{xltabular}{\textwidth}{|Cbl|*{4}{Y|}}
-		\textbf{Fach} &
-		\makecell{sehr gut\\erfüllt} &
-		\makecell{gut\\erfüllt} &
-		\makecell{teilweise\\erfüllt} &
-		\makecell{nicht\\erfüllt}\\\hline%
-		% … more rows …
+	\begin{xltabular}{\linewidth}{|>{\raggedright\arraybackslash\cellcolor{egelightblue}}m{\dimexpr\linewidth-4\tableGradeWidth-5\tabcolsep-5\arrayrulewidth}|%
+			C{\tableGradeWidth}|C{\tableGradeWidth}|%
+			C{\tableGradeWidth}|C{\tableGradeWidth}|}
+		\hline
+		\textit{\textbf{Mathe}} &
+		\thead{\footnotesize sehr gut\\erfüllt} &
+		\thead{\footnotesize gut\\erfüllt} &
+		\thead{\footnotesize teilweise\\erfüllt} &
+		\thead{\footnotesize nicht\\erfüllt} \\
+		\hline
 	\end{xltabular}
 	
 \end{document}

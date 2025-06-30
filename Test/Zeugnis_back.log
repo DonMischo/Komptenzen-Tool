@@ -1,0 +1,2116 @@
+This is LuaHBTeX, Version 1.22.0 (MiKTeX 25.4) (format=lualatex 2025.6.28)  30 JUN 2025 05:34
+ restricted system commands enabled.
+**Zeugnis_back.tex
+(./Zeugnis_back.tex
+LaTeX2e <2025-06-01> patch level 1
+L3 programming layer <2025-05-26>
+Lua module: luaotfload 2024-12-03 v3.29 Lua based OpenType font support
+Lua module: lualibs 2023-07-13 v2.76 ConTeXt Lua standard libraries.
+Lua module: lualibs-extended 2023-07-13 v2.76 ConTeXt Lua libraries -- extended 
+collection.
+luaotfload | conf : Root cache directory is "C:/Users/m.poehle16/AppData/Local/M
+iKTeX/luatex-cache/generic/names".
+luaotfload | init : Loading fontloader "fontloader-2023-12-28.lua" from kpse-res
+olved path "C:/Program Files/MiKTeX/tex/luatex/luaotfload/fontloader-2023-12-28.
+lua".
+Lua-only attribute luaotfload@noligature = 1
+luaotfload | init : Context OpenType loader version 3.134
+Inserting `luaotfload.node_processor' in `pre_linebreak_filter'.
+Inserting `luaotfload.node_processor' in `hpack_filter'.
+Inserting `luaotfload.glyph_stream' in `glyph_stream_provider'.
+Inserting `luaotfload.define_font' in `define_font'.
+Lua-only attribute luaotfload_color_attribute = 2
+luaotfload | conf : Root cache directory is "C:/Users/m.poehle16/AppData/Local/M
+iKTeX/luatex-cache/generic/names".
+Inserting `luaotfload.harf.strip_prefix' in `find_opentype_file'.
+Inserting `luaotfload.harf.strip_prefix' in `find_truetype_file'.
+Removing  `luaotfload.glyph_stream' from `glyph_stream_provider'.
+Inserting `luaotfload.harf.glyphstream' in `glyph_stream_provider'.
+Inserting `luaotfload.harf.finalize_vlist' in `post_linebreak_filter'.
+Inserting `luaotfload.harf.finalize_hlist' in `hpack_filter'.
+Inserting `luaotfload.cleanup_files' in `wrapup_run'.
+Inserting `luaotfload.harf.finalize_unicode' in `finish_pdffile'.
+Inserting `luaotfload.glyphinfo' in `glyph_info'.
+Lua-only attribute luaotfload.letterspace_done = 3
+Inserting `luaotfload.aux.set_sscale_dimens' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.set_font_index' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.patch_cambria_domh' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.fixup_fontdata' in `luaotfload.patch_font_unsafe'.
+Inserting `luaotfload.aux.set_capheight' in `luaotfload.patch_font'.
+Inserting `luaotfload.aux.set_xheight' in `luaotfload.patch_font'.
+Inserting `luaotfload.rewrite_fontname' in `luaotfload.patch_font'.
+Inserting `tracingstacklevels' in `input_level_string'.
+! Undefined control sequence.
+l.1 \newpagedefsLastPage
+                        
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.4 \fcolorbox
+              {egeblue}{white}{%
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+! LaTeX Error: Missing \begin{document}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.4 \fcolorbox{e
+                geblue}{white}{%
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+luaotfload | db : Font names database loaded from C:/Users/m.poehle16/AppData/Lo
+cal/MiKTeX/luatex-cache/generic/names/luaotfload-names.luc.gz[\directlua]:1: att
+empt to index a nil value (global 'student')
+stack traceback:
+	[\directlua]:1: in main chunk.
+l.8 ...lua{tex.print(tex_escape(student.comment))}
+                                                  \par
+The lua interpreter ran into a problem, so the
+remainder of this lua chunk will be ignored.
+
+
+! LaTeX Error: Environment tabularx undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.13 		\begin{tabularx}
+                       {\linewidth}{@{}lX@{}}
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.13 		\begin{tabularx}{\linewidth}
+                                   {@{}lX@{}}
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.13 		\begin{tabularx}{\linewidth}
+                                   {@{}lX@{}}
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Misplaced alignment tab character &.
+l.14 			Versäumnisse: &
+                        
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+[\directlua]:1: attempt to index a nil value (global 'student')
+stack traceback:
+	[\directlua]:1: in main chunk.
+l.15 ...ctlua{tex.print(student.absenceDaysTotal)}
+                                                  ~Tage
+The lua interpreter ran into a problem, so the
+remainder of this lua chunk will be ignored.
+
+[\directlua]:1: attempt to index a nil value (global 'student')
+stack traceback:
+	[\directlua]:1: in main chunk.
+l.16 ...ex.print(student.absenceDaysUnauthorized)}
+                                                  ~Tage
+The lua interpreter ran into a problem, so the
+remainder of this lua chunk will be ignored.
+
+! Misplaced alignment tab character &.
+l.18 			&
+         %
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+[\directlua]:1: attempt to index a nil value (global 'student')
+stack traceback:
+	[\directlua]:1: in main chunk.
+l.19 ...tlua{tex.print(student.absenceHoursTotal)}
+                                                  ~Stunden
+The lua interpreter ran into a problem, so the
+remainder of this lua chunk will be ignored.
+
+[\directlua]:1: attempt to index a nil value (global 'student')
+stack traceback:
+	[\directlua]:1: in main chunk.
+l.20 ...x.print(student.absenceHoursUnauthorized)}
+                                                  ~Stunden
+The lua interpreter ran into a problem, so the
+remainder of this lua chunk will be ignored.
+
+
+! LaTeX Error: \begin{minipage} on input line 5 ended by \end{tabularx}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.22 		\end{tabularx}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+Missing character: There is no @ (U+0040) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no X (U+0058) in font nullfont!
+Missing character: There is no @ (U+0040) in font nullfont!
+Missing character: There is no V (U+0056) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no ä (U+00E4) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no m (U+006D) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no : (U+003A) in font nullfont!
+Missing character: There is no T (U+0054) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no ( (U+0028) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no v (U+0076) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no T (U+0054) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no ) (U+0029) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no ( (U+0028) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no v (U+0076) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no ) (U+0029) in font nullfont!
+Missing character: There is no @ (U+0040) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no X (U+0058) in font nullfont!
+Missing character: There is no @ (U+0040) in font nullfont!
+Missing character: There is no V (U+0056) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no ä (U+00E4) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no m (U+006D) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no : (U+003A) in font nullfont!
+Missing character: There is no T (U+0054) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no ( (U+0028) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no v (U+0076) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no T (U+0054) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no ) (U+0029) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no ( (U+0028) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no v (U+0076) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no ) (U+0029) in font nullfont!
+Missing character: There is no @ (U+0040) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no X (U+0058) in font nullfont!
+Missing character: There is no @ (U+0040) in font nullfont!
+Missing character: There is no V (U+0056) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no ä (U+00E4) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no m (U+006D) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no : (U+003A) in font nullfont!
+Missing character: There is no T (U+0054) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no ( (U+0028) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no v (U+0076) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no T (U+0054) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no ) (U+0029) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no ( (U+0028) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no v (U+0076) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no ) (U+0029) in font nullfont!
+
+Underfull \hbox (badness 10000) in paragraph at lines 13--23
+
+ []
+
+! Undefined control sequence.
+l.25 		Erfurt, den \schoolReportDay
+                                   
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no , (U+002C) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no , (U+002C) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+
+! LaTeX Error: Environment tabularx undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.29 		\begin{tabularx}
+                       {\linewidth}{C{.4\linewidth}X C{.4\linewidth}}
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.29 		\begin{tabularx}{\linewidth}
+                                   {C{.4\linewidth}X C{.4\linewidth}}
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.29 		\begin{tabularx}{\linewidth}
+                                   {C{.4\linewidth}X C{.4\linewidth}}
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.29 ...egin{tabularx}{\linewidth}{C{.4\linewidth}
+                                                  X C{.4\linewidth}}
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.29 ...egin{tabularx}{\linewidth}{C{.4\linewidth}
+                                                  X C{.4\linewidth}}
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.29 ...inewidth}{C{.4\linewidth}X C{.4\linewidth}
+                                                  }
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.29 ...inewidth}{C{.4\linewidth}X C{.4\linewidth}
+                                                  }
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Misplaced alignment tab character &.
+l.30 			\rule{\linewidth}{1pt} &
+                                 & \rule{\linewidth}{1pt} \\
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Misplaced alignment tab character &.
+l.30 			\rule{\linewidth}{1pt} & &
+                                   \rule{\linewidth}{1pt} \\
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Misplaced alignment tab character &.
+l.31 			{\centering KlassenleiterIn} &
+                                       & {\centering KlassenleiterIn}\\%
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Misplaced alignment tab character &.
+l.31 			{\centering KlassenleiterIn} & &
+                                         {\centering KlassenleiterIn}\\%
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+
+! LaTeX Error: \begin{minipage} on input line 5 ended by \end{tabularx}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.32 		\end{tabularx}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no X (U+0058) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no K (U+004B) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no K (U+004B) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no X (U+0058) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no K (U+004B) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no K (U+004B) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no X (U+0058) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no K (U+004B) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no K (U+004B) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+
+Underfull \hbox (badness 10000) in paragraph at lines 29--33
+
+ []
+
+
+! LaTeX Error: Environment tabularx undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.36 		\begin{tabularx}
+                       {\linewidth}{C{.4\linewidth}Y C{.4\linewidth}}
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.36 		\begin{tabularx}{\linewidth}
+                                   {C{.4\linewidth}Y C{.4\linewidth}}
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.36 		\begin{tabularx}{\linewidth}
+                                   {C{.4\linewidth}Y C{.4\linewidth}}
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.36 ...egin{tabularx}{\linewidth}{C{.4\linewidth}
+                                                  Y C{.4\linewidth}}
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.36 ...egin{tabularx}{\linewidth}{C{.4\linewidth}
+                                                  Y C{.4\linewidth}}
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.36 ...inewidth}{C{.4\linewidth}Y C{.4\linewidth}
+                                                  }
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.36 ...inewidth}{C{.4\linewidth}Y C{.4\linewidth}
+                                                  }
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Misplaced alignment tab character &.
+l.37 			\rule{\linewidth}{1pt} &
+                                 & \\[-.7ex]
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Misplaced alignment tab character &.
+l.37 			\rule{\linewidth}{1pt} & &
+                                   \\[-.7ex]
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Misplaced alignment tab character &.
+l.38 			{\centering SchulleiterIn} &
+                                     {\tiny Siegel} & \\%
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Undefined control sequence.
+l.38 			{\centering SchulleiterIn} & {\tiny
+                                            Siegel} & \\%
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Misplaced alignment tab character &.
+l.38 ...entering SchulleiterIn} & {\tiny Siegel} &
+                                                   \\%
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+
+! LaTeX Error: \begin{minipage} on input line 5 ended by \end{tabularx}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.39 		\end{tabularx}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no Y (U+0059) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no Y (U+0059) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no Y (U+0059) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+
+Underfull \hbox (badness 10000) in paragraph at lines 36--40
+
+ []
+
+
+! LaTeX Error: Environment tabularx undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.43 		\begin{tabularx}
+                       {\linewidth}{C{.4\linewidth}X C{.4\linewidth}}
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.43 		\begin{tabularx}{\linewidth}
+                                   {C{.4\linewidth}X C{.4\linewidth}}
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.43 		\begin{tabularx}{\linewidth}
+                                   {C{.4\linewidth}X C{.4\linewidth}}
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.43 ...egin{tabularx}{\linewidth}{C{.4\linewidth}
+                                                  X C{.4\linewidth}}
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.43 ...egin{tabularx}{\linewidth}{C{.4\linewidth}
+                                                  X C{.4\linewidth}}
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.43 ...inewidth}{C{.4\linewidth}X C{.4\linewidth}
+                                                  }
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.43 ...inewidth}{C{.4\linewidth}X C{.4\linewidth}
+                                                  }
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Misplaced alignment tab character &.
+l.44 			\rule{\linewidth}{1pt} &
+                                 & \rule{\linewidth}{1pt} \\
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Misplaced alignment tab character &.
+l.44 			\rule{\linewidth}{1pt} & &
+                                   \rule{\linewidth}{1pt} \\
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Misplaced alignment tab character &.
+l.45 			{\centering Erziehungsberechtigte} &
+                                             &
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+! Misplaced alignment tab character &.
+l.45 			{\centering Erziehungsberechtigte} & &
+                                              
+I can't figure out why you would want to use a tab mark
+here. If you just want an ampersand, the remedy is
+simple: Just type `I\&' now. But if some right brace
+up above has ended a previous alignment prematurely,
+you're probably due for more error messages, and you
+might try typing `S' now just to see what is salvageable.
+
+
+! LaTeX Error: \begin{minipage} on input line 5 ended by \end{tabularx}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.47 		\end{tabularx}
+                     
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no X (U+0058) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no ü (U+00FC) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no X (U+0058) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no ü (U+00FC) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no X (U+0058) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 4 (U+0034) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no ü (U+00FC) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no I (U+0049) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+
+Underfull \hbox (badness 10000) in paragraph at lines 43--48
+
+ []
+
+! Undefined control sequence.
+l.52 		{\footnotesize
+                     
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+! LaTeX Error: Environment tabularx undefined.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.59 			\begin{tabularx}
+                        {\linewidth}{C{.6\linewidth}}
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.59 			\begin{tabularx}{\linewidth}
+                                    {C{.6\linewidth}}
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.59 			\begin{tabularx}{\linewidth}
+                                    {C{.6\linewidth}}
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+! Missing number, treated as zero.
+<to be read again> 
+                   }
+l.59 ...egin{tabularx}{\linewidth}{C{.6\linewidth}
+                                                  }
+A number should have been here; I inserted `0'.
+(If you can't figure out why I needed to see a number,
+look up `weird error' in the index to The TeXbook.)
+
+! Illegal unit of measure (pt inserted).
+<to be read again> 
+                   }
+l.59 ...egin{tabularx}{\linewidth}{C{.6\linewidth}
+                                                  }
+Dimensions can be in units of em, ex, in, pt, pc,
+cm, mm, dd, cc, nd, nc, bp, or sp; but yours is a new one!
+I'll assume that you meant to say pt, for printer's points.
+To recover gracefully from this error, it's best to
+delete the erroneous units; e.g., type `2' to delete
+two letters. (See Chapter 27 of The TeXbook.)
+
+
+! LaTeX Error: \begin{minipage} on input line 5 ended by \end{tabularx}.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.62 			\end{tabularx}
+                      
+Your command was ignored.
+Type  I <command> <return>  to replace it with another command,
+or  <return>  to continue without it.
+
+Missing character: There is no G (U+0047) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no V (U+0056) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no k (U+006B) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no M (U+004D) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no B (U+0042) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no k (U+006B) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no Z (U+005A) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no W (U+0057) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no p (U+0070) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no w (U+0077) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no D (U+0044) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no W (U+0057) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no p (U+0070) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no v (U+0076) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no G (U+0047) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no m (U+006D) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no , (U+002C) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no R (U+0052) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no ß (U+00DF) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no 2 (U+0032) in font nullfont!
+Missing character: There is no 2 (U+0032) in font nullfont!
+Missing character: There is no , (U+002C) in font nullfont!
+Missing character: There is no 9 (U+0039) in font nullfont!
+Missing character: There is no 9 (U+0039) in font nullfont!
+Missing character: There is no 0 (U+0030) in font nullfont!
+Missing character: There is no 8 (U+0038) in font nullfont!
+Missing character: There is no 5 (U+0035) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no N (U+004E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 6 (U+0036) in font nullfont!
+Missing character: There is no K (U+004B) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no m (U+006D) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no G (U+0047) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no V (U+0056) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no k (U+006B) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no M (U+004D) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no B (U+0042) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no k (U+006B) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no Z (U+005A) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no W (U+0057) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no p (U+0070) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no w (U+0077) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no D (U+0044) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no W (U+0057) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no p (U+0070) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no v (U+0076) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no G (U+0047) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no m (U+006D) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no , (U+002C) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no R (U+0052) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no ß (U+00DF) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no 2 (U+0032) in font nullfont!
+Missing character: There is no 2 (U+0032) in font nullfont!
+Missing character: There is no , (U+002C) in font nullfont!
+Missing character: There is no 9 (U+0039) in font nullfont!
+Missing character: There is no 9 (U+0039) in font nullfont!
+Missing character: There is no 0 (U+0030) in font nullfont!
+Missing character: There is no 8 (U+0038) in font nullfont!
+Missing character: There is no 5 (U+0035) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no N (U+004E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 6 (U+0036) in font nullfont!
+Missing character: There is no K (U+004B) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no m (U+006D) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no G (U+0047) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no V (U+0056) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no k (U+006B) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no M (U+004D) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no B (U+0042) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no k (U+006B) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no Z (U+005A) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no W (U+0057) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no p (U+0070) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no w (U+0077) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no D (U+0044) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no W (U+0057) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no p (U+0070) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no v (U+0076) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no G (U+0047) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no m (U+006D) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no , (U+002C) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no R (U+0052) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no - (U+002D) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no ß (U+00DF) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no 2 (U+0032) in font nullfont!
+Missing character: There is no 2 (U+0032) in font nullfont!
+Missing character: There is no , (U+002C) in font nullfont!
+Missing character: There is no 9 (U+0039) in font nullfont!
+Missing character: There is no 9 (U+0039) in font nullfont!
+Missing character: There is no 0 (U+0030) in font nullfont!
+Missing character: There is no 8 (U+0038) in font nullfont!
+Missing character: There is no 5 (U+0035) in font nullfont!
+Missing character: There is no E (U+0045) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no l (U+006C) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no N (U+004E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no f (U+0066) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no z (U+007A) in font nullfont!
+Missing character: There is no u (U+0075) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no C (U+0043) in font nullfont!
+Missing character: There is no . (U+002E) in font nullfont!
+Missing character: There is no 6 (U+0036) in font nullfont!
+Missing character: There is no K (U+004B) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no s (U+0073) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+Missing character: There is no a (U+0061) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no m (U+006D) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no d (U+0064) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no S (U+0053) in font nullfont!
+Missing character: There is no o (U+006F) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no b (U+0062) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no r (U+0072) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no c (U+0063) in font nullfont!
+Missing character: There is no h (U+0068) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no i (U+0069) in font nullfont!
+Missing character: There is no g (U+0067) in font nullfont!
+Missing character: There is no t (U+0074) in font nullfont!
+Missing character: There is no e (U+0065) in font nullfont!
+Missing character: There is no n (U+006E) in font nullfont!
+
+Underfull \hbox (badness 10000) in paragraph at lines 53--64
+
+ []
+
+)
+! Emergency stop.
+<*> Zeugnis_back.tex
+                    
+*** (job aborted, no legal \end found)
+
+
+
+Here is how much of LuaTeX's memory you used:
+ 24 strings out of 470203
+ 100000,662416 words of node,token memory allocated 5829 words of node memory still in use:
+   36 hlist, 1 vlist, 6 rule, 6 disc, 8 local_par, 1 dir, 149 glue, 8 kern, 39 p
+enalty, 516 glyph, 62 attribute, 39 glue_spec, 62 attribute_list, 1 temp nodes
+   avail lists: 2:5,3:2,4:2,5:10,7:4,10:1
+ 28451 multiletter control sequences out of 65536+600000
+ 15 fonts using 723367 bytes
+ 18i,3n,21p,116b,155s stack positions out of 10000i,1000n,20000p,200000b,200000s
+!  ==> Fatal error occurred, no output PDF file produced!

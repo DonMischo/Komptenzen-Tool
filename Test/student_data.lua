@@ -24,17 +24,20 @@ student = {
                 {
                     title = "Lese- / Hörverstehen",
                     competences = {
-                        { description = "Ich kann Texte verstehen.", level = 1 },
-                        { description = "Ich kann Texte vorlesen.", level = 2 },
-                    }
+                        { description = "Ich kann Texte verstehen."},
+                        { description = "Ich kann Texte vorlesen."},
+                    },
+					grade = 2,
                 },
                 {
                     title = "Sprechen",
                     competences = {
-                        { description = "Ich kann ein Gespräch führen.", level = 2 }
-                    }
+                        { description = "Ich kann ein Gespräch führen."}
+                    },
+					grade = 1,
                 }
-            }
+            },
+			level = "nb",			
         },
         {
             name = "Mathematik",
@@ -42,11 +45,27 @@ student = {
                 {
                     title = "Arithmetik",
                     competences = {
-                        { description = "Ich kann Zahlen runden.", level = 3 },
-                        { description = "Ich kann Terme umformen.", level = 1 }
-                    }
+                        { description = "Ich kann Zahlen runden."},
+                        { description = "Ich kann Terme umformen."}
+                    },
+					grade = 3,
                 }
-            }
+            },
+			level = "HJ2",
+        },
+		{
+            name = "Englisch",
+            areas = {
+                {
+                    title = "Sprache",
+                    competences = {
+                        { description = "Ich kann Zahlen runden."},
+                        { description = "Ich kann Terme umformen."}
+                    },
+					grade = 3,
+                },
+            },
+			level = "",
         }
     }
 }

@@ -32,14 +32,15 @@
 	\end{tabularx}
 }
 
-\newcommand{\gradeOne}{& $\boxtimes$ & $\Box$ & $\Box$ & $\Box$\\}
-\newcommand{\gradeTwo}{& $\Box$ & $\boxtimes$ & $\Box$ & $\Box$\\}
-\newcommand{\gradeThree}{& $\Box$ & $\Box$ & $\boxtimes$ & $\Box$\\}
-\newcommand{\gradeFour}{& $\Box$ & $\Box$ & $\Box$ & $\boxtimes$\\}
-\newcommand{\gradeNotGiven}{& \multicolumn{4}{c|}{nicht erteilt}\\}
-\newcommand{\gradeComesWithSecondHalfYear}{& \multicolumn{4}{c|}{wird im 2. Halbjahr belegt}\\}
-\newcommand{\gradeDefault}{&  &  &  & \\}
-\newcommand{\gradeSkip}{& $\Box$ & $\Box$ & $\Box$ & $\Box$\\}
+\newcommand{\gradeOne}{& $\boxtimes$ & $\Box$ & $\Box$ & $\Box$\\\nobreakhline}
+\newcommand{\gradeTwo}{& $\Box$ & $\boxtimes$ & $\Box$ & $\Box$\\\nobreakhline}
+\newcommand{\gradeThree}{& $\Box$ & $\Box$ & $\boxtimes$ & $\Box$\\\nobreakhline}
+\newcommand{\gradeFour}{& $\Box$ & $\Box$ & $\Box$ & $\boxtimes$\\\nobreakhline}
+\newcommand{\gradeNotGiven}{& \multicolumn{4}{c|}{nicht erteilt}\\\nobreakhline}
+\newcommand{\gradeComesWithSecondHalfYear}{& \multicolumn{4}{c|}{wird im 2. Halbjahr belegt}\\\nobreakhline}
+%\newcommand{\gradeDefault}{&  &  &  & \\\nobreakhline}
+\newcommand\gradeDefault{& \multicolumn{4}{c|}{\textemdash} \\}
+\newcommand{\gradeSkip}{& $\Box$ & $\Box$ & $\Box$ & $\Box$\\\nobreakhline}
 
 
 \newcommand\levelRow[1]{\multicolumn{5}{|c|}{#1}\\\hline}
