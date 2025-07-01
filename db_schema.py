@@ -14,6 +14,11 @@ Base = declarative_base()
 
 def switch_engine(db_path: Path | str) -> None:
     global ENGINE
+    
+    # ---- new: bail out if unchanged -------------------------------
+    if ENGINE.url.database == str(db_path):
+        return 
+    
     ENGINE = create_engine(f"sqlite:///{db_path}", echo=False, future=True)
 
     # propagate to modules that imported ENGINE early
