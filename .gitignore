@@ -4,6 +4,7 @@
 .git/
 .venv/*
 __pycache__/
+db/
 Lehrpläne/
 other-files/
 saved/*
