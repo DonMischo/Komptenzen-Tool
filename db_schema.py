@@ -140,6 +140,9 @@ class Student(Base):
 
     report_text = Column(String, default="")
     remarks     = Column(String, default="")
+    lb = Column(Boolean, default=False)
+    gb = Column(Boolean, default=False)
+
 
     grades = relationship("Grade", back_populates="student", cascade="all, delete-orphan")
     subjects = relationship(
