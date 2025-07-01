@@ -4,6 +4,8 @@
 .git/
 .venv/*
 __pycache__/
+data/
+deprecated/
 db/
 Lehrpläne/
 other-files/
