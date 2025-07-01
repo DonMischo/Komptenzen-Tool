@@ -3,7 +3,7 @@
 from pathlib import Path
 from typing import Dict, List
 from sqlalchemy import (create_engine, Column, Integer, String, Date, Boolean,
-                        ForeignKey, UniqueConstraint)
+                        ForeignKey, UniqueConstraint, text)
 from sqlalchemy.orm import declarative_base, relationship, Session
 from competence_data import COMPETENCES      # dein großes Dict
 
@@ -11,6 +11,25 @@ DB_PATH = Path("kompetenzen.db")
 ENGINE   = create_engine(f"sqlite:///{DB_PATH}", echo=False,
                          future=True)
 Base = declarative_base()
+
+def switch_engine(db_path: Path | str) -> None:
+    global ENGINE
+    ENGINE = create_engine(f"sqlite:///{db_path}", echo=False, future=True)
+
+    # propagate to modules that imported ENGINE early
+    import sys
+    for m in ("student_loader", "db_helpers"):
+        if m in sys.modules:
+            sys.modules[m].ENGINE = ENGINE
+
+    # --- optional: quick sanity check & feedback --------------------
+    try:
+        with ENGINE.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        print(f"✅  ENGINE switched to {db_path}")
+    except Exception as exc:
+        print(f"❌  Could not connect to {db_path}: {exc}")
+        raise
 
 # ---------- Tabellen ---------------------------
 class Subject(Base):
@@ -186,9 +205,20 @@ def ensure_default_classes() -> None:
         ses.commit()
 
 # ---------- Hilfsfunktionen --------------------
-def init_db(drop: bool = False):
+def init_db(drop: bool = False, *, populate: bool = True) -> None:
+    """
+    Erzeugt (und optional löscht) das DB-Schema.
+    Wenn *populate* True ist, werden die Fach-, Topic- und Kompetenz-
+    Datensätze aus COMPETENCES sofort eingespielt.
+    """
     if drop and DB_PATH.exists():
         DB_PATH.unlink()
+
     Base.metadata.create_all(ENGINE)
     ensure_default_classes()
 
+    if populate:                              # NEW -------------------
+        with Session(ENGINE) as ses:
+            populate_from_dict(COMPETENCES, ses)
+
+    print(f"✅  Schema{' + Daten' if populate else ''} OK für {ENGINE.url.database}")
