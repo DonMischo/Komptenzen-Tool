@@ -29,6 +29,7 @@ from db_helpers  import (
 from helpers import unique_key as _unique_key
 from helpers import safe_rerun
 from competence_data  import SUBJECTS                     # Wunschreihenfolge
+from student_base_data import run_base_data_editor # neu oben einfügen
 
 # --------------------------------------------------------------------
 def run_student_ui() -> None:
@@ -53,6 +54,17 @@ def run_student_ui() -> None:
     if not class_sel or not subject_sel:
         st.info("Bitte Klasse **und** Fach auswählen.")
         return
+
+    # direkt nach der Klassenwahl
+    if st.sidebar.button("⇨ Stammdaten bearbeiten", key="_btn_stammdaten"):
+        st.session_state["mode"] = "stammdaten"
+
+    if st.session_state.get("mode") == "stammdaten":
+        run_base_data_editor(class_sel)      # classroom == ausgewählte Klasse
+        if st.button("← Zurück", key="_back"):
+            st.session_state.pop("mode")     # zurück zu den Kompetenzen
+        st.stop()                            # Rest des Kompetenz-UIs überspringen
+
 
     # ---------- Daten laden -------------------------------------------
     with Session(ENGINE) as ses:
