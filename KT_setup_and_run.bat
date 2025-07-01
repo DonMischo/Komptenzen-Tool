@@ -13,7 +13,7 @@ set "APP=KompetenzenTool.py"
 set "ENV_DIR=.venv"
 
 REM ===== Check Python =====
-where python >nul 2>&1
+where py >nul 2>&1
 if errorlevel 1 (
     echo ^> Python is not in PATH. Please install Python 3.9+ and tick "Add to PATH".
     pause
@@ -23,7 +23,7 @@ if errorlevel 1 (
 REM ===== Create virtual environment if it does not exist =====
 if not exist "%ENV_DIR%" (
     echo Creating virtual environment in %ENV_DIR% ...
-    python -m venv "%ENV_DIR%"
+    py -m venv "%ENV_DIR%"
 )
 
 REM ===== Activate virtual environment =====
@@ -46,11 +46,10 @@ python -m pip install --upgrade "sqlalchemy>=2.0"
 
 
 pip install sqlalchemy aiosqlite
-python manage_db.py init
-python manage_db.py populate
 REM ===== Run the Streamlit app =====
 echo Launching Streamlit app ...
-streamlit run "%APP%"
+REM streamlit run "%APP%"
+python -m db_cli --run
 
 REM Keep the window open after exit
 pause

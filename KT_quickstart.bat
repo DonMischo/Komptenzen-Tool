@@ -13,7 +13,9 @@ if errorlevel 1 (
 
 REM ===== Run the Streamlit app =====
 echo Launching Streamlit app ...
-streamlit run "%APP%"
+@echo off
+REM python db_cli.py --run
+python -m db_cli --run
 
 REM Keep the window open after exit
 pause
