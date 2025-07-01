@@ -2,7 +2,7 @@ import requests
 from datetime import datetime, timedelta, date
 
 def fetch_halfyear_report_day(state='TH', year=None):
-    year = year or datetime.now().year
+    year = year or get_school_year()
     url = f"https://ferien-api.de/api/v1/holidays/{state}/{year}"
     
     try:
@@ -25,7 +25,7 @@ def fetch_halfyear_report_day(state='TH', year=None):
     raise ValueError(f"Winterferien für {state} im Jahr {year} nicht gefunden.")
 
 def fetch_last_school_day(state='TH', year=None):
-    year = year or datetime.now().year
+    year = year or get_school_year()
     url = f"https://ferien-api.de/api/v1/holidays/{state}/{year}"
     
     try:
@@ -54,3 +54,10 @@ def get_school_year(today=None):
         return f"{today.year}/{today.year + 1}"
     else:                 # January–July → school year started last year
         return f"{today.year - 1}/{today.year}"
+
+def get_school_year_report(today=None):
+    today = today or date.today()
+    if today.month >= 8:  # August–December → new school year starts this year
+        return f"{today.year + 1}"
+    else:                 # January–July → school year started last year
+        return f"{today.year}"
