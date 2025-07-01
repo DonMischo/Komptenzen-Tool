@@ -5,7 +5,14 @@ from typing import Dict, List
 from sqlalchemy import (create_engine, Column, Integer, String, Date, Boolean,
                         ForeignKey, UniqueConstraint, text)
 from sqlalchemy.orm import declarative_base, relationship, Session
-from competence_data import COMPETENCES      # dein großes Dict
+from competence_data import COMPETENCES
+
+from datetime import datetime
+from time_functions import (
+    get_school_year,
+    fetch_halfyear_report_day,
+    fetch_last_school_day,
+)
 
 DB_PATH = Path("kompetenzen.db")
 ENGINE   = create_engine(f"sqlite:///{DB_PATH}", echo=False,
@@ -37,6 +44,19 @@ def switch_engine(db_path: Path | str) -> None:
         raise
 
 # ---------- Tabellen ---------------------------
+# ---- School years -------------------------------------------------
+class SchoolYear(Base):
+    __tablename__ = "school_years"
+
+    id          = Column(Integer, primary_key=True)
+    name        = Column(String, unique=True, nullable=False)  # e.g. "2024/2025"
+    endjahr     = Column(Boolean, default=False, nullable=False)
+    report_day  = Column(Date, nullable=True)                  # last day before winter break
+
+    # optional but nice: avoid accidental duplicates of the “2024/2025” record
+    __table_args__ = (UniqueConstraint("name", name="uq_school_year_name"),)
+
+
 class Subject(Base):
     __tablename__ = "subjects"
     id   = Column(Integer, primary_key=True)
@@ -209,6 +229,46 @@ def ensure_default_classes() -> None:
                 ses.add(SchoolClass(name=cname))
         ses.commit()
 
+
+def ensure_school_year_entry() -> None:
+    """
+    Adds/updates *one* SchoolYear row that matches
+    the current DB file (…hj / …ej).
+
+    name       → get_school_year()               e.g. "2024/2025"
+    endjahr    → True  if DB-file name ends with "ej"
+    report_day → half-year or end-year date, picked automatically
+    """
+    db_file  = Path(ENGINE.url.database or "").stem.lower()
+    suffix   = db_file[-2:]            # "hj" | "ej"
+    is_ej    = suffix == "ej"
+
+    # pick correct date helper -------------------------------------
+    rep_str  = (
+        fetch_last_school_day()     if is_ej
+        else fetch_halfyear_report_day()
+    )                               # "DD.MM.YYYY"
+    rep_date = datetime.strptime(rep_str, "%d.%m.%Y").date()
+    print(rep_date, suffix)
+
+    with Session(ENGINE) as ses:
+        sy = (
+            ses.query(SchoolYear)
+               .filter_by(name=get_school_year(), endjahr=is_ej)
+               .first()
+        )
+        if sy is None:                              # insert
+            ses.add(
+                SchoolYear(
+                    name=get_school_year(),
+                    endjahr=is_ej,
+                    report_day=rep_date,
+                )
+            )
+        else:                                        # update
+            sy.report_day = rep_date
+        ses.commit()
+
 # ---------- Hilfsfunktionen --------------------
 def init_db(drop: bool = False, *, populate: bool = True) -> None:
     """
@@ -221,8 +281,9 @@ def init_db(drop: bool = False, *, populate: bool = True) -> None:
 
     Base.metadata.create_all(ENGINE)
     ensure_default_classes()
+    ensure_school_year_entry()
 
-    if populate:                              # NEW -------------------
+    if populate:
         with Session(ENGINE) as ses:
             populate_from_dict(COMPETENCES, ses)
 
