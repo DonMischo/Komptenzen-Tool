@@ -1,0 +1,65 @@
+\begin{luacode*}
+	-- tiny helper: escape TeX specials that may appear in the data
+	local esc = {
+		["\\"]="\\textbackslash{}", ["%%"]="\\%",
+		["_"]="\\_", ["{"]="\\{", ["}"]="\\}",
+		["&"]="\\&",  ["#"]="\\#", ["^"]="\\textasciicircum{}",
+		["~"]="\\textasciitilde{}"
+	}
+	local function tex_escape(str)
+	return (str:gsub("[\\%%_%{%}&#%^~]", esc))
+	end
+	
+	-- check/uncheck boxes for the 4-step grading scale
+	local gradeCmd = {
+		[1]  = "& $\\boxtimes$ & $\\Box$      & $\\Box$      & $\\Box$\\\\",
+		[2]  = "& $\\Box$      & $\\boxtimes$ & $\\Box$      & $\\Box$\\\\",
+		[3]  = "& $\\Box$      & $\\Box$      & $\\boxtimes$ & $\\Box$\\\\",
+		[4]  = "& $\\Box$      & $\\Box$      & $\\Box$      & $\\boxtimes$\\\\",
+		ne   = "\\SetCell[c=5]{c} nicht erteilt\\\\",
+		HJ2  = "\\SetCell[c=5]{c} wird im 2.~Halbjahr belegt\\\\",
+		default = "\\SetCell[c=5]{c} ~\\\\"
+	}
+	
+	-- map a level (number or free text) to the line that goes into column 5
+	local function levelLine(level)
+		-- numeric mapping 1–3, 7–9
+		if type(level) == "number" then
+			local tbl = {
+				[1] = "\\SetCell[c=5]{c} Du hast vorwiegend auf {\\color{greenEnglish} Anforderungsebene~1} gearbeitet.\\\\",
+				[2] = "\\SetCell[c=5]{c} Du hast vorwiegend auf {\\color{blue} Anforderungsebene~2} gearbeitet.\\\\",
+				[3] = "\\SetCell[c=5]{c} Du hast vorwiegend auf {\\color{red} Anforderungsebene~3} gearbeitet.\\\\",
+				[7] = "\\SetCell[c=5]{c} bis~Klasse~7 ohne Anforderungsebene\\\\",
+				[8] = "\\SetCell[c=5]{c} bis~Klasse~8 ohne Anforderungsebene\\\\",
+				[9] = "\\SetCell[c=5]{c} bis~Klasse~9 ohne Anforderungsebene\\\\",
+			}
+			return tbl[level] or ""          -- unknown → print nothing (nolevel)
+		end
+		
+		-- free-text alternative: put the given text left-aligned in column 5
+		if type(level) == "string" and level ~= "" then
+			return "\\SetCell[c=5]{l} "..tex_escape(level).."\\\\"
+		end
+		
+		return ""                          -- nil / empty string  =  nolevel
+	end
+
+	
+	-- loop over all subjects → topics → competences
+	for _, subj in ipairs(student.subjects) do
+	tex.print("\\myZeugnisTable{"..tex_escape(subj.name).."}{%")
+		
+		for _, topic in ipairs(subj.topics) do
+			tex.print("\\textbf{"..tex_escape(topic.title).."}\\par%")
+			for _, comp in ipairs(topic.competences) do
+				tex.print(tex_escape(comp.description).."\\par%")
+			end
+			-- insert the tick-box line that matches the grade
+			tex.print( gradeCmd[topic.grade] or gradeCmd.default )
+		end
+		
+		tex.print( levelLine(subj.level) )   -- or topic.level, whatever field you use
+		
+		tex.print("}\\par\\vspace{1em}")
+	end
+\end{luacode*}
