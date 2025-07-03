@@ -46,6 +46,15 @@
 	\end{tblr}
 }
 
+\begin{luacode*}
+	-- Escape TeX‑special characters coming from Lua strings
+	function tex_escape(str)
+		return (str
+			:gsub("([%%#$&{}_\\])", "\\%1")   -- escape % # $ & _ { } \
+			:gsub("\n", "\\\\"))              -- newline → \\
+	end
+\end{luacode*}
+
 % argument is the page threshold until a newline should be added
 \newcommand\newOptionalNewPage[1]{
 	\ifnum #1>\value{page}
