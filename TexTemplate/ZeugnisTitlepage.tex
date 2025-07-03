@@ -1,0 +1,34 @@
+\thispagestyle{empty}
+\fcolorbox{egeblue}{white}{
+	\begin{minipage}[t][.98\textheight][t]{.97\textwidth}
+		\begin{center}\vspace{1cm}
+			\includegraphics[width=.9\linewidth]{Logotop_mit_ESM_zeugnis}
+		\end{center}
+		\vspace{3cm}
+		\begin{center}
+			\textbf{\Huge Zeugnis}\\\vspace{1em}
+			\textbf{\LARGE ~\\\vspace{1em}
+				Evangelische Gemeinschaftsschule Erfurt\\\vspace{2cm}
+				\directlua{tex.sprint(student.part_of_year)} \directlua{tex.sprint(student.school_year)}}
+		\end{center}\vspace{3cm}
+		\begin{center}\LARGE
+			\begin{tblr}{
+					colspec = {l X},
+					cell{1}{1} = {font=\bfseries},
+					cell{2}{1} = {font=\bfseries},
+					rowsep=5pt,
+					colsep=8pt,
+					width=0.6\textwidth
+				}
+				Klasse: & \directlua{tex.sprint(student.classRoom)} \\
+				Name:   & \directlua{tex.sprint(student.first_name)} \directlua{tex.sprint(student.last_name)} \\
+				& geb.: \directlua{tex.sprint(student.date_of_birth)} \\
+			\end{tblr}
+		\end{center}
+		\vfill
+		\begin{center}
+			\includegraphics[width=0.4\linewidth]{Stiftung}
+		\end{center}
+		\vspace{1cm}
+	\end{minipage}
+}

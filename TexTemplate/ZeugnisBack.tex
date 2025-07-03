@@ -1,0 +1,84 @@
+\newpagedefsLastPage
+\thispagestyle{plain}
+
+\fcolorbox{egeblue}{white}{%
+	\begin{minipage}[t][.99\textheight][t]{.97\textwidth}
+		% ---------- remarks ---------------------------------------
+		\textbf{Bemerkungen:}\par\vspace{.5em}%
+		\directlua{tex.print(tex_escape(student.comment))}\par
+		
+		\vfill
+		
+		% ---------- absence block ---------------------------------
+		\begin{tblr}{
+				width   = \linewidth,
+				colspec = {l X[l]},        % left-aligned label, flexible centred text
+				rowsep  = 3pt,
+				leftsep = 0pt,
+			}
+			Versäumnisse: &
+			\directlua{tex.sprint(student.absenceDaysTotal)}~Tage
+			(davon \directlua{tex.sprint(student.absenceDaysUnauthorized)}~Tage unentschuldigt)\\[.3em]
+			& \directlua{tex.sprint(student.absenceHoursTotal)}~Stunden
+			(davon \directlua{tex.sprint(student.absenceHoursUnauthorized)}~Stunden unentschuldigt)
+		\end{tblr}
+		
+		\vspace{3cm}\par
+		Erfurt, den schoolReportDay
+		
+		% ---------- signatures 1 ---------------------------------
+		\vspace{2.0cm}\par
+		\begin{tblr}{
+				width   = \linewidth,
+				colspec = {Q[c,wd=.4\linewidth] X[c] Q[c,wd=.4\linewidth]},
+				rowsep  = 6pt
+			}
+			\hrulefill & & \hrulefill \\[6pt]
+			Klassenleiter/in & & Klassenleiter/in
+		\end{tblr}
+		
+		% ---------- signatures 2 ---------------------------------
+		\vspace{2.5cm}\par
+		\begin{tblr}{
+				width   = \linewidth,
+				colspec = {Q[c,wd=.4\linewidth] X[c] Q[c,wd=.4\linewidth]},
+				rowsep  = 3pt
+			}
+			\rule{\linewidth}{1pt} & & \\[-.7ex]
+			{\centering SchulleiterIn} & {\tiny Siegel} &
+		\end{tblr}
+		
+		% ---------- signatures 3 ---------------------------------
+		\vspace{2.5cm}\par
+		\begin{tblr}{
+				width   = \linewidth,
+				colspec = {Q[c,wd=.4\linewidth] X[c] Q[c,wd=.4\linewidth]},
+				rowsep  = 3pt
+			}
+			\rule{\linewidth}{1pt} & & \rule{\linewidth}{1pt}\\
+			{\centering Erziehungsberechtigte} & &
+			{\centering SchülerIn}
+		\end{tblr}
+		
+		\vfill
+		
+		% ---------- legal notice ---------------------------------
+		{\footnotesize
+			\textbf{Rechtsbehelf:}\\
+			Gegen die Versetzungsentscheidung kann innerhalb eines Monats nach
+			Bekanntgabe des Zeugnisses Widerspruch erhoben werden. Der Widerspruch
+			ist bei der Evangelischen Gemeinschaftsschule Erfurt,
+			Eugen-Richter-Straße 22, 99085 Erfurt schriftlich oder zur Niederschrift
+			zu erheben.\\[3em]
+			
+			\begin{tblr}{
+					width   = \linewidth,
+					colspec = {Q[c,wd=.6\linewidth]},
+					rowsep  = 3pt
+				}
+				\rule{\linewidth}{1pt}\\[-.3ex]
+				{\centering Kenntnisnahme der Sorgeberechtigten}
+			\end{tblr}
+		}
+	\end{minipage}%  
+}% 
