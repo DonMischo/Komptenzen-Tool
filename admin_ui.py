@@ -19,6 +19,8 @@ from sqlalchemy.orm import Session
 from db_schema import ENGINE, Student, SchoolYear
 from db_helpers import get_students_by_class, get_classes
 from helpers import unique_key as _uk
+from export import export_students
+
 
 ROW_HEIGHT = 35  # Pixel pro Zeile inkl. Header
 
@@ -131,5 +133,6 @@ def run_admin_ui() -> None:
 
     st.markdown("---")
     if st.button("📄 Berichte erstellen", key=_uk("create_reports", classroom)):
-        st.success(f"{len(to_print)} Bericht(e) würden jetzt erstellt – Logik folgt.")
-        st.json(to_print)
+        mapping = export_students(to_print, classroom)
+        st.success(f"{len(mapping)} Dateien erzeugt.")
+        st.json(mapping)
