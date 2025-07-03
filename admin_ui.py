@@ -133,6 +133,9 @@ def run_admin_ui() -> None:
 
     st.markdown("---")
     if st.button("📄 Berichte erstellen", key=_uk("create_reports", classroom)):
-        mapping = export_students(to_print, classroom)
-        st.success(f"{len(mapping)} Dateien erzeugt.")
-        st.json(mapping)
+        lua_map, pdfs = export_students(to_print, classroom)
+        st.success(
+            f"{len(lua_map)} Lua/TeX-Dateien erzeugt, "
+            f"{len(pdfs)} PDF(s) neu kompiliert."
+        )
+        st.json({"lua": lua_map, "pdf": [str(p) for p in pdfs]})
