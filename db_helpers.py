@@ -365,29 +365,29 @@ def delete_custom_competence(comp_id: int, ses: Session):
 # -------------------------------------------------------------------
 
 def fetch_grade_matrix(
-    students: list[Student],
-    topics: list[Topic],          # <-- list of Topic
+    students: List[Student],
+    topics:   List[Topic],          # now real Topic objects
     subject_name: str,
     ses: Session,
 ) -> pd.DataFrame:
-    subj_id = _get_subject_id(subject_name, ses)
-    if subj_id is None:
-        return pd.DataFrame()
-
     rows = []
+    # build a quick lookup: {(stu_id, topic_id) -> grade_str}
+    grade_rows = (
+        ses.query(Grade.student_id, Grade.topic_id, Grade.value)
+           .filter(Grade.student_id.in_([s.id for s in students]),
+                   Grade.topic_id.in_([t.id for t in topics]))
+           .all()
+    )
+    gmap = {(sid, tid): val for sid, tid, val in grade_rows}
+
     for stu in students:
         row = {
             "Nachname": stu.last_name,
             "Vorname":  stu.first_name,
-            "Niveau":   get_niveau(stu.id, subj_id, ses),
+            "Niveau":   get_niveau(stu.id, subject_name, ses),
         }
         for tp in topics:
-            stmt_g = (
-                select(Grade.value)
-                .where((Grade.student_id == stu.id) &
-                       (Grade.topic_id  == tp.id))
-            )
-            row[str(tp.id)] = ses.scalar(stmt_g) or ""
+            row[str(tp.id)] = gmap.get((stu.id, tp.id), "")
         rows.append(row)
 
     return pd.DataFrame(rows)

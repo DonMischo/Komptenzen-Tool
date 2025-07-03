@@ -88,11 +88,10 @@ def run_student_ui() -> None:
         # ------------------------------------------------------------------
         # Re-order and rename columns: keep the first 3 unchanged, then ids
         # ------------------------------------------------------------------
-        order       = ["Nachname", "Vorname", "Niveau", *topics_raw]
-        df          = df.reindex(columns=order)
-        df.columns  = df.columns[:3].tolist() + topic_ids
+        order = ["Nachname", "Vorname", "Niveau", *topic_ids]   # <- ids, not objects
+        df    = df.reindex(columns=order)                       # keeps existing values
 
-        # Nice labels for the Streamlit table header
+        # labels stay readable
         col_cfg = {
             str(t.id): st.column_config.Column(
                 label=f"{subject_sel} – {t.name} ({t.block})"
