@@ -20,7 +20,7 @@ student = {
     subjects = {
         {
             name = "Deutsch",
-            areas = {
+            topics = {
                 {
                     title = "Lese- / Hörverstehen",
                     competences = {
@@ -34,28 +34,28 @@ student = {
                     competences = {
                         { description = "Ich kann ein Gespräch führen."}
                     },
-					grade = 1,
+					grade = "nb",
                 }
             },
-			level = "nb",			
+			level = "1",			
         },
         {
             name = "Mathematik",
-            areas = {
+            topics = {
                 {
                     title = "Arithmetik",
                     competences = {
                         { description = "Ich kann Zahlen runden."},
                         { description = "Ich kann Terme umformen."}
                     },
-					grade = 3,
+					grade = "HJ2",
                 }
             },
-			level = "HJ2",
+			level = "3",
         },
 		{
             name = "Englisch",
-            areas = {
+            topics = {
                 {
                     title = "Sprache",
                     competences = {
@@ -65,7 +65,7 @@ student = {
 					grade = 3,
                 },
             },
-			level = "",
+			level = "WTF have u done",
         }
     }
 }

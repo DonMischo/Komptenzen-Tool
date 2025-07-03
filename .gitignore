@@ -10,7 +10,8 @@ db/
 Lehrpläne/
 other-files/
 saved/*
-test/.venv/
+Test/
+.venv/
 
 
 

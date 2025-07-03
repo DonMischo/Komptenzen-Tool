@@ -1,20 +1,44 @@
-\documentclass{article}
+\documentclass[10pt,a4paper]{article}
+\usepackage[top=2cm,bottom=2cm,left=1.5cm,right=1.5cm]{geometry}
 \usepackage[table]{xcolor}
+\definecolor{egeblue}{RGB}{0,99,142}
+\definecolor{egelightblue}{RGB}{66,144,179}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Sans}
 \usepackage{tabularray}
-\UseTblrLibrary{booktabs}  % ← this should now work
+\usepackage{amssymb,amsmath}
+\usepackage{pifont}
 
-\makeatletter
-\newcommand{\tblrversion}{Tabularray version: \tblr@version}
-\makeatother
+
+\newcommand{\levelThree}{{\centering Du hast vorwiegend auf {\color{red} Anforderungsebene 3} gearbeitet.}}
+\newcommand{\myZeugnisTable}[1]{
+	\begin{tblr}{
+			width = \linewidth,
+			colspec = {Q[l,m,wd=12cm] X[c] X[c] X[c] X[c]},
+			hlines = {1pt,solid},
+			vlines = {0.6pt,solid},
+			rowsep = 2pt,
+			colsep = 3pt,
+			row{1} = {bg=egelightblue, fg=white, font=\bfseries\footnotesize},
+		}
+		#1
+	\end{tblr}
+}
 
 \begin{document}
+	\noindent
+	\myZeugnisTable{
+		\textbf{\large Deutsch} & 
+		\shortstack[c]{\textbf{sehr gut}\\ \textbf{erfüllt}} &
+		\shortstack[c]{\textbf{gut}\\ \textbf{erfüllt}} &
+		\shortstack[c]{\textbf{teilweise}\\ \textbf{erfüllt}} &
+		\shortstack[c]{\textbf{nicht}\\ \textbf{erfüllt}} \\
+		\textbf{Über Sprache, Sprachverwendung und Sprachenlernen reflektieren}\par
+		\textit{Wortebene}\par
+		Ich kann einen Grundbestand an Rechtschreibregeln sicher anwenden.\par
+		Ich kann die Wortarten benennen.\par
+		Ich kann Rechtschreibstrategien erkennen und sicher anwenden. & $\boxtimes$ & $\Box$ & $\Box$ & $\Box$\\
+		\SetCell[c=5]{c} \levelThree \\
+	}
 	
-	
-	\begin{tblr}{
-			hlines, vlines, booktabs,
-			colspec = {Q[l,m,wd=5cm]  *{4}{Q[c,wd=8mm]}},
-			row{1} = {font = \bfseries\itshape\footnotesize},
-		}
-		Subject & A & B & C & D \\
-	\end{tblr}
 \end{document}

@@ -5,7 +5,7 @@
 
 % ---------------- Page layout & colours -------------
 \usepackage[top=2cm,bottom=2cm,
-inner=1.5cm,outer=1.5cm]{geometry}
+left=1.5cm,right=1.5cm]{geometry}
 
 \usepackage[table]{xcolor}
 \definecolor{egeblue}{RGB}{0,99,142}
@@ -45,30 +45,9 @@ inner=1.5cm,outer=1.5cm]{geometry}
 \usepackage{fancyhdr}
 
 % ---------------- Tables & boxes --------------------
-\usepackage{array,tabularx,xltabular}
-%\setlength{\LTpre}{0pt}\setlength{\LTpost}{0pt}
-\usepackage{cellspace}
-\makeatletter
-\let\@startpbox@action\@startpbox
-\makeatother
-
-\usepackage{makecell,colortbl,booktabs,multirow}
-
 \usepackage{nowidow}            % prevents widows/orphans
 
-% convenient column types
-\newcolumntype{Y}{>{\centering\arraybackslash}X}
-\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
-%\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
-\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
-\newcolumntype{J}[1]{>{\justifying\arraybackslash}p{#1}}
-\newcolumntype{v}[1]{>{\raggedright\hspace{0em}}p{#1}}
-\newcolumntype{C}[1]{>{\centering\arraybackslash}m{#1}}
-\renewcommand*\tabularxcolumn[1]{>{}m{#1}}
-
-\newcommand*\rot{\rotatebox{90}}
-%\renewcommand\theadalign{l}
-\renewcommand\theadfont{\bfseries\footnotesize}
+\usepackage{tabularray}
 
 % ---------------- Maths & symbols -------------------
 \usepackage{amsmath,amssymb}

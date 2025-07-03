@@ -8,20 +8,17 @@
 \input{SchoolReportTemplate_ZeugnisTemplate_Packages.tex}
 \input{SchoolReportTemplate_ZeugnisTemplate_Commands.tex}
 
-\renewcommand\cellalign{tl}  % top-left alignment inside every \makecell
-
-
 % --- Lua helpers ----------------------------------------------
 \begin{luacode*}
 	-- Load student data table
 	dofile("student_data.lua")
 	
 	-- Escape TeX‑special characters coming from Lua strings
-	 function tex_escape(str)
-	 return (str
-		:gsub("([%%#$&{}_\\])", "\\%1")   -- escape % # $ & _ { } \
-		:gsub("\n", "\\\\"))              -- newline → \\
-  	 end
+	function tex_escape(str)
+	return (str
+	:gsub("([%%#$&{}_\\])", "\\%1")   -- escape % # $ & _ { } \
+	:gsub("\n", "\\\\"))              -- newline → \\
+	end
 	
 	-- Convenience for checkbox columns (1‑4)
 	function checkbox(level, col)
@@ -29,49 +26,26 @@
 	end
 \end{luacode*}
 
-\newcommand{\headcol}[2]{\cellcolor{#1}\color{white}\bfseries #2}
-
 % --- Document --------------------------------------------------
 \begin{document}
 	
 	% ---------- Title page ----------------------------------------
-	\include{Zeugnis_titlepage.tex}
+%	\include{Zeugnis_titlepage.tex}
 
 	\newpage
 	
 	% ---------- Personal text -------------------------------------
-	Lieber \directlua{tex.sprint(student.first_name)},\\
-	\directlua{tex.sprint(student.personal_text)}
-	\newpage
-	\vspace{1em}
+%	Lieber \directlua{tex.sprint(student.first_name)},\\
+%	\directlua{tex.sprint(student.personal_text)}
+%	\newpage
+%	\vspace{1em}
 	
 %	% ---------- Subjects & competences ----------------------------
 
 %\begin{luacode*}
 %	local gradeCmd = {
-%		[1]  = "\\gradeOne",
-%		[2]  = "\\gradeTwo",
-%		[3]  = "\\gradeThree",
-%		[4]  = "\\gradeFour",
-%		ne   = "\\gradeNotGiven",
-%		HJ2  = "\\gradeComesWithSecondHalfYear",
-%		default = "\\gradeDefault"
-%	}
-%
-%	local headerTemplate = [=[
-%	\cellcolor{egelightblue}{\textit{\textbf{%s}}} &
-%		\makecell[c]{\footnotesize{sehr~gut\\erfüllt}} &
-%		\makecell[c]{\footnotesize{gut\\erfüllt}} &
-%		\makecell[c]{\footnotesize{teilweise\\erfüllt}} &
-%		\makecell[c]{\footnotesize{nicht\\erfüllt}}\\
-%		]=]
-%
+
 %for _, subj in ipairs(student.subjects) do
-%	tex.print("\\renewcommand{\\arraystretch}{1.5}")
-%	tex.print("\\begin{xltabular}{\\linewidth}{|X|C{\\tableGradeWidth}|C{\\tableGradeWidth}|C{\\tableGradeWidth}|C{\\tableGradeWidth}|}")
-%	tex.print("\\nobreakhline")
-%	-- tex.print(string.format(headerTemplate, tex_escape(subj.name)))
-%	tex.print("\\nobreakhline")
 %	
 %	-- ----------------------------------------------------------
 %	-- 2. exactly one row per AREA  ➔ all competences in 1st cell
@@ -92,30 +66,58 @@
 %end
 %\end{luacode*}
 
-\begin{xltabular}{\linewidth}{|X|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|C{\tableGradeWidth}|}
-	\hline
-	\cellcolor{egelightblue}{\textit{\textbf{Mathe}}} & \thead{\footnotesize sehr gut\\erfüllt} & \thead{\footnotesize gut\\erfüllt} & \thead{\footnotesize teilweise\\erfüllt} & \thead{\footnotesize nicht\\erfüllt} \\
-	\hline
-\end{xltabular}
 
+% -------------------------------------------------------------------
+%  ▸ Lua-Code: erzeugt pro Fach eine \myZeugnisTable{…}{…}
+% -------------------------------------------------------------------
+\begin{luacode*}
 
-%\begin{xltabular}{\textwidth}{|
-%		>{\raggedright\arraybackslash\cellcolor{teal!70}\color{white}\bfseries}X
-%		|Y|Y|Y|Y|}
-%	\hline
-%	Fach &
-%	\theadcell{sehr gut\\erfüllt} &
-%	\theadcell{gut\\erfüllt} &
-%	\theadcell{teilweise\\erfüllt} &
-%	\theadcell{nicht\\erfüllt} \\\hline%
-%	%  …body of the table…
-%	Deutsch      &   &   &   &   \\\hline%
-%	Mathematik   &   &   &   &   \\\hline%
-%\end{xltabular}
+%	if type(student) ~= "table" then
+%	student = _G.student       -- fall back to global
+%	end
+	
+	-- quick sanity check
+	assert(type(student) == "table" and student.subjects,
+	"student_data.lua must define a table 'student' with field 'subjects'!")
+	
+	
 
+	local esc = { ["\\"]="\\textbackslash{}", ["%%"]="\\%",
+		["_"]="\\_", ["{"]="\\{", ["}"]="\\}",
+		["&"]="\\&",  ["#"]="\\#", ["^"]="\\textasciicircum{}",
+		["~"]="\\textasciitilde{}" }
+	local function tex_escape(str)  return (str:gsub("[\\%%_%{%}&#%^~]", esc)) end
 
+	local gradeCmd = {
+		[1]  = "& $\\boxtimes$ & $\\Box$      & $\\Box$      & $\\Box$\\\\",
+		[2]  = "& $\\Box$      & $\\boxtimes$ & $\\Box$      & $\\Box$\\\\",
+		[3]  = "& $\\Box$      & $\\Box$      & $\\boxtimes$ & $\\Box$\\\\",
+		[4]  = "& $\\Box$      & $\\Box$      & $\\Box$      & $\\boxtimes$\\\\",
+		ne   = "\\SetCell[c=5]{c} nicht erteilt\\\\",
+		HJ2  = "\\SetCell[c=5]{c} wird im 2.~Halbjahr belegt\\\\",
+		default = "\\SetCell[c=5]{c} ~\\\\"
+	}
 
-\include{Zeugnis_back.tex}
+--	for _, subj in ipairs(student.subjects) do
+--	tex.print("Hello World")
+--	tex.print("\\myZeugnisTable{"..tex_escape(subj.name).."}{%")
+
+		--	for _, topic in ipairs(subj.topics) do
+		--	tex.print("\\textbf{"..tex_escape(topic.title).."}\\par%")
+		--	for _, comp in ipairs(topic.competences) do
+		--	tex.print(tex_escape(comp.description).."\\par"%)
+		--	end
+		--	tex.print( gradeCmd[topic.grade] or gradeCmd.default )
+		--	end
+
+		--	tex.print("\\SetCell[c=5]{c} rot \\\\")
+			
+		--	tex.print("}")
+		--end
+--	end
+\end{luacode*}
+
+%\include{Zeugnis_back.tex}
 
 	
 \end{document}
