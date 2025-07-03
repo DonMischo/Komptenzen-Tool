@@ -68,9 +68,13 @@ def run_student_ui() -> None:
 
     # ---------- Daten laden -------------------------------------------
     with Session(ENGINE) as ses:
-        students = get_students_by_class(class_sel, ses)     # Student-Objekte
-        topics_raw = get_topics_by_subject(subject_sel, ses, class_name=class_sel)
-        topic_ids  = [_unique_key(subject_sel, t) for t in topics_raw]
+        students    = get_students_by_class(class_sel, ses)
+        topics_raw  = get_topics_by_subject(subject_sel, ses, class_name=class_sel)
+
+        # ------------------------------------------------------------------
+        # Use *only* the primary-key as column id → no collisions possible
+        # ------------------------------------------------------------------
+        topic_ids = [str(t.id) for t in topics_raw]          # e.g. "12", "27", …
 
         if not students:
             st.warning(f"Keine Schüler für {class_sel} in der Datenbank.")
@@ -81,21 +85,30 @@ def run_student_ui() -> None:
 
         df = fetch_grade_matrix(students, topics_raw, subject_sel, ses)
 
-        # Spalten-Reihenfolge sicherstellen
-        order = ["Nachname", "Vorname", "Niveau", *topics_raw]
-        df = df.reindex(columns=order)
-        df.columns = df.columns[:3].tolist() + topic_ids
-        col_cfg = {cid: st.column_config.Column(label=name)
-           for cid, name in zip(topic_ids, topics_raw)}
+        # ------------------------------------------------------------------
+        # Re-order and rename columns: keep the first 3 unchanged, then ids
+        # ------------------------------------------------------------------
+        order       = ["Nachname", "Vorname", "Niveau", *topics_raw]
+        df          = df.reindex(columns=order)
+        df.columns  = df.columns[:3].tolist() + topic_ids
+
+        # Nice labels for the Streamlit table header
+        col_cfg = {
+            str(t.id): st.column_config.Column(
+                label=f"{subject_sel} – {t.name} ({t.block})"
+            )
+            for t in topics_raw
+        }
 
     # ---------- Editierbare Tabelle -----------------------------------
-    disabled_cols = ["Nachname", "Vorname"]           # read-only
+    disabled_cols = ["Nachname", "Vorname"]  # read-only
     edited = st.data_editor(
         df,
-        column_config = col_cfg,
-        num_rows      = "dynamic",
+        column_config=col_cfg,
+        num_rows="dynamic",
         use_container_width=True,
     )
+
 
     # ---------- Speichern-Button --------------------------------------
     if st.button("💾 Änderungen speichern"):

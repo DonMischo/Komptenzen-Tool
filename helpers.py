@@ -5,21 +5,28 @@
 import re
 import uuid
 import streamlit as st
+from db_schema import Topic
+from typing import Any
 
-def unique_key(*parts: str, idx: int | None = None) -> str:
+def unique_key(*parts: Any) -> str:
     """
-    Baut aus beliebigen Teil­strings einen garantiert eindeutigen Key
-    für Streamlit-Widgets.
+    Build a stable key from arbitrary parts.
 
-    Beispiele
-    ---------
-    unique_key("Deutsch", "5/6", "Leseverstehen", idx=3)
-    →  "Deutsch_5_6_Leseverstehen_3"
+    * If one of the parts is a Topic object → use its primary-key.
+    * Otherwise: cast each part to str and join with '|'.
+
+    Works for:
+        unique_key("subject_select")             # 1 arg
+        unique_key(subject_name, topic)          # 2 args (old use-case)
     """
-    key = "_".join(_safe(p) for p in parts if p)
-    if idx is not None:
-        key = f"{key}_{idx}"
-    return key or uuid.uuid4().hex        # Fallback – unique random
+    norm: list[str] = []
+    for p in parts:
+        if isinstance(p, Topic):
+            norm.append(str(p.id))
+        else:
+            norm.append(str(p))
+    return "|".join(norm)
+
 
 def _safe(s) -> str:                    # Typ weglassen oder Any
     """Ersetzt Nicht-Alphanumerisches, damit der Key gültig bleibt."""
