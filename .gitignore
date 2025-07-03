@@ -11,6 +11,11 @@ Lehrpläne/
 other-files/
 saved/*
 Test/
+TexTemplate/*.aux
+TexTemplate/*.log
+TexTemplate/*.lua
+TexTemplate/*.synctex.gz
+TexTemplate/*.pdf
 .venv/
 
 
