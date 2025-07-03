@@ -1,150 +1,127 @@
-import json
+"""
+time_functions.py
+
+Fetch school holiday periods from Ferienwiki ICS feeds, cache them locally,
+and compute report days (last school days) for both half-year (before winter holidays)
+and end-year (before summer holidays), taking into account weekends
+(weekends don’t count as school days).
+
+Requires: icalendar (pip install icalendar)
+Optionally consider using the `holidays` or `workalendar` packages for built-in German holiday calendars.
+"""
 from datetime import datetime, timedelta, date
 from pathlib import Path
-from typing import Any, List, Dict
-
+from typing import List, Dict, Any
 import requests
+from icalendar import Calendar
 
-# ---------------------------------------------------------------------------
-# Simple on‑disk cache -------------------------------------------------------
-# ---------------------------------------------------------------------------
-# All fetched JSON payloads are stored in <package>/data/ so the API is
-# contacted only when the cached file is missing or considered too old.
-# ---------------------------------------------------------------------------
-
+# Directory for caching .ics files
 CACHE_DIR: Path = Path(__file__).resolve().parent / "data"
 CACHE_DIR.mkdir(exist_ok=True)
 
+# ICS URL template for Ferienwiki (adjust if their URL pattern changes)
+ICS_URL_TEMPLATE = "https://www.ferienwiki.de/exports/ferien/{year}/de/{state}"
 
-def _sanitize_year_for_filename(year: str | int) -> str:
-    """Return *year* with path‑unfriendly characters replaced."""
-    return str(year).replace("/", "-")
+
+
+def get_school_year(today: date | None = None) -> str:
+    """Return the current school year as "YYYY/YYYY" (e.g. "2025/2026")."""
+    today = today or date.today()
+    return f"{today.year}/{today.year+1}" if today.month >= 8 else f"{today.year-1}/{today.year}"
+
+
+def get_school_year_report(today: date | None = None) -> str:
+    """Return the calendar year for reports: year of winter or summer break."""
+    today = today or date.today()
+    return str(today.year+1) if today.month >= 8 else str(today.year)
 
 
 def _load_or_fetch_holidays(
-    state: str = "TH",
+    state: str = "thueringen",
     year: str | int | None = None,
     *,
     max_age_days: int = 30,
 ) -> List[Dict[str, Any]]:
-    """Return the holiday list for *state* and *year*.
-
-    1. If a cached copy (``data/holidays_{state}_{year}.json``) exists and is
-       not older than *max_age_days*, it is loaded and returned.
-    2. Otherwise the data is fetched from https://ferien-api.de, stored in the
-       cache directory, and returned.
     """
+    Download (or load from cache) the ICS for the given state and year,
+    parse all VEVENTs into a list of {"name": str, "start": ISO-datetime} dicts.
+    """
+    year = year or get_school_year_report()
+    cache_file = CACHE_DIR / f"ferien_{state}_{year}.ics"
+    url = ICS_URL_TEMPLATE.format(state=state, year=year)
+    data_bytes: bytes | None = None
 
-    year = year or get_school_year()
-    sanitized_year = _sanitize_year_for_filename(year)
-    cache_file = CACHE_DIR / f"holidays_{state}_{sanitized_year}.json"
-
-    # ---------------------------------------------------------------------
-    # 1 ) Try the cache -----------------------------------------------------
-    # ---------------------------------------------------------------------
+    # Try cache first
     if cache_file.exists():
         age = datetime.now() - datetime.fromtimestamp(cache_file.stat().st_mtime)
         if age <= timedelta(days=max_age_days):
-            try:
-                with cache_file.open("r", encoding="utf-8") as fh:
-                    return json.load(fh)
-            except Exception:
-                # Corrupted cache – remove it and fall through to refetch
-                cache_file.unlink(missing_ok=True)
+            data_bytes = cache_file.read_bytes()
 
-    # ---------------------------------------------------------------------
-    # 2.) Fetch fresh from the API -----------------------------------------
-    # ---------------------------------------------------------------------
-    url = f"https://ferien-api.de/api/v1/holidays/{state}/{year}"
-    try:
+    # Fetch if needed
+    if data_bytes is None:
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
-        data = resp.json()
-    except requests.RequestException as exc:
-        raise RuntimeError(f"Fehler beim Abrufen der Ferien-Daten: {exc}") from exc
-    except ValueError as exc:
-        raise RuntimeError("Antwort konnte nicht als JSON gelesen werden.") from exc
+        data_bytes = resp.content
+        try:
+            cache_file.write_bytes(data_bytes)
+        except Exception:
+            pass
 
-    # Cache the fresh data (best-effort)
-    try:
-        with cache_file.open("w", encoding="utf-8") as fh:
-            json.dump(data, fh, ensure_ascii=False, indent=2)
-    except Exception:
-        # Caching failures should not break the function
-        pass
+    # Parse ICS
+    cal = Calendar.from_ical(data_bytes)
+    events: List[Dict[str, Any]] = []
+    for comp in cal.walk():
+        if comp.name == "VEVENT":
+            summary = str(comp.get("SUMMARY"))
+            dtstart = comp.get("DTSTART").dt
+            # Normalize to date
+            dt_obj = dtstart.date() if hasattr(dtstart, "date") else dtstart
+            iso = datetime.combine(dt_obj, datetime.min.time()).isoformat()
+            events.append({"name": summary, "start": iso})
+    return events
 
-    return data
+
+def _get_last_school_day_before(dt: datetime) -> date:
+    """Return the last school day before the given datetime,
+    skipping weekends (Sat/Sun → move back to Fri)."""
+    day = dt.date() - timedelta(days=1)
+    while day.weekday() >= 5:  # 5=Sat, 6=Sun
+        day -= timedelta(days=1)
+    return day
 
 
-# ---------------------------------------------------------------------------
-# Public convenience wrappers -----------------------------------------------
-# ---------------------------------------------------------------------------
-
-def fetch_halfyear_report_day(state: str = "TH", year: str | int | None = None) -> str:
-    """Return the date of the Zeugnis‑ (half-year) day.
-
-    This is defined as the last school day *before* the Winterferien. The date
-    string is returned in the format ``DD.MM.YYYY``.
-    """
-    year = get_school_year_report()
-    data = _load_or_fetch_holidays(state, year)
-
-    for entry in data:
-        if "winterferien" in entry.get("name", "").lower():
-            try:
-                start = datetime.fromisoformat(entry["start"])
-                return (start - timedelta(days=1)).strftime("%d.%m.%Y")
-            except Exception as exc:
-                raise RuntimeError(
-                    f"Ungültiges Startdatum: {entry.get('start')} ({exc})"
-                ) from exc
-
+def fetch_halfyear_report_day(
+    state: str = "thueringen", year: str | int | None = None
+) -> str:
+    """Return the report day (last school day) before winter holidays in DD.MM.YYYY."""
+    year = year or get_school_year_report()
+    events = _load_or_fetch_holidays(state, year)
+    for entry in events:
+        if "winterferien" in entry["name"].lower():
+            dt = datetime.fromisoformat(entry["start"])
+            rep = _get_last_school_day_before(dt)
+            return rep.strftime("%d.%m.%Y")
     raise ValueError(f"Winterferien für {state} im Jahr {year} nicht gefunden.")
 
 
-def fetch_last_school_day(state: str = "TH", year: str | int | None = None) -> str:
-    """Return the last school day before the Sommerferien (``DD.MM.YYYY``)."""
-    year = get_school_year_report()
-    data = _load_or_fetch_holidays(state, year)
-
-    for entry in data:
-        if "sommerferien" in entry.get("name", "").lower():
-            try:
-                start = datetime.fromisoformat(entry["start"])
-                return (start - timedelta(days=1)).strftime("%d.%m.%Y")
-            except Exception as exc:
-                raise RuntimeError(
-                    f"Ungültiges Startdatum: {entry.get('start')} ({exc})"
-                ) from exc
-
+def fetch_last_school_day(
+    state: str = "thueringen", year: str | int | None = None
+) -> str:
+    """Return the report day (last school day) before summer holidays in DD.MM.YYYY."""
+    year = year or get_school_year_report()
+    events = _load_or_fetch_holidays(state, year)
+    for entry in events:
+        if "sommerferien" in entry["name"].lower():
+            dt = datetime.fromisoformat(entry["start"])
+            rep = _get_last_school_day_before(dt)
+            return rep.strftime("%d.%m.%Y")
     raise ValueError(f"Sommerferien für {state} im Jahr {year} nicht gefunden.")
 
 
-# ---------------------------------------------------------------------------
-# Auxiliary helpers ---------------------------------------------------------
-# ---------------------------------------------------------------------------
-
-def get_school_year(today: date | None = None) -> str:
-    today = today or date.today()
-    if today.month >= 8:  # August–December → new school year starts this year
-        return f"{today.year}/{today.year + 1}"
-    else:                 # January–July → school year started last year
-        return f"{today.year - 1}/{today.year}"
-
-
-def get_school_year_report(today: date | None = None) -> str:
-    today = today or date.today()
-    return str(today.year + 1) if today.month >= 8 else str(today.year)
-
-
 if __name__ == "__main__":
-    # Quick sanity-checks for the two public helpers
-    state = "TH"           # Thuringia
-    school_year = get_school_year()          # e.g. "2024/2025"
-    calendar_year = "2026" # e.g. "2025"
-
-    print(f"💡 School year detected: {school_year}")
-    print(f"📄 Half-year report day ({state}, {calendar_year}):",
-          fetch_halfyear_report_day(state, calendar_year))
-    print(f"🏁 Last school day before summer break ({state}, {calendar_year}):",
-          fetch_last_school_day(state, calendar_year))
+    state = "thueringen"
+    sy = get_school_year()
+    cy = get_school_year_report()
+    print(f"School year: {sy}")
+    print(f"Half-year report day: {fetch_halfyear_report_day(state, cy)}")
+    print(f"Last school day before summer: {fetch_last_school_day(state, cy)}")
