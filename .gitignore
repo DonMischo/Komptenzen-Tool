@@ -9,8 +9,10 @@ deprecated/
 db/
 Lehrpläne/
 other-files/
+print*/
 saved/*
-Test/
+Test/*
+Test/New/*
 TexTemplate/*.aux
 TexTemplate/*.log
 TexTemplate/*.lua
