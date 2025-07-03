@@ -1,0 +1,18 @@
+# requirements.txt for Kompetenzen-Tool
+
+# HTTP requests and ICS parsing
+requests>=2.0
+icalendar>=4.0
+
+# Database ORM
+SQLAlchemy>=2.0
+
+# Web UI
+streamlit>=1.26
+
+# Data processing
+pandas>=1.5
+numpy>=1.24
+
+# YAML support
+PyYAML>=5.4
