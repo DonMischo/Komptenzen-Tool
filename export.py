@@ -16,6 +16,7 @@ Compilation
   the Admin UI can inform the user.
 """
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -33,6 +34,52 @@ from db_schema import (
     SchoolClass,
     ClassCompetence,
 )
+
+# ---------------------------------------------------------------------------
+# Zeugnistext helper -------------------------------------------------------
+# ---------------------------------------------------------------------------
+def lua_long_str(s: str) -> str:
+    """
+    Wrap *s* in the shortest [=*[ … ]=*] delimiter that does not
+    occur inside *s* itself.
+    """
+    for eq in range(0, 10):                     # usually 0 is enough
+        open_  = "[" + "=" * eq + "["
+        close_ = "]" + "=" * eq + "]"
+        if open_ not in s and close_ not in s:
+            return f"{open_}\n{s}\n{close_}"
+    raise ValueError("text contains ]] with 9 ='s — very unlikely!")
+
+def format_report_tex(text: str) -> str:
+    """
+    1. The first physical line (up to the first '\n') is taken as a greeting.
+       → it becomes {\textbf{\LARGE …}}\\
+    2. A single newline  ->  '\\\\'
+       Two or more blank-line gaps  ->  '\\\\\n\\vspace{1em}'
+    3. Everything after the greeting is prefixed with
+       '\\nowidow[11]\\noclub[11]'
+    """
+    text = text.lstrip()                     # ignore leading blanks / BOM
+    if "\n" in text:
+        greeting, body = text.split("\n", 1)   # first line only
+    else:
+        greeting, body = text, ""
+
+    # --- 1. greeting block ---
+    formatted = rf"{{\textbf{{\LARGE {greeting.strip()} }}}}\\"
+
+    if body:
+        # --- 2. convert line breaks in the body ---
+        # a) double (or more) newlines → \\  \vspace{1em}
+        body = re.sub(r"\n{2,}",
+                      r"\n \\vspace{1em}", body.strip())
+        # b) remaining single newlines → \\
+        body = body.replace("\n", r"\\")
+        # --- 3. widows & clubs protection ---
+        formatted += "\n\\nowidow[11]\\noclub[11]\\setstretch{1.15}\\large " + body
+
+    return formatted
+
 
 # ---------------------------------------------------------------------------
 # Filename/dir helpers ------------------------------------------------------
@@ -67,28 +114,39 @@ def _copy_template(dst: Path) -> None:
 # Lua serializer (unchanged logic) ------------------------------------------
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Lua serializer (UNIVERSAL version)  ← REPLACE the old `_lua()` completely
+# ---------------------------------------------------------------------------
 def _lua(obj: Any, ind: int = 0) -> str:
     sp = " " * ind
+
+    # tables ----------------------------------------------------------------
     if isinstance(obj, dict):
         if not obj:
             return "{}"
-        buf = [sp + "{"]
-        for k, v in obj.items():
-            buf.append(f"{sp}  {k} = {_lua(v, ind + 2)},")
-        buf.append(sp + "}")
-        return "\n".join(buf)
+        body = ",\n".join(
+            f"{sp}  {k} = {_lua(v, ind + 2)}" for k, v in obj.items()
+        )
+        return f"{{\n{body},\n{sp}}}"
     if isinstance(obj, list):
         if not obj:
             return "{}"
-        buf = [sp + "{"]
-        for v in obj:
-            buf.append(f"{_lua(v, ind + 2)},")
-        buf.append(sp + "}")
-        return "\n".join(buf)
+        body = ",\n".join(_lua(v, ind + 2) for v in obj)
+        return f"{{\n{body},\n{sp}}}"
+
+    # strings ---------------------------------------------------------------
     if isinstance(obj, str):
-        esc = obj.replace("'", "\\'")
-        return f"'{esc}'" if "\n" not in esc else f"[[\n{esc}\n{sp}]]"
+        # any back-slash, newline, quote or “]]” ⇒ use long-bracket
+        if ("\n" in obj) or ("\\" in obj) or ("'" in obj) or ("]]" in obj):
+            return lua_long_str(obj)
+        # simple case → single-quoted, escape single quote only
+        # simple case → single-quoted, escape *only* the single quote itself
+        return "'" + obj.replace("'", r"\'") + "'"
+
+
+    # numbers / booleans / null --------------------------------------------
     return json.dumps(obj)
+
 
 
 # ---------------------------------------------------------------------------
@@ -130,7 +188,7 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
         "school_year": sy.name,
         "part_of_year": "Endjahr" if sy.endjahr else "Halbjahr",
         "report_date": sy.report_day.strftime("%d.%m.%Y") if sy.report_day else "",
-        "personal_text": stu.report_text or "",
+        "personal_text": format_report_tex(stu.report_text) or "",
         "comment": stu.remarks or "",
         "absenceDaysTotal": stu.days_absent_excused + stu.days_absent_unexcused,
         "absenceDaysUnauthorized": stu.days_absent_unexcused,
@@ -161,7 +219,7 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
             "level": level_val if level_val is not None else "",
             "topics": [] if stu.gb else topics_out,
         })
-    return "student = " + _lua(data) + "\n"
+    return "student = " + _lua(data) + "\n return student\n"
 
 
 def _write_student_files(stu: Student, sy: SchoolYear, cl_dir: Path, template: str, sel_comp: Set[int], ses: Session) -> str:
@@ -169,7 +227,7 @@ def _write_student_files(stu: Student, sy: SchoolYear, cl_dir: Path, template: s
     lua_p = cl_dir / f"{base}.lua"
     tex_p = cl_dir / f"{base}.tex"
     lua_p.write_text(_student_to_lua(stu, sy, sel_comp, ses), encoding="utf-8")
-    tex_p.write_text(template.replace("studentdata.lua", lua_p.name), encoding="utf-8")
+    tex_p.write_text(template.replace("studentdata", base), encoding="utf-8")
     return base
 
 

@@ -2,14 +2,15 @@
 \input{../ZeugnisPackages.tex}
 
 \begin{luacode*}
-	local student = dofile("studentdata.lua")
+	student = require("studentdata")
 \end{luacode*}
 
 
 \begin{document}
 	\input{../ZeugnisTitlepage.tex}
-
+	\directlua{tex.print(student.personal_text)}
+	\newOptionalNewPage{4}
 	\input{../ZeugnisTables.tex}	
-	
+	\newOptionalNewPage{11}
 	\input{../ZeugnisBack.tex}
 \end{document}
