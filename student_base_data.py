@@ -150,5 +150,8 @@ def run_base_data_editor(classroom: str) -> Dict:
             stu.report_text = text
             ses.commit()
             st.success("Text gespeichert.")
+        
+        if st.button("← Zurück", key="_back"):
+            st.session_state.pop("mode")
         safe_rerun()
     return {}
