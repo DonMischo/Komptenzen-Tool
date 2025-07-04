@@ -14,7 +14,7 @@ SUBJECTS = [
     "MNT - Projekt Lutherpark",
     "Technisches Werken",
     "Geografie",
-    "Chemmie",
+    "Chemie",
     "Physik",
     "Biologie",
     "Geschichte",
