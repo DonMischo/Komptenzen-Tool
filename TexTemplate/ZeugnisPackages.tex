@@ -12,7 +12,7 @@
 \usepackage{amsmath,amssymb}
 
 \usepackage{tabularray}      % modern table package used by \myZeugnisTable
-\usepackage{pifont}          % \ding symbols for ticks / crosses
+\usepackage{makecell}
 
 \usepackage{graphicx}        % needed by \includegraphics on the title page
 \usepackage{microtype}       % optional but keeps line-breaking / kerning tidy
@@ -46,12 +46,30 @@
 	\end{tblr}
 }
 
+% ------------------------------------------------------------
+%  Simple variant: 1-column header + one free-text row
+% ------------------------------------------------------------
+\newcommand{\myZeugnisTableSimple}[2]{
+	\begin{tblr}{
+			width = \linewidth,
+			colspec = {X[l]},
+			hlines = {1pt,solid},
+			vlines = {0.6pt,solid},
+			rowsep = 2pt,
+			colsep = 3pt,
+			row{1} = {bg=egelightblue, fg=white, font=\bfseries\footnotesize},
+		}
+		\textbf{\large #1}\\
+		#2
+	\end{tblr}
+}
+
 \begin{luacode*}
 	-- Escape TeX‑special characters coming from Lua strings
 	function tex_escape(str)
-		return (str
-			:gsub("([%%#$&{}_\\])", "\\%1")   -- escape % # $ & _ { } \
-			:gsub("\n", "\\\\"))              -- newline → \\
+	return (str
+	:gsub("([%%#$&{}_\\])", "\\%1")   -- escape % # $ & _ { } \
+	:gsub("\n", "\\\\"))              -- newline → \\
 	end
 \end{luacode*}
 
@@ -61,7 +79,7 @@
 	\newpage           % flush everything pending
 	\null                % empty box → forces a page
 	\thispagestyle{plain}% no headers/footers
-	}
+}
 
 %%% Pad the document up to a specified page number
 \newcommand*\newOptionalNewPage[1]{%
