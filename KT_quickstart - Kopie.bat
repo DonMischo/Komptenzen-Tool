@@ -14,8 +14,8 @@ if errorlevel 1 (
 REM ===== Run the Streamlit app =====
 echo Launching Streamlit app ...
 @echo off
-python db_cli.py --run
-REM python -m populate_random_reports --db db/reports_2024-2025_ej.db
+
+python -m populate_random_reports --db db/reports_2024-2025_ej.db
 REM python check_grades.py
 REM Keep the window open after exit
 pause
