@@ -19,10 +19,7 @@ TexTemplate/*.lua
 TexTemplate/*.synctex.gz
 TexTemplate/*.pdf
 .venv/
-
-
-
 student_data/students.csv
 kompetenzen.db
 /Test/New
-/Test
+Test/
