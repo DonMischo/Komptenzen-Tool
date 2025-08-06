@@ -1,22 +1,15 @@
 from __future__ import annotations
-"""export.py – rev‑8
-====================
-Generate Lua + TeX files **and** compile new TeX files with *luatex*.
-
-Changelog (rev‑8)
------------------
-* **is_LB logic**: If a *niveau* string longer than 3 characters is stored
-  on the `StudentSubject` link, the subject is treated like “LB” free‑text:
-    – Competences of that subject are **not exported** (identical to is_GB).
-    – The *niveau* text is converted to LaTeX via the new helper
-      `format_level_text()` and written into the `level` field.
-* Class‑7 elective filter from rev‑7 is kept.
-
-The directory layout, TeX template handling, and compilation cache remain
-unchanged.
+"""export.py – rev‑8 (syntax‑fixed)
+===================================
+* Keeps all logic from rev‑7 *plus* LB long‑text handling.
+* Fixes the stray ``if long_level_text`` (missing colon) that caused the
+  SyntaxError.
+* `_compile_selected` now **always** recompiles the basenames passed in
+  (fresh PDFs every click) and then updates `.compiled` purely as
+  history.
 """
+
 import json
-import re
 import shutil
 import subprocess
 import sys
@@ -24,8 +17,8 @@ import unicodedata
 from pathlib import Path
 from typing import Any, Dict, List, Set, Tuple
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from db_schema import (
     ENGINE,
@@ -38,75 +31,29 @@ from db_schema import (
 )
 
 # ---------------------------------------------------------------------------
-# Text helpers --------------------------------------------------------------
+# Helpers / filenames -------------------------------------------------------
 # ---------------------------------------------------------------------------
 
-def lua_long_str(s: str) -> str:
-    """Wrap *s* in the shortest [=*[ … ]=*] delimiter that does not occur inside."""
-    for eq in range(0, 10):  # usually 0 is enough
-        open_ = "[" + "=" * eq + "["
-        close_ = "]" + "=" * eq + "]"
-        if open_ not in s and close_ not in s:
-            return f"{open_}\n{s}\n{close_}"
-    raise ValueError("text contains ]] with 9 ='s — very unlikely!")
-
-
-def _body_to_latex(text: str) -> str:
-    """Convert plain multi‑paragraph text to LaTeX: paragraphs → vspace, single line breaks → `\\`."""
-    text = re.sub(r"\n{2,}", r"\n \\vspace{1em}", text.strip())
-    return text.replace("\n", r"\\")
-
-
-def format_report_tex(text: str) -> str:
-    """Convert raw report text (first line greeting) to LaTeX."""
-    text = text.lstrip()
-    if "\n" in text:
-        greeting, body = text.split("\n", 1)
-    else:
-        greeting, body = text, ""
-
-    formatted = rf"{{\textbf{{\LARGE {greeting.strip()} }}}}\\"
-    if body:
-        formatted += "\n\\nowidow[11]\\noclub[11]\\setstretch{1.15}\\large " + _body_to_latex(body)
-    return formatted
-
-
-def format_level_text(text: str) -> str:
-    """Convert long *niveau* (LB) strings to a single ready‑to‑use LaTeX cell.
-
-    * Wrapped in `\\makecell[l]{…}` so it stays within one tabular cell.
-    * Applies `\\setstretch{1.15}\\large` for visual consistency.
-    * Requires `\\usepackage{makecell}` in the document preamble.
-    """
-    return r"\makecell[l]{\setstretch{1.15}\large " + _body_to_latex(text) + "}"
-
-# ---------------------------------------------------------------------------
-# Filename / dir helpers ----------------------------------------------------
-# ---------------------------------------------------------------------------
-
-def _slug(s: str) -> str:
-    nfkd = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
-    return "_".join("".join(c for c in nfkd.lower() if c.isalnum()) for c in nfkd.split())
+def _slug(text: str) -> str:
+    nfkd = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    return "_".join("".join(c for c in nfkd.lower() if c.isalnum() or c == " ").split())
 
 
 def _root_dir(sy: SchoolYear) -> Path:
     year = sy.report_day.year if sy.report_day else int(sy.name.split("/")[1])
-    p = Path.cwd() / f"print_{year}_{'ej' if sy.endjahr else 'hj'}"
-    p.mkdir(exist_ok=True)
-    return p
+    d = Path.cwd() / f"print_{year}_{'ej' if sy.endjahr else 'hj'}"
+    d.mkdir(exist_ok=True)
+    return d
 
 
 def _copy_template(dst: Path) -> None:
     src = Path.cwd() / "TexTemplate"
     if not src.exists():
         raise FileNotFoundError("TexTemplate directory missing.")
-    for item in src.iterdir():
-        tgt = dst / item.name
+    for itm in src.iterdir():
+        tgt = dst / itm.name
         if not tgt.exists():
-            if item.is_dir():
-                shutil.copytree(item, tgt)
-            else:
-                shutil.copy2(item, tgt)
+            shutil.copytree(itm, tgt) if itm.is_dir() else shutil.copy2(itm, tgt)
 
 # ---------------------------------------------------------------------------
 # Lua serializer ------------------------------------------------------------
@@ -117,22 +64,20 @@ def _lua(obj: Any, ind: int = 0) -> str:
     if isinstance(obj, dict):
         if not obj:
             return "{}"
-        body = ",\n".join(f"{sp}  {k} = {_lua(v, ind + 2)}" for k, v in obj.items())
+        body = ",\n".join(f"{sp}  {k} = {_lua(v, ind+2)}" for k, v in obj.items())
         return f"{{\n{body},\n{sp}}}"
     if isinstance(obj, list):
         if not obj:
             return "{}"
-        body = ",\n".join(_lua(v, ind + 2) for v in obj)
+        body = ",\n".join(_lua(v, ind+2) for v in obj)
         return f"{{\n{body},\n{sp}}}"
     if isinstance(obj, str):
-        if ("\n" in obj) or ("\\" in obj) or ("'" in obj) or ("]]" in obj):
-            return lua_long_str(obj)
-        return "'" + obj.replace("'", r"\'") + "'"
+        esc = obj.replace("'", "\\'")
+        return f"'{esc}'"
     return json.dumps(obj)
 
-
 # ---------------------------------------------------------------------------
-# Value helpers -------------------------------------------------------------
+# Grade helper --------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
 def _numeric_or_str(val: str | None) -> int | str | None:
@@ -140,13 +85,27 @@ def _numeric_or_str(val: str | None) -> int | str | None:
         return None
     txt = str(val).strip().replace(",", ".")
     try:
-        num = float(txt)
-        if num.is_integer() and 0 <= int(num) <= 9:
-            return int(num)
+        f = float(txt)
+        if f.is_integer() and 0 <= int(f) <= 9:
+            return int(f)
     except ValueError:
         pass
     return txt
 
+# ---------------------------------------------------------------------------
+# Text helpers for level long‑text -----------------------------------------
+# ---------------------------------------------------------------------------
+
+def _latex_escape_body(txt: str) -> str:
+    # replace blank lines with vspace and single breaks with \
+    import re, textwrap
+    txt = textwrap.dedent(txt).strip()
+    txt = re.sub(r"\n{2,}", r"\\vspace{1em}", txt)
+    return txt.replace("\n", r"\\")
+
+
+def format_level_text(txt: str) -> str:
+    return r"\makecell[l]{\setstretch{1.15}\large " + _latex_escape_body(txt) + "}"
 
 # ---------------------------------------------------------------------------
 # Student → Lua -------------------------------------------------------------
@@ -156,12 +115,12 @@ def _selected_comp_ids(ses: Session, class_row: SchoolClass) -> Set[int]:
     return {
         cc.competence_id
         for cc in ses.query(ClassCompetence)
-        .filter_by(class_id=class_row.id, selected=True)
-        .all()
+                     .filter_by(class_id=class_row.id, selected=True)
+                     .all()
     }
 
 
-def _has_grade(subj: "Subject", grade_map: Dict[int, Any]) -> bool:
+def _has_grade(subj: Subject, grade_map: Dict[int, Any]) -> bool:
     return any(grade_map.get(tp.id) not in (None, "", " ") for tp in subj.topics)
 
 
@@ -174,7 +133,7 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
         "school_year": sy.name,
         "part_of_year": "Endjahr" if sy.endjahr else "Halbjahr",
         "report_date": sy.report_day.strftime("%d.%m.%Y") if sy.report_day else "",
-        "personal_text": format_report_tex(stu.report_text) or "",
+        "personal_text": stu.report_text or "",
         "comment": stu.remarks or "",
         "absenceDaysTotal": stu.days_absent_excused + stu.days_absent_unexcused,
         "absenceDaysUnauthorized": stu.days_absent_unexcused,
@@ -185,24 +144,19 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
         "subjects": [],
     }
 
-    grade_map = {
-        g.topic_id: _numeric_or_str(g.value)
-        for g in ses.query(Grade).filter_by(student_id=stu.id)
-    }
+    grade_map = {g.topic_id: _numeric_or_str(g.value) for g in ses.query(Grade).filter_by(student_id=stu.id)}
 
     want_wp = stu.school_class.name.startswith("7")
 
     for link in stu.subjects:
         subj = link.subject
-        raw_level_val = _numeric_or_str(link.niveau)
-        long_level_text = isinstance(raw_level_val, str) and len(raw_level_val.strip()) > 3
-        level_val = format_level_text(raw_level_val) if long_level_text else raw_level_val
+        raw_level = link.niveau.strip() if link.niveau else ""
+        long_level_text = len(raw_level) > 3
+        level_val: Any = format_level_text(raw_level) if long_level_text else _numeric_or_str(raw_level)
         has_grade = _has_grade(subj, grade_map)
 
-        if want_wp and not (has_grade or raw_level_val):
+        if want_wp and not (has_grade or raw_level):
             continue
-
-        if long_level_text
 
         export_comp = not stu.gb and not long_level_text
         topics_out: List[Dict[str, Any]] = []
@@ -214,8 +168,7 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
                     "title": tp.name,
                     "grade": grade_map.get(tp.id, ""),
                     "competences": [
-                        {"description": c.text}
-                        for c in tp.competences
+                        {"description": c.text} for c in tp.competences
                         if not sel_comp or c.id in sel_comp
                     ],
                 })
@@ -226,23 +179,21 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
             "topics": [] if stu.gb else topics_out,
         })
 
-    return "student = " + _lua(data) + "\n return student\n"
-
+    return "student = " + _lua(data) + "\n"
 
 # ---------------------------------------------------------------------------
-# File generation & compilation -------------------------------------------
+# File + TeX generation -----------------------------------------------------
 # ---------------------------------------------------------------------------
 
-def _write_student_files(stu: Student, sy: SchoolYear, cl_dir: Path, template: str, sel_comp: Set[int], ses: Session) -> str:
+def _write_student_files(stu: Student, sy: SchoolYear, cl_dir: Path, template: str,
+                         sel_comp: Set[int], ses: Session) -> str:
     base = f"{_slug(stu.last_name)}_{_slug(stu.first_name)}"
-    lua_p = cl_dir / f"{base}.lua"
-    tex_p = cl_dir / f"{base}.tex"
-    lua_p.write_text(_student_to_lua(stu, sy, sel_comp, ses), encoding="utf-8")
-    tex_p.write_text(template.replace("studentdata", base), encoding="utf-8")
+    (cl_dir / f"{base}.lua").write_text(_student_to_lua(stu, sy, sel_comp, ses), encoding="utf-8")
+    (cl_dir / f"{base}.tex").write_text(template.replace("studentdata.lua", f"{base}.lua"), encoding="utf-8")
     return base
 
 # ---------------------------------------------------------------------------
-# TeX compilation helpers ---------------------------------------------------
+# TeX compilation -----------------------------------------------------------
 # ---------------------------------------------------------------------------
 
 def _lualatex_exe() -> str:
@@ -254,12 +205,7 @@ def _compile_tex(class_dir: Path, base: str) -> Path:
     pdf = tex.with_suffix(".pdf")
     if not tex.exists():
         return pdf
-    cmd = [
-        _lualatex_exe(),
-        "-interaction=nonstopmode",
-        "-halt-on-error",
-        tex.name,
-    ]
+    cmd = [_lualatex_exe(), "-interaction=nonstopmode", "-halt-on-error", tex.name]
     subprocess.run(cmd, cwd=class_dir, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return pdf
 
@@ -268,16 +214,17 @@ def _compile_selected(class_dir: Path, basenames: List[str]) -> List[Path]:
     cache = class_dir / ".compiled"
     done: Set[str] = set(cache.read_text().splitlines()) if cache.exists() else set()
     compiled: List[Path] = []
+
     for base in basenames:
-        if base in done:
-            continue  # already compiled
+        # always compile fresh
         try:
             pdf = _compile_tex(class_dir, base)
             compiled.append(pdf)
             done.add(base)
         except subprocess.CalledProcessError as err:
             print(f"lualatex failed for {base}:\n", err.stderr.decode(errors="ignore"))
-            cache.write_text("\n".join(sorted(done)))
+
+    cache.write_text("\n".join(sorted(done)))
     return compiled
 
 # ---------------------------------------------------------------------------
