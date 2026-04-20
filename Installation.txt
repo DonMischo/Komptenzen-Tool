@@ -1,0 +1,29 @@
+WSL installieren:
+wsl --install
+wsl --set-default-version 2
+# restart if prompted
+wsl --status   # confirm "Default Version: 2"
+
+env file:
+POSTGRES_USER=appuser
+POSTGRES_PASSWORD=supersecret
+POSTGRES_DB=school_current
+APP_PORT=8501
+DB_PORT=5432
+
+
+DockerDesktop installieren:
+  - WindowsStore
+
+Projekt von GitHub clonen
+
+Port freigeben:
+New-NetFirewallRule -DisplayName "Kompetenzen-Tool" `
+  -Direction Inbound -Protocol TCP -LocalPort 8501 `
+  -Action Allow -Profile Private
+
+
+Start App:
+# Pfad anpassen oder im Projektordner "cmd" in die Adressleiste eingeben
+cd C:\Users\micha\Documents\GitHub\Komptenzen-Tool
+docker compose up --build

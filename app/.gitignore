@@ -1,0 +1,25 @@
+# Ignore all files with the specified name.
+# Scope is all repo folders.
+
+.git/
+.venv/*
+__pycache__/
+data/
+deprecated/
+db/
+Lehrpläne/
+other-files/
+print*/
+saved/*
+Test/*
+Test/New/*
+TexTemplate/*.aux
+TexTemplate/*.log
+TexTemplate/*.lua
+TexTemplate/*.synctex.gz
+TexTemplate/*.pdf
+.venv/
+student_data/students.csv
+kompetenzen.db
+/Test/New
+Test/

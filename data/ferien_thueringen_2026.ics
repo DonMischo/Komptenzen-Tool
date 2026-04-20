@@ -1,0 +1,61 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:icalendar-ruby
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+NAME:Ferien in Thüringen 2026
+BEGIN:VEVENT
+DTSTAMP:20260413T104429Z
+UID:f326c03a-d3cf-4277-a355-cb63540d7ae2
+DTSTART;VALUE=DATE:20260216
+DTEND;VALUE=DATE:20260222
+DESCRIPTION:Winterferien 2026 in Thüringen - Importiert von Ferienwiki
+SUMMARY:Winterferien
+URL:https://www.ferienwiki.de/ferientermine/2026/de/winterferien
+END:VEVENT
+BEGIN:VEVENT
+DTSTAMP:20260413T104429Z
+UID:1ed4109b-1e2b-4109-9a80-46c4099c7a64
+DTSTART;VALUE=DATE:20260407
+DTEND;VALUE=DATE:20260418
+DESCRIPTION:Osterferien 2026 in Thüringen - Importiert von Ferienwiki
+SUMMARY:Osterferien
+URL:https://www.ferienwiki.de/ferientermine/2026/de/osterferien
+END:VEVENT
+BEGIN:VEVENT
+DTSTAMP:20260413T104429Z
+UID:babb4816-b138-4834-b6a6-c6a910670cc4
+DTSTART;VALUE=DATE:20260515
+DTEND;VALUE=DATE:20260516
+DESCRIPTION:Pfingstferien 2026 in Thüringen - Importiert von Ferienwiki
+SUMMARY:Pfingstferien
+URL:https://www.ferienwiki.de/ferientermine/2026/de/pfingstferien
+END:VEVENT
+BEGIN:VEVENT
+DTSTAMP:20260413T104429Z
+UID:8fc6f0f1-900c-4fb0-8f7b-e95bdff0562f
+DTSTART;VALUE=DATE:20260704
+DTEND;VALUE=DATE:20260815
+DESCRIPTION:Sommerferien 2026 in Thüringen - Importiert von Ferienwiki
+SUMMARY:Sommerferien
+URL:https://www.ferienwiki.de/ferientermine/2026/de/sommerferien
+END:VEVENT
+BEGIN:VEVENT
+DTSTAMP:20260413T104429Z
+UID:270eb99c-e85a-426d-ba7b-6846c3009b19
+DTSTART;VALUE=DATE:20261012
+DTEND;VALUE=DATE:20261025
+DESCRIPTION:Herbstferien 2026 in Thüringen - Importiert von Ferienwiki
+SUMMARY:Herbstferien
+URL:https://www.ferienwiki.de/ferientermine/2026/de/herbstferien
+END:VEVENT
+BEGIN:VEVENT
+DTSTAMP:20260413T104429Z
+UID:299ad298-72e2-4425-a7b1-80a26c044422
+DTSTART;VALUE=DATE:20261223
+DTEND;VALUE=DATE:20270103
+DESCRIPTION:Weihnachtsferien 2026 in Thüringen - Importiert von Ferienwiki
+SUMMARY:Weihnachtsferien
+URL:https://www.ferienwiki.de/ferientermine/2026/de/weihnachtsferien
+END:VEVENT
+END:VCALENDAR
