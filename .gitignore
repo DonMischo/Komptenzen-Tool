@@ -11,3 +11,31 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+
+
+
+# Ignore all files with the specified name.
+# Scope is all repo folders.
+.git/
+app/.git/
+app/.venv/*
+app/__pycache__/
+app/data/
+app/deprecated/
+app/db/
+app/Lehrpläne/
+app/other-files/
+app/print*/
+app/saved/*
+app/Test/*
+app/Test/New/*
+app/TexTemplate/*.aux
+app/TexTemplate/*.log
+app/TexTemplate/*.lua
+app/TexTemplate/*.synctex.gz
+app/TexTemplate/*.pdf
+app/.venv/
+app/student_data/students.csv
+app/kompetenzen.db
+app//Test/New
+app/Test/
