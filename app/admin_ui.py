@@ -1,51 +1,38 @@
 from __future__ import annotations
 """
 admin_ui.py – Admin-Seite
-=========================
-Es gibt genau **einen** Datensatz in der Tabelle *school_years*.
-Die Sidebar zeigt diesen Eintrag (Schuljahr-Name, Halbjahr/Endjahr)
-und einen editierbaren Berichtstag (Text-Eingabe DD.MM.YYYY).  
-
-* Button **💾 Berichtstag speichern** speichert das Datum und
-  führt ein `st.experimental_rerun()` aus.
-* Hauptbereich bleibt unverändert (Schüler-Tabelle, Druck-Checkboxen).
 """
 
 import streamlit as st
 import pandas as pd
 from datetime import datetime, date
+from pathlib import Path
 from sqlalchemy.orm import Session
 
 from db_schema import ENGINE, Student, SchoolYear
 from db_helpers import get_students_by_class, get_classes
 from helpers import unique_key as _uk
-from export import export_students
+from export import prepare_export, compile_one
 
 
-ROW_HEIGHT = 35  # Pixel pro Zeile inkl. Header
+ROW_HEIGHT = 35
+
 
 # ------------------------------------------------------------------
-# Helper ------------------------------------------------------------
+# Helpers
 # ------------------------------------------------------------------
 
 def _load_students(classroom: str) -> list[Student]:
-    """Return ORM objects of all students in *classroom*."""
     with Session(ENGINE) as ses:
         return get_students_by_class(classroom, ses)
 
 
 def _get_schoolyear() -> SchoolYear | None:
-    """Return the single SchoolYear entry (newest if multiple exist)."""
     with Session(ENGINE) as ses:
-        return (
-            ses.query(SchoolYear)
-               .order_by(SchoolYear.id.desc())
-               .first()
-        )
+        return ses.query(SchoolYear).order_by(SchoolYear.id.desc()).first()
 
 
 def _save_report_day(sy_id: int, new_date: date) -> None:
-    """Persist *new_date* into the SchoolYear row identified by *sy_id*."""
     with Session(ENGINE) as ses:
         row = ses.query(SchoolYear).get(sy_id)
         if row:
@@ -53,36 +40,110 @@ def _save_report_day(sy_id: int, new_date: date) -> None:
             ses.commit()
 
 
+def _start_export(student_ids: list[int], classroom: str) -> None:
+    """Kick off a new export run — stores state, triggers first rerun."""
+    try:
+        with st.spinner("Generiere Lua/TeX-Dateien …"):
+            cl_dir, bases = prepare_export(student_ids, classroom)
+    except Exception as e:
+        st.error(f"Export fehlgeschlagen: {e}")
+        return
+    if not bases:
+        st.warning("Keine Schüler ausgewählt.")
+        return
+    st.session_state["_exp_cl_dir"]  = str(cl_dir)
+    st.session_state["_exp_bases"]   = bases
+    st.session_state["_exp_idx"]     = 0
+    st.session_state["_exp_pdfs"]    = []
+    st.session_state["_exp_errors"]  = {}
+    st.session_state["_exp_stop"]    = False
+    st.rerun()
+
+
+def _render_export_progress() -> None:
+    """
+    Called every rerun while an export is in progress.
+    Compiles one student, then reruns — or shows results when done.
+    Returns without doing anything if no export is active.
+    """
+    if "_exp_bases" not in st.session_state:
+        return
+
+    bases   = st.session_state["_exp_bases"]
+    cl_dir  = Path(st.session_state["_exp_cl_dir"])
+    idx     = st.session_state["_exp_idx"]
+    total   = len(bases)
+    stopped = st.session_state.get("_exp_stop", False)
+
+    st.markdown("---")
+    st.subheader("Zeugniserstellung läuft …" if not stopped else "Zeugniserstellung gestoppt")
+
+    bar    = st.progress(idx / total if total else 1.0)
+    status = st.empty()
+
+    if idx < total and not stopped:
+        base = bases[idx]
+        status.text(f"{idx + 1}/{total}: {base.replace('_', ' ')}")
+
+        if st.button("⏹ Stop", key="_exp_stop_btn"):
+            st.session_state["_exp_stop"] = True
+            st.rerun()
+
+        pdf, err = compile_one(cl_dir, base)
+        if pdf:
+            st.session_state["_exp_pdfs"].append(str(pdf))
+        if err:
+            st.session_state["_exp_errors"][base] = err
+
+        st.session_state["_exp_idx"] += 1
+        st.rerun()
+
+    else:
+        # Finished or stopped — show results
+        bar.progress(1.0)
+        status.empty()
+        pdfs   = st.session_state["_exp_pdfs"]
+        errors = st.session_state["_exp_errors"]
+
+        if pdfs:
+            st.success(f"✅ {len(pdfs)}/{total} PDF(s) erstellt – gespeichert in `{cl_dir}`")
+        if stopped and idx < total:
+            st.info(f"Gestoppt nach {idx}/{total} Schüler(n).")
+        if errors:
+            st.warning(f"⚠️ {len(errors)} Fehler beim Kompilieren.")
+            for base, err in errors.items():
+                with st.expander(f"❌ lualatex-Fehler: {base}", expanded=True):
+                    st.code(err[-3000:], language="text")
+
+        if st.button("✖ Schließen", key="_exp_close"):
+            for k in ["_exp_cl_dir", "_exp_bases", "_exp_idx",
+                      "_exp_pdfs", "_exp_errors", "_exp_stop"]:
+                st.session_state.pop(k, None)
+            st.rerun()
+
+
 # ------------------------------------------------------------------
-# Main entry --------------------------------------------------------
+# Main entry
 # ------------------------------------------------------------------
 
 def run_admin_ui() -> None:
-    """Entry-Point für *ui_components.run_ui()* – Admin-Modul."""
-
     st.title("🛠️ Admin – Berichte erstellen")
 
     # -------- Sidebar -------------------------------------------------
     with st.sidebar:
         st.subheader("Admin-Einstellungen")
 
-        # Passwort-Feld (Platzhalter)
-        st.text_input("Passwort", type="password", key="_admin_pw")
-
-        # Klassen-Auswahl
         classes = get_classes()
         if not classes:
             st.error("Es sind noch keine Klassen angelegt.")
             st.stop()
         classroom = st.selectbox("Klasse wählen", classes, key="_admin_cls")
 
-        # Schuljahr-Info + Berichtstag-Editor --------------------------
         sy = _get_schoolyear()
         if sy:
             label = "Endjahr" if sy.endjahr else "Halbjahr"
             st.markdown(f"**Schuljahr:** {sy.name}  \n**Modus:** {label}")
 
-            # Textfeld (DD.MM.YYYY)
             default_str = sy.report_day.strftime("%d.%m.%Y") if sy.report_day else ""
             rpt_str = st.text_input(
                 "Berichtstag (DD.MM.YYYY)",
@@ -116,12 +177,11 @@ def run_admin_ui() -> None:
             "Drucken":  [False] * len(students),
         }
     )
-    table_height = (len(df) + 1) * ROW_HEIGHT
 
     df_edit = st.data_editor(
         df,
         hide_index=True,
-        height=table_height,
+        height=(len(df) + 1) * ROW_HEIGHT,
         width="stretch",
         column_config={
             "Drucken": st.column_config.CheckboxColumn(required=False),
@@ -129,23 +189,29 @@ def run_admin_ui() -> None:
         key=_uk("admin_editor", classroom),
     )
 
-    to_print = df_edit.query("Drucken == True")["ID"].tolist()
+    to_print     = df_edit.query("Drucken == True")["ID"].tolist()
+    all_ids      = df_edit["ID"].tolist()
+
+    # Show progress UI if an export is running (blocks buttons below)
+    _render_export_progress()
+
+    if "_exp_bases" in st.session_state:
+        return  # don't show buttons while export is active
 
     st.markdown("---")
-    if st.button("📄 Berichte erstellen", key=_uk("create_reports", classroom)):
-        try:
-            lua_map, pdfs, errors = export_students(to_print, classroom)
-        except Exception as e:
-            st.error(f"Export fehlgeschlagen: {e}")
-            return
-        if pdfs:
-            st.success(
-                f"{len(lua_map)} Lua/TeX-Dateien erzeugt, "
-                f"{len(pdfs)} PDF(s) kompiliert."
-            )
-            st.json({"pdf": [str(p) for p in pdfs]})
-        else:
-            st.warning(f"{len(lua_map)} Lua/TeX-Dateien erzeugt, aber keine PDFs kompiliert.")
-        for base, err in errors.items():
-            with st.expander(f"❌ lualatex-Fehler: {base}", expanded=True):
-                st.code(err[-3000:], language="text")  # last 3000 chars of log
+    col_sel, col_all = st.columns(2)
+
+    with col_sel:
+        if st.button(
+            f"📄 Ausgewählte erstellen ({len(to_print)})",
+            key=_uk("create_selected", classroom),
+            disabled=not to_print,
+        ):
+            _start_export(to_print, classroom)
+
+    with col_all:
+        if st.button(
+            f"📄 Alle erstellen ({len(all_ids)})",
+            key=_uk("create_all", classroom),
+        ):
+            _start_export(all_ids, classroom)
