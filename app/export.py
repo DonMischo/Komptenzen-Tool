@@ -39,10 +39,12 @@ def _slug(text: str) -> str:
     return "_".join("".join(c for c in nfkd.lower() if c.isalnum() or c == " ").split())
 
 
-def _root_dir(sy: SchoolYear) -> Path:
-    year = sy.report_day.year if sy.report_day else int(sy.name.split("/")[1])
-    d = Path.cwd() / f"print_{year}_{'ej' if sy.endjahr else 'hj'}"
-    d.mkdir(exist_ok=True)
+def _root_dir(sy: SchoolYear, classroom: str = "") -> Path:
+    year  = sy.report_day.year if sy.report_day else int(sy.name.split("/")[1])
+    term  = "EJ" if sy.endjahr else "HJ"
+    base  = Path.home() / "Zeugnisse" / f"{year}-{term}"
+    d     = base / classroom if classroom else base
+    d.mkdir(parents=True, exist_ok=True)
     return d
 
 
@@ -72,7 +74,10 @@ def _lua(obj: Any, ind: int = 0) -> str:
         body = ",\n".join(_lua(v, ind+2) for v in obj)
         return f"{{\n{body},\n{sp}}}"
     if isinstance(obj, str):
-        esc = obj.replace("'", "\\'")
+        esc = obj.replace("\\", "\\\\")
+        esc = esc.replace("\n", "\\n")
+        esc = esc.replace("\r", "\\r")
+        esc = esc.replace("'", "\\'")
         return f"'{esc}'"
     return json.dumps(obj)
 
@@ -105,7 +110,7 @@ def _latex_escape_body(txt: str) -> str:
 
 
 def format_level_text(txt: str) -> str:
-    return r"\makecell[l]{\setstretch{1.15}\large " + _latex_escape_body(txt) + "}"
+    return r"{\setstretch{1.15}" + _latex_escape_body(txt) + "}"
 
 # ---------------------------------------------------------------------------
 # Student → Lua -------------------------------------------------------------
@@ -124,6 +129,30 @@ def _has_grade(subj: Subject, grade_map: Dict[int, Any]) -> bool:
     return any(grade_map.get(tp.id) not in (None, "", " ") for tp in subj.topics)
 
 
+SUBJECT_ORDER = [
+    "Deutsch",
+    "Mathematik",
+    "Englisch",
+    "Wahlpflichtbereich - Französisch",
+    "Wahlpflichtbereich - Spanisch",
+    "Wahlpflichtbereich - Darstellen und Gestalten",
+    "Wahlpflichtbereich - Natur und Technik",
+    "MNT - Projekt Lutherpark",
+    "Technisches Werken",
+    "Medienbildung und Informatik",
+    "Geografie",
+    "Chemie",
+    "Physik",
+    "Biologie",
+    "Geschichte",
+    "Evangelische Religionslehre",
+    "Sport",
+    "Werkstätten",
+    "Mitarbeit und Verhalten",
+]
+_SUBJECT_RANK = {name: i for i, name in enumerate(SUBJECT_ORDER)}
+
+
 def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Session) -> str:
     data: Dict[str, Any] = {
         "first_name": stu.first_name,
@@ -133,7 +162,7 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
         "school_year": sy.name,
         "part_of_year": "Endjahr" if sy.endjahr else "Halbjahr",
         "report_date": sy.report_day.strftime("%d.%m.%Y") if sy.report_day else "",
-        "personal_text": stu.report_text or "",
+        "personal_text": _latex_escape_body(stu.report_text or ""),
         "comment": stu.remarks or "",
         "absenceDaysTotal": stu.days_absent_excused + stu.days_absent_unexcused,
         "absenceDaysUnauthorized": stu.days_absent_unexcused,
@@ -179,7 +208,8 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
             "topics": [] if stu.gb else topics_out,
         })
 
-    return "student = " + _lua(data) + "\n"
+    data["subjects"].sort(key=lambda s: _SUBJECT_RANK.get(s["name"], 999))
+    return "student = " + _lua(data) + "\nreturn student\n"
 
 # ---------------------------------------------------------------------------
 # File + TeX generation -----------------------------------------------------
@@ -189,7 +219,9 @@ def _write_student_files(stu: Student, sy: SchoolYear, cl_dir: Path, template: s
                          sel_comp: Set[int], ses: Session) -> str:
     base = f"{_slug(stu.last_name)}_{_slug(stu.first_name)}"
     (cl_dir / f"{base}.lua").write_text(_student_to_lua(stu, sy, sel_comp, ses), encoding="utf-8")
-    (cl_dir / f"{base}.tex").write_text(template.replace("studentdata.lua", f"{base}.lua"), encoding="utf-8")
+    tex = template.replace('require("studentdata")', f'require("{base}")')
+    tex = tex.replace("studentdata.lua", f"{base}.lua")  # fallback for \input style
+    (cl_dir / f"{base}.tex").write_text(tex, encoding="utf-8")
     return base
 
 # ---------------------------------------------------------------------------
@@ -210,28 +242,33 @@ def _compile_tex(class_dir: Path, base: str) -> Path:
     return pdf
 
 
-def _compile_selected(class_dir: Path, basenames: List[str]) -> List[Path]:
+def _compile_selected(class_dir: Path, basenames: List[str]) -> Tuple[List[Path], Dict[str, str]]:
+    """Returns (compiled_pdfs, errors) where errors maps basename → stderr."""
     cache = class_dir / ".compiled"
     done: Set[str] = set(cache.read_text().splitlines()) if cache.exists() else set()
     compiled: List[Path] = []
+    errors: Dict[str, str] = {}
 
     for base in basenames:
-        # always compile fresh
         try:
             pdf = _compile_tex(class_dir, base)
             compiled.append(pdf)
             done.add(base)
         except subprocess.CalledProcessError as err:
-            print(f"lualatex failed for {base}:\n", err.stderr.decode(errors="ignore"))
+            stderr = err.stderr.decode(errors="ignore")
+            stdout = err.stdout.decode(errors="ignore") if err.stdout else ""
+            errors[base] = stderr or stdout or f"lualatex exited with code {err.returncode}"
+        except FileNotFoundError:
+            errors[base] = "lualatex nicht gefunden – ist texlive-luatex installiert?"
 
     cache.write_text("\n".join(sorted(done)))
-    return compiled
+    return compiled, errors
 
 # ---------------------------------------------------------------------------
 # Public API ----------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
-def export_students(student_ids: List[int], classroom: str) -> Tuple[Dict[str, str], List[Path]]:
+def export_students(student_ids: List[int], classroom: str) -> Tuple[Dict[str, str], List[Path], Dict[str, str]]:
     """Generate Lua/TeX for given students and compile new PDFs.
     Returns (lua_path_map, compiled_pdf_paths)."""
     with Session(ENGINE) as ses:
@@ -244,11 +281,15 @@ def export_students(student_ids: List[int], classroom: str) -> Tuple[Dict[str, s
 
         sel_comp = _selected_comp_ids(ses, class_row)
 
-        root = _root_dir(sy)
-        _copy_template(root)
-        cl_dir = root / classroom
-        cl_dir.mkdir(exist_ok=True)
-        template_tex = (root / "Zeugnis.tex").read_text(encoding="utf-8")
+        cl_dir = _root_dir(sy, classroom)
+        src_template = Path.cwd() / "TexTemplate" / "Zeugnis.tex"
+        if not src_template.exists():
+            raise FileNotFoundError(
+                "TexTemplate/Zeugnis.tex nicht gefunden. "
+                "Bitte die LaTeX-Vorlage in das TexTemplate-Verzeichnis legen."
+            )
+        template_tex = src_template.read_text(encoding="utf-8")
+        _copy_template(cl_dir.parent.parent)
 
         lua_map: Dict[str, str] = {}
         bases: List[str] = []
@@ -261,8 +302,8 @@ def export_students(student_ids: List[int], classroom: str) -> Tuple[Dict[str, s
             bases.append(base)
             lua_map[base] = str(cl_dir / f"{base}.lua")
 
-        compiled = _compile_selected(cl_dir, bases)
-        return lua_map, compiled
+        compiled, errors = _compile_selected(cl_dir, bases)
+        return lua_map, compiled, errors
 
 
 if __name__ == "__main__":

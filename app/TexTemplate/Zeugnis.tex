@@ -1,5 +1,5 @@
 
-\input{../ZeugnisPackages.tex}
+\input{../../ZeugnisPackages.tex}
 
 \begin{luacode*}
 	student = require("studentdata")
@@ -7,10 +7,10 @@
 
 
 \begin{document}
-	\input{../ZeugnisTitlepage.tex}
+	\input{../../ZeugnisTitlepage.tex}
 	\directlua{tex.print(student.personal_text)}
-	\newOptionalNewPage{3}
-	\input{../ZeugnisTables.tex}	
-	\newOptionalNewPage{11}
-	\input{../ZeugnisBack.tex}
+%	\newOptionalNewPage{3}
+	\input{../../ZeugnisTables.tex}	
+	\newOptionalNewPage{15}
+	\input{../../ZeugnisBack.tex}
 \end{document}

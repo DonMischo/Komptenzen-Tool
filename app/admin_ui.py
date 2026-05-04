@@ -98,7 +98,7 @@ def run_admin_ui() -> None:
                 else:
                     _save_report_day(sy.id, new_date)
                     st.success(f"Berichtstag aktualisiert: {new_date.strftime('%d.%m.%Y')}")
-                    safe_rerun()
+                    st.rerun()
         else:
             st.info("Kein Schuljahr-Eintrag in der Datenbank gefunden.")
 
@@ -133,9 +133,15 @@ def run_admin_ui() -> None:
 
     st.markdown("---")
     if st.button("📄 Berichte erstellen", key=_uk("create_reports", classroom)):
-        lua_map, pdfs = export_students(to_print, classroom)
-        st.success(
-            f"{len(lua_map)} Lua/TeX-Dateien erzeugt, "
-            f"{len(pdfs)} PDF(s) neu kompiliert."
-        )
-        st.json({"lua": lua_map, "pdf": [str(p) for p in pdfs]})
+        lua_map, pdfs, errors = export_students(to_print, classroom)
+        if pdfs:
+            st.success(
+                f"{len(lua_map)} Lua/TeX-Dateien erzeugt, "
+                f"{len(pdfs)} PDF(s) kompiliert."
+            )
+            st.json({"pdf": [str(p) for p in pdfs]})
+        else:
+            st.warning(f"{len(lua_map)} Lua/TeX-Dateien erzeugt, aber keine PDFs kompiliert.")
+        for base, err in errors.items():
+            with st.expander(f"❌ lualatex-Fehler: {base}", expanded=True):
+                st.code(err[-3000:], language="text")  # last 3000 chars of log

@@ -34,6 +34,7 @@ from student_loader import (
     sync_students_from_upload,
     count_students,
 )
+from generate_test_data import generate_class_7a
 
 DB_RX = re.compile(r"^reports_(\d{4})_(\d{2})_(hj|ej)$", re.I)
 
@@ -201,15 +202,44 @@ def run_setup_ui() -> None:
                     st.success(f"Datenbank {new_name} angelegt und initialisiert.")
                     st.rerun()
 
-    # everything below only makes sense with a ready schema
-    active_db = st.session_state.get("current_db", ENGINE.url.database or "")
+    # everything below only makes sense with a ready schema.
+    # Priority: explicit connect > selectbox selection > ENGINE url > nothing
+    active_db = (
+        st.session_state.get("current_db")
+        or st.session_state.get("_s_sel")
+        or (ENGINE.url.database if ENGINE.url.database != "postgres" else "")
+        or ""
+    )
+
     if not active_db or not _schema_ready_for(active_db):
-        st.info("Wähle oder erstelle eine Datenbank, um fortzufahren.")
+        st.info("Wähle eine Datenbank aus und klicke **🔌 Verbinden**, um fortzufahren.")
         return
 
-    # App restarts reset ENGINE to 'postgres'; re-sync if session_state still has a DB
+    # Ensure ENGINE points to active_db (covers app restarts + implicit selection)
     if ENGINE.url.database != active_db:
         switch_engine(active_db)
+        st.session_state["current_db"] = active_db
+
+    st.divider()
+
+    # -----------------------------------------------------------------------
+    # 🧪 Testdaten (development helper)
+    # -----------------------------------------------------------------------
+    with st.expander("🧪 Testdaten generieren (Klasse 7a)", expanded=False):
+        st.markdown(
+            "Befüllt die Datenbank mit realistischen Testdaten für **Klasse 7a**:  \n"
+            "Niveaus 1–3, Noten 1–4, ein Wahlpflichtfach pro Schüler, "
+            "Zeugnistexte (~1 A4-Seite) und Sonderschüler **Alexander Herrmann** "
+            "(Förderschwerpunkt Lernen, Worturteile in Mathe & Englisch).  \n"
+            "⚠️ Bestehende Daten für Klasse 7a werden überschrieben."
+        )
+        if st.button("▶ Testdaten jetzt generieren", key="_s_gen_test"):
+            with st.spinner("Generiere Testdaten …"):
+                result = generate_class_7a()
+            if result.startswith("✅"):
+                st.success(result)
+            else:
+                st.error(result)
 
     st.divider()
 

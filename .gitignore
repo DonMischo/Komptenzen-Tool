@@ -16,6 +16,7 @@ Thumbs.db
 
 # Ignore all files with the specified name.
 # Scope is all repo folders.
+Zeugnisse/
 .git/
 app/.git/
 app/.venv/*

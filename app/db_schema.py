@@ -54,7 +54,7 @@ def switch_engine(db_name: str) -> None:
     # propagate to all modules that imported ENGINE at load time
     for m in ("student_loader", "db_helpers", "setup_ui",
               "ui_components", "admin_ui", "export", "kompetenz_ui",
-              "studenten_ui", "student_base_data"):
+              "studenten_ui", "student_base_data", "generate_test_data"):
         if m in sys.modules:
             sys.modules[m].ENGINE = ENGINE
 
@@ -231,6 +231,13 @@ class StudentSubject(Base):
     subject = relationship("Subject", back_populates="student_links")
 
     __table_args__ = (UniqueConstraint("student_id", "subject_id"),)
+
+
+class AdminUser(Base):
+    __tablename__ = "admin_users"
+    id            = Column(Integer, primary_key=True)
+    username      = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
 
 
 class Grade(Base):

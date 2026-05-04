@@ -1,0 +1,9 @@
+app/.venv
+app/__pycache__
+app/*.pyc
+app/data
+app/print*
+app/student_data/students.csv
+.git
+.claude
+.env

@@ -20,3 +20,6 @@ PyYAML>=5.4
 
 # Environment variable loading
 python-dotenv>=1.0
+
+# Password hashing
+bcrypt>=4.0

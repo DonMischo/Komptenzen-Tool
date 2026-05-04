@@ -18,22 +18,48 @@ services:
       retries: 10
 
   app:
-    build: .
+    build:
+      context: .
+      network: host
     restart: unless-stopped
     ports:
-      - "${APP_PORT}:8501"
+      - "127.0.0.1:${APP_PORT}:8501"
     environment:
-      # Base URL — no database name; the app appends the selected report DB
       POSTGRES_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432
     depends_on:
       db:
         condition: service_healthy
     volumes:
-      - ./student_data:/app/student_data   # CSV imports survive rebuilds
-      - ./data:/app/data                   # holiday ICS cache
-      - ./TexTemplate:/app/TexTemplate     # LaTeX templates
-      - print_output:/app/print_output     # generated PDFs
+      - ./student_data:/app/student_data      # CSV imports survive rebuilds
+      - ./data:/app/data                      # holiday ICS cache
+      - ./app/TexTemplate:/app/TexTemplate    # LaTeX templates
+      - ./Zeugnisse:/home/appuser/Zeugnisse   # PDF output, host-accessible
+
+  app-public:
+    build:
+      context: .
+      network: host
+    restart: unless-stopped
+    ports:
+      - "${APP_PUBLIC_PORT:-8502}:8502"
+    environment:
+      POSTGRES_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+    command: >
+      streamlit run KompetenzenToolPublic.py
+      --server.address=0.0.0.0
+      --server.port=8502
 
 volumes:
   pgdata:
   print_output:
+
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: "1450"
