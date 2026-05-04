@@ -268,6 +268,52 @@ def _compile_selected(class_dir: Path, basenames: List[str]) -> Tuple[List[Path]
 # Public API ----------------------------------------------------------------
 # ---------------------------------------------------------------------------
 
+def prepare_export(student_ids: List[int], classroom: str) -> Tuple[Path, List[str]]:
+    """Generate Lua/TeX files for students; return (cl_dir, basenames) for compilation."""
+    with Session(ENGINE) as ses:
+        sy = ses.query(SchoolYear).order_by(SchoolYear.id.desc()).first()
+        if not sy:
+            raise RuntimeError("Kein Schuljahreintrag gefunden.")
+        class_row = ses.query(SchoolClass).filter_by(name=classroom).first()
+        if not class_row:
+            raise RuntimeError(f"Klasse {classroom} nicht gefunden.")
+
+        sel_comp = _selected_comp_ids(ses, class_row)
+        cl_dir = _root_dir(sy, classroom)
+        src_template = Path.cwd() / "TexTemplate" / "Zeugnis.tex"
+        if not src_template.exists():
+            raise FileNotFoundError(
+                "TexTemplate/Zeugnis.tex nicht gefunden. "
+                "Bitte die LaTeX-Vorlage in das TexTemplate-Verzeichnis legen."
+            )
+        template_tex = src_template.read_text(encoding="utf-8")
+        _copy_template(cl_dir.parent.parent)
+
+        bases: List[str] = []
+        for stu in (
+            ses.query(Student)
+            .filter(Student.id.in_(student_ids))
+            .order_by(Student.last_name, Student.first_name)
+        ):
+            base = _write_student_files(stu, sy, cl_dir, template_tex, sel_comp, ses)
+            bases.append(base)
+
+    return cl_dir, bases
+
+
+def compile_one(cl_dir: Path, base: str) -> Tuple[Path | None, str | None]:
+    """Compile a single student's TeX file. Returns (pdf_path, error_or_None)."""
+    try:
+        pdf = _compile_tex(cl_dir, base)
+        return pdf, None
+    except subprocess.CalledProcessError as err:
+        stderr = err.stderr.decode(errors="ignore")
+        stdout = err.stdout.decode(errors="ignore") if err.stdout else ""
+        return None, stderr or stdout or f"lualatex exited with code {err.returncode}"
+    except FileNotFoundError:
+        return None, "lualatex nicht gefunden – ist texlive-luatex installiert?"
+
+
 def export_students(student_ids: List[int], classroom: str) -> Tuple[Dict[str, str], List[Path], Dict[str, str]]:
     """Generate Lua/TeX for given students and compile new PDFs.
     Returns (lua_path_map, compiled_pdf_paths)."""
