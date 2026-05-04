@@ -1,5 +1,5 @@
 # install-windows.ps1
-# Kompetenzen-Tool — Windows 11 + Docker Desktop + WSL2 setup
+# Kompetenzen-Tool - Windows 11 + Docker Desktop + WSL2 setup
 # Run as Administrator in PowerShell:
 #   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 #   .\install-windows.ps1
@@ -7,10 +7,10 @@
 #Requires -RunAsAdministrator
 
 $ErrorActionPreference = "Stop"
-$REPO_DIR   = Split-Path -Parent $MyInvocation.MyCommand.Path
-$APP_PORT   = 8501
-$DB_PORT    = 5432
-$REPO_URL   = "https://github.com/DonMischo/Komptenzen-Tool.git"
+$REPO_DIR        = Split-Path -Parent $MyInvocation.MyCommand.Path
+$APP_PORT        = 8501
+$APP_PUBLIC_PORT = 8502
+$DB_PORT         = 5432
 
 function Write-Step { param($msg) Write-Host "`n==> $msg" -ForegroundColor Cyan }
 function Write-OK   { param($msg) Write-Host "    [OK] $msg" -ForegroundColor Green }
@@ -32,7 +32,7 @@ Write-OK "Windows Build $build"
 Write-Step "Pruefe WSL2"
 $wslInstalled = Get-Command wsl -ErrorAction SilentlyContinue
 if (-not $wslInstalled) {
-    Write-Warn "WSL nicht gefunden – installiere WSL2 mit Ubuntu..."
+    Write-Warn "WSL nicht gefunden - installiere WSL2 mit Ubuntu..."
     wsl --install -d Ubuntu
     Write-OK "WSL2 + Ubuntu installiert. Bitte System neu starten und Skript erneut ausfuehren."
     exit 0
@@ -43,31 +43,30 @@ if (-not $wslInstalled) {
 }
 
 # ---------------------------------------------------------------------------
-# 3. Docker Desktop  (via winget — pre-installed on Windows 11)
+# 3. Docker Desktop (via winget)
 # ---------------------------------------------------------------------------
 Write-Step "Pruefe Docker Desktop"
 $dockerCmd = Get-Command docker -ErrorAction SilentlyContinue
 if (-not $dockerCmd) {
-    Write-Warn "Docker nicht gefunden – installiere ueber winget..."
+    Write-Warn "Docker nicht gefunden - installiere ueber winget..."
 
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        Write-Error ("winget nicht gefunden. Bitte 'App-Installer' aus dem Microsoft Store installieren " +
-                     "oder Docker Desktop manuell von https://docs.docker.com/desktop/install/windows-install/")
+        Write-Error "winget nicht gefunden. Bitte App-Installer aus dem Microsoft Store installieren oder Docker Desktop manuell von https://docs.docker.com/desktop/install/windows-install/"
     }
 
     winget install --id Docker.DockerDesktop --exact --silent --accept-package-agreements --accept-source-agreements
     Write-OK "Docker Desktop installiert."
-    Write-Warn "Bitte Docker Desktop starten, den Lizenzbedingungen zustimmen und dann dieses Skript erneut ausfuehren."
+    Write-Warn "Bitte Docker Desktop starten, Lizenzbedingungen akzeptieren und Skript erneut ausfuehren."
     Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe" -ErrorAction SilentlyContinue
     exit 0
 }
 
-# Docker installed — make sure daemon is running
+# Docker installed - make sure daemon is running
 $dockerRunning = $false
 try { docker info 2>&1 | Out-Null; $dockerRunning = $true } catch {}
 
 if (-not $dockerRunning) {
-    Write-Warn "Docker ist installiert aber nicht gestartet – starte Docker Desktop..."
+    Write-Warn "Docker ist installiert aber nicht gestartet - starte Docker Desktop..."
     $desktopExe = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
     if (Test-Path $desktopExe) { Start-Process $desktopExe }
 
@@ -99,7 +98,7 @@ try {
 Write-Step "Konfiguration (.env)"
 $envFile = Join-Path $REPO_DIR ".env"
 if (-not (Test-Path $envFile)) {
-    Write-Warn ".env nicht gefunden – wird angelegt"
+    Write-Warn ".env nicht gefunden - wird angelegt"
 
     $pgUser = Read-Host "PostgreSQL-Benutzername [appuser]"
     if ([string]::IsNullOrWhiteSpace($pgUser)) { $pgUser = "appuser" }
@@ -112,50 +111,58 @@ if (-not (Test-Path $envFile)) {
         Write-Error "Passwort darf nicht leer sein."
     }
 
-    $appPort = Read-Host "App-Port [$APP_PORT]"
+    $appPort = Read-Host "Admin-Port [$APP_PORT]"
     if ([string]::IsNullOrWhiteSpace($appPort)) { $appPort = $APP_PORT }
+
+    $pubPort = Read-Host "Public-Port [$APP_PUBLIC_PORT]"
+    if ([string]::IsNullOrWhiteSpace($pubPort)) { $pubPort = $APP_PUBLIC_PORT }
 
     $dbPort = Read-Host "DB-Port [$DB_PORT]"
     if ([string]::IsNullOrWhiteSpace($dbPort)) { $dbPort = $DB_PORT }
 
-    @"
+    $envContent = @"
 POSTGRES_USER=$pgUser
 POSTGRES_PASSWORD=$pgPassPlain
 APP_PORT=$appPort
+APP_PUBLIC_PORT=$pubPort
 DB_PORT=$dbPort
 POSTGRES_URL=postgresql://${pgUser}:${pgPassPlain}@localhost:5432
-"@ | Set-Content $envFile -Encoding UTF8
-
+"@
+    [System.IO.File]::WriteAllText($envFile, $envContent, [System.Text.Encoding]::UTF8)
     Write-OK ".env erstellt"
 } else {
     Write-OK ".env bereits vorhanden"
 }
 
 # ---------------------------------------------------------------------------
-# 5. Windows Firewall rule for app port
+# 5. Windows Firewall rule for public port
 # ---------------------------------------------------------------------------
-Write-Step "Windows Firewall – Port $APP_PORT"
+Write-Step "Windows Firewall"
 
-# Read actual port from .env
-$envContent = Get-Content $envFile
-$portLine   = $envContent | Where-Object { $_ -match "^APP_PORT=" }
-if ($portLine) { $APP_PORT = [int]($portLine -split "=")[1].Trim() }
+# Read actual ports from .env
+$envLines    = Get-Content $envFile
+$portLine    = $envLines | Where-Object { $_ -match "^APP_PORT=" }
+$pubPortLine = $envLines | Where-Object { $_ -match "^APP_PUBLIC_PORT=" }
+if ($portLine)    { $APP_PORT        = [int]($portLine    -split "=")[1].Trim() }
+if ($pubPortLine) { $APP_PUBLIC_PORT = [int]($pubPortLine -split "=")[1].Trim() }
 
-$ruleName = "Kompetenzen-Tool (Port $APP_PORT)"
-$existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
-if (-not $existing) {
-    New-NetFirewallRule -DisplayName $ruleName `
-        -Direction Inbound -Protocol TCP -LocalPort $APP_PORT `
-        -Action Allow -Profile Private | Out-Null
-    Write-OK "Firewall-Regel '$ruleName' angelegt"
+Write-OK "Port $APP_PORT (Admin) ist auf localhost gebunden - keine Firewall-Regel noetig"
+
+$pubRuleName = "Kompetenzen-Tool Public (Port $APP_PUBLIC_PORT)"
+$existingPub = Get-NetFirewallRule -DisplayName $pubRuleName -ErrorAction SilentlyContinue
+if (-not $existingPub) {
+    New-NetFirewallRule -DisplayName $pubRuleName `
+        -Direction Inbound -Protocol TCP -LocalPort $APP_PUBLIC_PORT `
+        -Action Allow -Profile Any | Out-Null
+    Write-OK "Firewall-Regel angelegt: $pubRuleName"
 } else {
-    Write-OK "Firewall-Regel bereits vorhanden"
+    Write-OK "Firewall-Regel bereits vorhanden: $pubRuleName"
 }
 
 # ---------------------------------------------------------------------------
 # 6. Docker WSL integration hint
 # ---------------------------------------------------------------------------
-Write-Step "Docker Desktop – WSL Integration"
+Write-Step "Docker Desktop - WSL Integration"
 Write-Warn "Bitte sicherstellen, dass in Docker Desktop unter:"
 Write-Host "    Settings > Resources > WSL Integration"
 Write-Host "    ... Ubuntu aktiviert ist."
@@ -181,11 +188,10 @@ Write-Step "Verzeichnisse pruefen"
 Write-Step "Docker-Container bauen und starten"
 Set-Location $REPO_DIR
 docker compose up --build -d
-
 Write-OK "Container gestartet"
 
 # ---------------------------------------------------------------------------
-# 9. Show access info
+# 9. Access info
 # ---------------------------------------------------------------------------
 Write-Step "Fertig!"
 
@@ -195,12 +201,13 @@ $lanIP = (Get-NetIPAddress -AddressFamily IPv4 |
           Select-Object -First 1).IPAddress
 
 Write-Host ""
-Write-Host "  Lokal:       http://localhost:$APP_PORT" -ForegroundColor White
+Write-Host "  Admin  (nur lokal): http://localhost:$APP_PORT" -ForegroundColor White
+Write-Host "  Public (lokal):     http://localhost:$APP_PUBLIC_PORT" -ForegroundColor White
 if ($lanIP) {
-    Write-Host "  Netzwerk:    http://${lanIP}:$APP_PORT" -ForegroundColor White
+    Write-Host "  Public (Netzwerk):  http://${lanIP}:$APP_PUBLIC_PORT" -ForegroundColor White
 }
 Write-Host ""
-Write-Host "  Logs:        docker compose logs -f" -ForegroundColor DarkGray
-Write-Host "  Stoppen:     docker compose down" -ForegroundColor DarkGray
-Write-Host "  Neu bauen:   docker compose up --build -d" -ForegroundColor DarkGray
+Write-Host "  Logs:       docker compose logs -f" -ForegroundColor DarkGray
+Write-Host "  Stoppen:    docker compose down" -ForegroundColor DarkGray
+Write-Host "  Neu bauen:  docker compose up --build -d" -ForegroundColor DarkGray
 Write-Host ""

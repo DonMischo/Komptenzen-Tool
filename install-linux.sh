@@ -10,6 +10,7 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_PORT=8501
+APP_PUBLIC_PORT=8502
 DB_PORT=5432
 REPO_URL="https://github.com/DonMischo/Komptenzen-Tool.git"
 
@@ -195,18 +196,26 @@ fi
 # ---------------------------------------------------------------------------
 # 8. Firewall (ufw)
 # ---------------------------------------------------------------------------
-step "Firewall – Port $APP_PORT"
+step "Firewall – Port $APP_PUBLIC_PORT (Public)"
+
+# Read actual public port from .env if overridden
+APP_PUBLIC_PORT_ENV=$(grep "^APP_PUBLIC_PORT=" "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]') || true
+APP_PUBLIC_PORT="${APP_PUBLIC_PORT_ENV:-$APP_PUBLIC_PORT}"
+
 if command -v ufw &>/dev/null; then
     UFW_STATUS=$($SUDO ufw status | head -1)
     if echo "$UFW_STATUS" | grep -q "active"; then
-        $SUDO ufw allow "$APP_PORT"/tcp comment "Kompetenzen-Tool" 2>/dev/null || true
-        ok "UFW: Port $APP_PORT freigegeben"
+        # Admin port (8501) is localhost-only — no inbound rule needed
+        ok "UFW: Port $APP_PORT (Admin) ist localhost-gebunden, keine Regel noetig"
+        # Public port — open to network
+        $SUDO ufw allow "$APP_PUBLIC_PORT"/tcp comment "Kompetenzen-Tool Public" 2>/dev/null || true
+        ok "UFW: Port $APP_PUBLIC_PORT (Public) freigegeben"
     else
-        warn "UFW ist inaktiv – Port wird nicht geblockt, aber auch nicht explizit freigegeben."
+        warn "UFW ist inaktiv – Ports werden nicht geblockt, aber auch nicht explizit freigegeben."
         warn "Aktivieren mit: sudo ufw enable"
     fi
 else
-    warn "ufw nicht gefunden – Firewall manuell konfigurieren (Port $APP_PORT/tcp)."
+    warn "ufw nicht gefunden – Firewall manuell konfigurieren (Port $APP_PUBLIC_PORT/tcp)."
 fi
 
 # ---------------------------------------------------------------------------
@@ -239,9 +248,10 @@ step "Fertig!"
 LAN_IP=$(hostname -I 2>/dev/null | awk '{print $1}') || LAN_IP=""
 
 echo ""
-echo -e "  ${GREEN}Lokal:    ${NC}http://localhost:${APP_PORT}"
+echo -e "  ${GREEN}Admin:      ${NC}http://localhost:${APP_PORT}  (nur lokal)"
+echo -e "  ${GREEN}Public:     ${NC}http://localhost:${APP_PUBLIC_PORT}"
 if [[ -n "$LAN_IP" ]]; then
-    echo -e "  ${GREEN}Netzwerk: ${NC}http://${LAN_IP}:${APP_PORT}"
+    echo -e "  ${GREEN}Public LAN: ${NC}http://${LAN_IP}:${APP_PUBLIC_PORT}"
 fi
 echo ""
 echo -e "  ${NC}Logs:       docker compose logs -f"
