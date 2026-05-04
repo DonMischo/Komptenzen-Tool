@@ -321,7 +321,7 @@ def run_setup_ui() -> None:
         if uploaded is not None:
             if st.button("🔄 Synchronisieren", key="_s_do_sync", type="primary"):
                 try:
-                    added, updated, removed = sync_students_from_upload(
+                    added, updated, removed, row_errors = sync_students_from_upload(
                         uploaded.getvalue(), remove_missing=remove_flag
                     )
                     st.success(
@@ -329,6 +329,10 @@ def run_setup_ui() -> None:
                         f"**{updated}** aktualisiert, "
                         f"**{removed}** entfernt."
                     )
+                    if row_errors:
+                        with st.expander(f"⚠️ {len(row_errors)} Zeile(n) übersprungen"):
+                            for err in row_errors:
+                                st.warning(err)
                     st.rerun()
                 except Exception as e:
                     st.error(f"Fehler beim Import: {e}")

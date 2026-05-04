@@ -19,8 +19,8 @@ from helpers import safe_rerun
 # Konstanten
 # ------------------------------------------------------------
 ABSENCE_INT_COLS = [
-    "Tage entsch.", "Tage unentsch.",
-    "Std entsch.",  "Std unentsch.",
+    "Tage entsch.", "Tage unentsch.",
+    "Std entsch.",  "Std unentsch.",
 ]
 
 # ------------------------------------------------------------
@@ -36,10 +36,10 @@ def _students_to_df(students: List[Student]) -> pd.DataFrame:
                 "Nachname"           : s.last_name,
                 "Vorname"            : s.first_name,
                 "Geburtstag"         : s.birthday,
-                "Tage entsch."       : (s.days_absent_excused      or 0),
-                "Tage unentsch."     : (s.days_absent_unexcused    or 0),
-                "Std entsch."        : (s.lessons_absent_excused   or 0),
-                "Std unentsch."      : (s.lessons_absent_unexcused or 0),
+                "Tage entsch."       : (s.days_absent_excused      or 0),
+                "Tage unentsch."     : (s.days_absent_unexcused    or 0),
+                "Std entsch."        : (s.lessons_absent_excused   or 0),
+                "Std unentsch."      : (s.lessons_absent_unexcused or 0),
                 "Bemerkungen"        : s.remarks or "",
                 "LB"                 : bool(getattr(s, "lb", False)),
                 "GB"                 : bool(getattr(s, "gb", False)),
@@ -56,7 +56,7 @@ def _students_to_df(students: List[Student]) -> pd.DataFrame:
 
 
 def _to_int_safe(value) -> int:
-    """Hilfs‑Caster: NaN/None/"" ⇒ 0  sonst int(value)"""
+    """Hilfs‑Caster: NaN/None/"" ⇒ 0  sonst int(value)"""
     if value is None or (isinstance(value, str) and value.strip() == ""):
         return 0
     try:
@@ -64,7 +64,10 @@ def _to_int_safe(value) -> int:
             return 0
     except TypeError:
         pass
-    return int(value)
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return 0
 
 
 def _persist_df(classroom: str, df: pd.DataFrame, ses: Session) -> None:
@@ -78,11 +81,15 @@ def _persist_df(classroom: str, df: pd.DataFrame, ses: Session) -> None:
         if not stu:
             continue
 
-        stu.birthday                 = pd.to_datetime(row["Geburtstag"]).date()
-        stu.days_absent_excused      = _to_int_safe(row["Tage entsch."])
-        stu.days_absent_unexcused    = _to_int_safe(row["Tage unentsch."])
-        stu.lessons_absent_excused   = _to_int_safe(row["Std entsch."])
-        stu.lessons_absent_unexcused = _to_int_safe(row["Std unentsch."])
+        try:
+            stu.birthday = pd.to_datetime(row["Geburtstag"]).date()
+        except Exception:
+            pass  # keep existing birthday if date is invalid
+
+        stu.days_absent_excused      = _to_int_safe(row["Tage entsch."])
+        stu.days_absent_unexcused    = _to_int_safe(row["Tage unentsch."])
+        stu.lessons_absent_excused   = _to_int_safe(row["Std entsch."])
+        stu.lessons_absent_unexcused = _to_int_safe(row["Std unentsch."])
         stu.remarks                  = row["Bemerkungen"] or ""
         stu.lb                       = bool(row["LB"])
         stu.gb                       = bool(row["GB"])
@@ -95,7 +102,7 @@ def _persist_df(classroom: str, df: pd.DataFrame, ses: Session) -> None:
 def run_base_data_editor(classroom: str) -> Dict:
     """Stammdaten‑ & Zeugnistext‑Editor für eine Klasse"""
 
-    st.header(f"📋 Stammdaten – Klasse {classroom}")
+    st.header(f"📋 Stammdaten – Klasse {classroom}")
 
     with Session(ENGINE) as ses:
         students = get_students_by_class(classroom, ses)
@@ -119,19 +126,25 @@ def run_base_data_editor(classroom: str) -> Dict:
             key=_uk("stammdaten", classroom),
         )
 
-        if st.button("💾 Änderungen speichern", key=_uk("save_base", classroom)):
-            _persist_df(classroom, df_edit, ses)
-            st.success("Stammdaten aktualisiert.")
+        if st.button("💾 Änderungen speichern", key=_uk("save_base", classroom)):
+            try:
+                _persist_df(classroom, df_edit, ses)
+                st.success("Stammdaten aktualisiert.")
+            except Exception as e:
+                st.error(f"Fehler beim Speichern der Stammdaten: {e}")
 
         # ---------------- Zeugnistext ------------------------
         st.markdown("---")
-        st.subheader("📝 Zeugnistext")
+        st.subheader("📝 Zeugnistext")
 
         # Auswahl‑Dropdown
         name_list = [f"{s.last_name}, {s.first_name}" for s in students]
         sel_name  = st.selectbox("Schüler auswählen", name_list, key=_uk("sel_stu", classroom))
         last, first = [p.strip() for p in sel_name.split(",", 1)]
-        stu = next(s for s in students if s.last_name == last and s.first_name == first)
+        stu = next((s for s in students if s.last_name == last and s.first_name == first), None)
+        if stu is None:
+            st.error(f"Schüler '{sel_name}' nicht gefunden.")
+            return {}
 
         txt_key = _uk("txt_report", f"{classroom}_{stu.id}")
         db_val  = stu.report_text or ""
@@ -146,11 +159,14 @@ def run_base_data_editor(classroom: str) -> Dict:
             key=txt_key,
         )
 
-        if st.button("💾 Text speichern", key=_uk("save_report", stu.id)):
-            stu.report_text = text
-            ses.commit()
-            st.success("Text gespeichert.")
-        
+        if st.button("💾 Text speichern", key=_uk("save_report", stu.id)):
+            try:
+                stu.report_text = text
+                ses.commit()
+                st.success("Text gespeichert.")
+            except Exception as e:
+                st.error(f"Fehler beim Speichern des Zeugnistextes: {e}")
+
         if st.button("← Zurück", key="_back"):
             st.session_state.pop("mode")
         safe_rerun()

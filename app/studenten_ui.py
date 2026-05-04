@@ -67,9 +67,15 @@ def run_student_ui() -> None:
 
 
     # ---------- Daten laden -------------------------------------------
+    try:
+        with Session(ENGINE) as ses:
+            students    = get_students_by_class(class_sel, ses)
+            topics_raw  = get_topics_by_subject(subject_sel, ses, class_name=class_sel)
+    except Exception as e:
+        st.error(f"Fehler beim Laden der Daten: {e}")
+        return
+
     with Session(ENGINE) as ses:
-        students    = get_students_by_class(class_sel, ses)
-        topics_raw  = get_topics_by_subject(subject_sel, ses, class_name=class_sel)
 
         # ------------------------------------------------------------------
         # Use *only* the primary-key as column id → no collisions possible
@@ -86,7 +92,11 @@ def run_student_ui() -> None:
             st.warning(f"Für {subject_sel} sind noch keine Topics erfasst.")
             return
 
-        df = fetch_grade_matrix(students, topics_raw, subject_sel, ses)
+        try:
+            df = fetch_grade_matrix(students, topics_raw, subject_sel, ses)
+        except Exception as e:
+            st.error(f"Fehler beim Laden der Notenmatrix: {e}")
+            return
 
         # ------------------------------------------------------------------
         # Re-order and rename columns: keep the first 3 unchanged, then ids
@@ -114,7 +124,10 @@ def run_student_ui() -> None:
 
     # ---------- Speichern-Button --------------------------------------
     if st.button("💾 Änderungen speichern"):
-        with Session(ENGINE) as ses:
-            persist_grade_matrix(class_sel, subject_sel, edited, ses)
-        st.success("Noten & Niveau wurden gespeichert!")
-        safe_rerun()          # UI aktualisieren
+        try:
+            with Session(ENGINE) as ses:
+                persist_grade_matrix(class_sel, subject_sel, edited, ses)
+            st.success("Noten & Niveau wurden gespeichert!")
+            safe_rerun()
+        except Exception as e:
+            st.error(f"Fehler beim Speichern: {e}")

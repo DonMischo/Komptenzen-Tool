@@ -260,7 +260,9 @@ def persist_grade_matrix(class_name: str, subject_name: str, df: "pd.DataFrame",
                .join(Subject).filter(Subject.name == subject_name).first()
         )
         if link is None:
-            subj = ses.query(Subject).filter_by(name=subject_name).one()
+            subj = ses.query(Subject).filter_by(name=subject_name).first()
+            if subj is None:
+                continue
             ses.add(StudentSubject(student=stu, subject=subj, niveau=niveau))
         else:
             link.niveau = niveau
@@ -268,7 +270,10 @@ def persist_grade_matrix(class_name: str, subject_name: str, df: "pd.DataFrame",
         for col_id, raw_val in row.items():
             if col_id in ("Nachname", "Vorname", "Niveau") or raw_val == "":
                 continue
-            topic_id = int(col_id)
+            try:
+                topic_id = int(col_id)
+            except (ValueError, TypeError):
+                continue
             grade_row = ses.query(Grade).filter_by(student_id=stu.id, topic_id=topic_id).first()
             if grade_row:
                 grade_row.value = _clean_grade(raw_val).strip()

@@ -133,7 +133,11 @@ def run_admin_ui() -> None:
 
     st.markdown("---")
     if st.button("📄 Berichte erstellen", key=_uk("create_reports", classroom)):
-        lua_map, pdfs, errors = export_students(to_print, classroom)
+        try:
+            lua_map, pdfs, errors = export_students(to_print, classroom)
+        except Exception as e:
+            st.error(f"Export fehlgeschlagen: {e}")
+            return
         if pdfs:
             st.success(
                 f"{len(lua_map)} Lua/TeX-Dateien erzeugt, "

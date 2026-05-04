@@ -158,16 +158,16 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
         "first_name": stu.first_name,
         "last_name": stu.last_name,
         "classRoom": stu.school_class.name if stu.school_class else "",
-        "date_of_birth": stu.birthday.strftime("%d.%m.%Y"),
+        "date_of_birth": stu.birthday.strftime("%d.%m.%Y") if stu.birthday else "",
         "school_year": sy.name,
         "part_of_year": "Endjahr" if sy.endjahr else "Halbjahr",
         "report_date": sy.report_day.strftime("%d.%m.%Y") if sy.report_day else "",
         "personal_text": _latex_escape_body(stu.report_text or ""),
         "comment": stu.remarks or "",
-        "absenceDaysTotal": stu.days_absent_excused + stu.days_absent_unexcused,
-        "absenceDaysUnauthorized": stu.days_absent_unexcused,
-        "absenceHoursTotal": stu.lessons_absent_excused + stu.lessons_absent_unexcused,
-        "absenceHoursUnauthorized": stu.lessons_absent_unexcused,
+        "absenceDaysTotal": (stu.days_absent_excused or 0) + (stu.days_absent_unexcused or 0),
+        "absenceDaysUnauthorized": stu.days_absent_unexcused or 0,
+        "absenceHoursTotal": (stu.lessons_absent_excused or 0) + (stu.lessons_absent_unexcused or 0),
+        "absenceHoursUnauthorized": stu.lessons_absent_unexcused or 0,
         "lb": bool(stu.lb),
         "gb": bool(stu.gb),
         "subjects": [],
@@ -307,5 +307,5 @@ def export_students(student_ids: List[int], classroom: str) -> Tuple[Dict[str, s
 
 
 if __name__ == "__main__":
-    m, pdfs = export_students([], "5a")
+    m, pdfs, errors = export_students([], "5a")
     print(len(m), "Lua files", len(pdfs), "PDF built")

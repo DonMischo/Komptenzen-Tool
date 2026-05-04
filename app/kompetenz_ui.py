@@ -101,7 +101,10 @@ def run_competence_ui () -> Dict:
                         key=_unique_key("cust", classroom, subject, topic_name, cc.id),
                     )
                     if col_del.button("🗑", key=_unique_key("del", cc.id)):
-                        delete_custom_competence(cc.id, ses)
+                        try:
+                            delete_custom_competence(cc.id, ses)
+                        except Exception as e:
+                            st.error(f"Fehler beim Löschen: {e}")
                         safe_rerun()
 
                 # ----- Neue Kompetenz hinzufügen ----------------
@@ -116,15 +119,24 @@ def run_competence_ui () -> Dict:
                     )
                     col_save, col_cancel = st.columns(2)
                     if col_save.button("💾 Speichern", key=_unique_key("save", topic_id)):
-                        add_custom_competence(topic_id, class_id, new_txt, ses)
-                        st.session_state.pop(f"add_{topic_id}")
-                        safe_rerun()
+                        if not new_txt.strip():
+                            st.warning("Bitte einen Text eingeben.")
+                        else:
+                            try:
+                                add_custom_competence(topic_id, class_id, new_txt, ses)
+                                st.session_state.pop(f"add_{topic_id}")
+                                safe_rerun()
+                            except Exception as e:
+                                st.error(f"Fehler beim Speichern: {e}")
                     if col_cancel.button("✖ Abbrechen", key=_unique_key("canc", topic_id)):
                         st.session_state.pop(f"add_{topic_id}")
 
     # --------------- Speichern-Button -----------------------------
     if changed and st.button("💾 Auswahl speichern"):
-        save_selections(classroom, changed)
-        st.success("Änderungen gespeichert.")
+        try:
+            save_selections(classroom, changed)
+            st.success("Änderungen gespeichert.")
+        except Exception as e:
+            st.error(f"Fehler beim Speichern der Auswahl: {e}")
 
     return {"class": classroom, "subject": subject, "block": block}

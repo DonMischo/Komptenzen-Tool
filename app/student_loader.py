@@ -34,20 +34,27 @@ def _parse_rows(text: str) -> List[Dict]:
     return [r for r in rows if r.get("Nachname", "").strip()]
 
 
-def _sync_rows(rows: List[Dict], remove_missing: bool = True) -> Tuple[int, int, int]:
+def _sync_rows(rows: List[Dict], remove_missing: bool = True) -> Tuple[int, int, int, list]:
     """
     Synchronise DB students against a list of parsed CSV rows.
-    Returns (added, updated, removed).
+    Returns (added, updated, removed, skipped_errors).
     """
     added = updated = removed = 0
 
     with Session(ENGINE) as ses:
         processed_ids: Set[int] = set()
 
+        errors: list[str] = []
         for row in rows:
-            cl   = _get_or_create_class(ses, row["Klasse"].strip())
-            bday = _parse_date(row["Geburtsdatum"])
-            stu  = ses.query(Student).filter_by(
+            name = f"{row.get('Vorname','').strip()} {row.get('Nachname','').strip()}"
+            try:
+                bday = _parse_date(row["Geburtsdatum"])
+            except (ValueError, KeyError) as e:
+                errors.append(f"{name}: ungültiges Geburtsdatum – {e}")
+                continue
+
+            cl = _get_or_create_class(ses, row["Klasse"].strip())
+            stu = ses.query(Student).filter_by(
                 last_name=row["Nachname"].strip(),
                 first_name=row["Vorname"].strip(),
                 birthday=bday,
@@ -64,16 +71,25 @@ def _sync_rows(rows: List[Dict], remove_missing: bool = True) -> Tuple[int, int,
             else:
                 updated += 1
 
+            def _safe_int(val, default: int = 0) -> int:
+                try:
+                    return int(val or default)
+                except (ValueError, TypeError):
+                    return default
+
             stu.school_class              = cl
-            stu.days_absent_excused       = int(row.get("Fehltage", 0) or 0)
-            stu.days_absent_unexcused     = int(row.get("Fehltage Unentschuldigt", 0) or 0)
-            stu.lessons_absent_excused    = int(row.get("Fehlstunden", 0) or 0)
-            stu.lessons_absent_unexcused  = int(row.get("Fehlstunden Unentschuldigt", 0) or 0)
+            stu.days_absent_excused       = _safe_int(row.get("Fehltage", 0))
+            stu.days_absent_unexcused     = _safe_int(row.get("Fehltage Unentschuldigt", 0))
+            stu.lessons_absent_excused    = _safe_int(row.get("Fehlstunden", 0))
+            stu.lessons_absent_unexcused  = _safe_int(row.get("Fehlstunden Unentschuldigt", 0))
             stu.report_text               = row.get("Zeugnistext", "").strip()
             stu.remarks                   = row.get("Bemerkungen", "").strip()
 
-            ses.flush()  # ensure stu.id is populated
+            ses.flush()
             processed_ids.add(stu.id)
+
+        if errors:
+            print(f"⚠️  {len(errors)} Zeile(n) übersprungen: {'; '.join(errors)}")
 
         if remove_missing:
             to_delete = (
@@ -88,7 +104,7 @@ def _sync_rows(rows: List[Dict], remove_missing: bool = True) -> Tuple[int, int,
         ses.commit()
 
     print(f"✔ Schüler-Sync: +{added} neu, ~{updated} aktualisiert, -{removed} entfernt")
-    return added, updated, removed
+    return added, updated, removed, errors
 
 
 def sync_students(remove_missing: bool = False) -> Tuple[int, int, int]:
@@ -99,11 +115,12 @@ def sync_students(remove_missing: bool = False) -> Tuple[int, int, int]:
     with CSV_FILE.open(encoding="utf-8", newline="") as fh:
         text = fh.read()
     rows = _parse_rows(text)
-    return _sync_rows(rows, remove_missing=remove_missing)
+    added, updated, removed, _ = _sync_rows(rows, remove_missing=remove_missing)
+    return added, updated, removed
 
 
-def sync_students_from_upload(csv_bytes: bytes, remove_missing: bool = True) -> Tuple[int, int, int]:
-    """Sync from uploaded CSV bytes (e.g. from st.file_uploader)."""
+def sync_students_from_upload(csv_bytes: bytes, remove_missing: bool = True) -> Tuple[int, int, int, list]:
+    """Sync from uploaded CSV bytes. Returns (added, updated, removed, errors)."""
     text = csv_bytes.decode("utf-8", errors="replace")
     rows = _parse_rows(text)
     return _sync_rows(rows, remove_missing=remove_missing)
