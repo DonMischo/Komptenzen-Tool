@@ -36,7 +36,7 @@ app/TexTemplate/*.lua
 app/TexTemplate/*.synctex.gz
 app/TexTemplate/*.pdf
 app/.venv/
-app/student_data/students.csv
+app/student_data/*
 app/kompetenzen.db
 app//Test/New
 app/Test/
