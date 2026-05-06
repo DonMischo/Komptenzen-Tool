@@ -41,6 +41,7 @@ def login(req: LoginRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
+        secure=True,
         samesite="lax",
         max_age=8 * 3600,
     )
@@ -68,6 +69,7 @@ def setup(req: AuthSetupRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
+        secure=True,
         samesite="lax",
         max_age=8 * 3600,
     )
