@@ -8,9 +8,8 @@
 
 $ErrorActionPreference = "Stop"
 $REPO_DIR        = Split-Path -Parent $MyInvocation.MyCommand.Path
-$APP_PORT        = 8501
-$APP_PUBLIC_PORT = 8502
-$DB_PORT         = 5432
+$APP_PORT = 1337
+$DB_PORT  = 5432
 
 function Write-Step { param($msg) Write-Host "`n==> $msg" -ForegroundColor Cyan }
 function Write-OK   { param($msg) Write-Host "    [OK] $msg" -ForegroundColor Green }
@@ -111,11 +110,14 @@ if (-not (Test-Path $envFile)) {
         Write-Error "Passwort darf nicht leer sein."
     }
 
-    $appPort = Read-Host "Admin-Port [$APP_PORT]"
-    if ([string]::IsNullOrWhiteSpace($appPort)) { $appPort = $APP_PORT }
+    # Auto-generate JWT secret using .NET crypto
+    $jwtBytes = New-Object byte[] 32
+    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($jwtBytes)
+    $jwtSecret = [BitConverter]::ToString($jwtBytes) -replace '-',''
+    Write-OK "JWT-Secret automatisch generiert"
 
-    $pubPort = Read-Host "Public-Port [$APP_PUBLIC_PORT]"
-    if ([string]::IsNullOrWhiteSpace($pubPort)) { $pubPort = $APP_PUBLIC_PORT }
+    $appPort = Read-Host "Port [$APP_PORT]"
+    if ([string]::IsNullOrWhiteSpace($appPort)) { $appPort = $APP_PORT }
 
     $dbPort = Read-Host "DB-Port [$DB_PORT]"
     if ([string]::IsNullOrWhiteSpace($dbPort)) { $dbPort = $DB_PORT }
@@ -124,8 +126,8 @@ if (-not (Test-Path $envFile)) {
 POSTGRES_USER=$pgUser
 POSTGRES_PASSWORD=$pgPassPlain
 APP_PORT=$appPort
-APP_PUBLIC_PORT=$pubPort
 DB_PORT=$dbPort
+JWT_SECRET=$jwtSecret
 POSTGRES_URL=postgresql://${pgUser}:${pgPassPlain}@localhost:5432
 "@
     [System.IO.File]::WriteAllText($envFile, $envContent, [System.Text.Encoding]::UTF8)
@@ -139,24 +141,20 @@ POSTGRES_URL=postgresql://${pgUser}:${pgPassPlain}@localhost:5432
 # ---------------------------------------------------------------------------
 Write-Step "Windows Firewall"
 
-# Read actual ports from .env
-$envLines    = Get-Content $envFile
-$portLine    = $envLines | Where-Object { $_ -match "^APP_PORT=" }
-$pubPortLine = $envLines | Where-Object { $_ -match "^APP_PUBLIC_PORT=" }
-if ($portLine)    { $APP_PORT        = [int]($portLine    -split "=")[1].Trim() }
-if ($pubPortLine) { $APP_PUBLIC_PORT = [int]($pubPortLine -split "=")[1].Trim() }
+# Read actual port from .env
+$envLines = Get-Content $envFile
+$portLine = $envLines | Where-Object { $_ -match "^APP_PORT=" } | Select-Object -First 1
+if ($portLine) { $APP_PORT = [int](($portLine -split "=",2)[1] -replace "#.*","" -replace "\s","") }
 
-Write-OK "Port $APP_PORT (Admin) ist auf localhost gebunden - keine Firewall-Regel noetig"
-
-$pubRuleName = "Kompetenzen-Tool Public (Port $APP_PUBLIC_PORT)"
-$existingPub = Get-NetFirewallRule -DisplayName $pubRuleName -ErrorAction SilentlyContinue
-if (-not $existingPub) {
-    New-NetFirewallRule -DisplayName $pubRuleName `
-        -Direction Inbound -Protocol TCP -LocalPort $APP_PUBLIC_PORT `
+$ruleName = "Kompetenzen-Tool (Port $APP_PORT)"
+$existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
+if (-not $existing) {
+    New-NetFirewallRule -DisplayName $ruleName `
+        -Direction Inbound -Protocol TCP -LocalPort $APP_PORT `
         -Action Allow -Profile Any | Out-Null
-    Write-OK "Firewall-Regel angelegt: $pubRuleName"
+    Write-OK "Firewall-Regel angelegt: $ruleName"
 } else {
-    Write-OK "Firewall-Regel bereits vorhanden: $pubRuleName"
+    Write-OK "Firewall-Regel bereits vorhanden: $ruleName"
 }
 
 # ---------------------------------------------------------------------------
@@ -172,7 +170,7 @@ Write-Host "    (Einmalig manuell zu pruefen)"
 # 7. Required directories
 # ---------------------------------------------------------------------------
 Write-Step "Verzeichnisse pruefen"
-@("app\student_data", "app\data", "app\TexTemplate") | ForEach-Object {
+@("data", "app\TexTemplate") | ForEach-Object {
     $dir = Join-Path $REPO_DIR $_
     if (-not (Test-Path $dir)) {
         New-Item -ItemType Directory -Path $dir | Out-Null
@@ -183,7 +181,7 @@ Write-Step "Verzeichnisse pruefen"
 }
 
 # ---------------------------------------------------------------------------
-# 8. Build & start containers
+# 9. Build & start containers
 # ---------------------------------------------------------------------------
 Write-Step "Docker-Container bauen und starten"
 Set-Location $REPO_DIR
@@ -191,7 +189,54 @@ docker compose up --build -d
 Write-OK "Container gestartet"
 
 # ---------------------------------------------------------------------------
-# 9. Access info
+# 10. Admin-Konto anlegen (falls noch keins vorhanden)
+# ---------------------------------------------------------------------------
+Write-Step "Warte auf Backend"
+Write-Host "    " -NoNewline
+$backendReady = $false
+for ($i = 0; $i -lt 30; $i++) {
+    Start-Sleep 2
+    try {
+        $null = Invoke-RestMethod "http://localhost:$APP_PORT/api/health" -ErrorAction Stop
+        $backendReady = $true
+        break
+    } catch {}
+    Write-Host "." -NoNewline
+}
+Write-Host ""
+
+if (-not $backendReady) {
+    Write-Warn "Backend nicht erreichbar. Admin-Konto bitte manuell unter http://localhost:$APP_PORT/login anlegen."
+} else {
+    Write-OK "Backend bereit"
+    $status = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/status" -ErrorAction SilentlyContinue
+    if ($status -and $status.needs_setup) {
+        Write-Step "Admin-Konto anlegen"
+        $adminUser = Read-Host "    Admin-Benutzername"
+        if ([string]::IsNullOrWhiteSpace($adminUser)) { $adminUser = "admin" }
+        do {
+            $adminPass = Read-Host "    Admin-Passwort (mind. 8 Zeichen)" -AsSecureString
+            $adminPassPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+                [Runtime.InteropServices.Marshal]::SecureStringToBSTR($adminPass)
+            )
+            if ($adminPassPlain.Length -lt 8) { Write-Warn "Passwort zu kurz, bitte erneut eingeben." }
+        } while ($adminPassPlain.Length -lt 8)
+        $body = @{ username = $adminUser; password = $adminPassPlain } | ConvertTo-Json
+        try {
+            $null = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/setup" `
+                -Method POST -Body $body -ContentType "application/json"
+            Write-OK "Admin-Konto '$adminUser' angelegt"
+        } catch {
+            Write-Warn "Fehler beim Anlegen des Admin-Kontos: $_"
+            Write-Warn "Bitte manuell unter http://localhost:$APP_PORT/login anlegen."
+        }
+    } else {
+        Write-OK "Admin-Konto bereits vorhanden"
+    }
+}
+
+# ---------------------------------------------------------------------------
+# 11. Access info
 # ---------------------------------------------------------------------------
 Write-Step "Fertig!"
 
@@ -201,10 +246,9 @@ $lanIP = (Get-NetIPAddress -AddressFamily IPv4 |
           Select-Object -First 1).IPAddress
 
 Write-Host ""
-Write-Host "  Admin  (nur lokal): http://localhost:$APP_PORT" -ForegroundColor White
-Write-Host "  Public (lokal):     http://localhost:$APP_PUBLIC_PORT" -ForegroundColor White
+Write-Host "  App:     http://localhost:$APP_PORT" -ForegroundColor White
 if ($lanIP) {
-    Write-Host "  Public (Netzwerk):  http://${lanIP}:$APP_PUBLIC_PORT" -ForegroundColor White
+    Write-Host "  Netzwerk: http://${lanIP}:$APP_PORT" -ForegroundColor White
 }
 Write-Host ""
 Write-Host "  Logs:       docker compose logs -f" -ForegroundColor DarkGray

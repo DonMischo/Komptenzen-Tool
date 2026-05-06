@@ -1,6 +1,9 @@
 # Secrets — never commit
 .env
 
+# PDF output
+zeugnisse/
+
 # Claude Code internals
 .claude/
 
