@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 
 from db_helpers import get_students_by_class
 from db_schema import Student
-from deps import get_current_user, get_db
+from deps import get_db
 from schemas import StudentBaseData, StudentBaseDataUpdate, ReportTextUpdate
 
 router = APIRouter()
@@ -35,7 +35,6 @@ def _student_to_schema(stu: Student) -> StudentBaseData:
 def list_stammdaten(
     class_name: str,
     db: Session = Depends(get_db),
-    _: str = Depends(get_current_user),
 ):
     students = get_students_by_class(class_name, db)
     return [_student_to_schema(s) for s in students]
@@ -45,7 +44,6 @@ def list_stammdaten(
 def save_stammdaten_batch(
     data: list[StudentBaseData],
     db: Session = Depends(get_db),
-    _: str = Depends(get_current_user),
 ):
     updated = 0
     for item in data:
@@ -74,7 +72,6 @@ def update_student(
     student_id: int,
     req: StudentBaseDataUpdate,
     db: Session = Depends(get_db),
-    _: str = Depends(get_current_user),
 ):
     stu = db.get(Student, student_id)
     if stu is None:
@@ -108,7 +105,6 @@ def update_student(
 def get_report_text(
     student_id: int,
     db: Session = Depends(get_db),
-    _: str = Depends(get_current_user),
 ):
     stu = db.get(Student, student_id)
     if stu is None:
@@ -121,7 +117,6 @@ def save_report_text(
     student_id: int,
     req: ReportTextUpdate,
     db: Session = Depends(get_db),
-    _: str = Depends(get_current_user),
 ):
     stu = db.get(Student, student_id)
     if stu is None:

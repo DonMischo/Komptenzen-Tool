@@ -3,17 +3,18 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { competenceApi } from "@/lib/api";
+import { competenceApi, stammdatenApi } from "@/lib/api";
 import { ClassSubjectFilter } from "@/components/layout/ClassSubjectFilter";
 import { TopicAccordion } from "@/components/kompetenzen/TopicAccordion";
 import { GradeMatrixTable } from "@/components/schuelerdaten/GradeMatrixTable";
+import { ReportTextEditor } from "@/components/stammdaten/ReportTextEditor";
 import { QK } from "@/lib/queries";
-import { CompetenceListResponse } from "@/types/api";
+import { CompetenceListResponse, StudentBaseData } from "@/types/api";
 import { Save, LogIn } from "lucide-react";
 import api from "@/lib/api";
 
 type Change = [number, boolean];
-type Tab = "kompetenzen" | "schuelerdaten";
+type Tab = "kompetenzen" | "schuelerdaten" | "stammdaten";
 
 export default function PublicPage() {
   const qc = useQueryClient();
@@ -40,6 +41,46 @@ export default function PublicPage() {
       setDbReady(true);
     }).catch(() => setDbError(true));
   }, []);
+
+  // Stammdaten state
+  const [stammdatenClass, setStammdatenClass] = useState("");
+  const [editRows, setEditRows] = useState<StudentBaseData[]>([]);
+  const [stammdatenDirty, setStammdatenDirty] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+
+  const { data: stammdatenData, isLoading: stammdatenLoading } = useQuery<StudentBaseData[]>({
+    queryKey: QK.stammdaten(stammdatenClass),
+    queryFn: () => stammdatenApi.list(stammdatenClass).then((r) => r.data),
+    enabled: dbReady && !!stammdatenClass && tab === "stammdaten",
+  });
+
+  useEffect(() => {
+    if (stammdatenData) {
+      setEditRows(stammdatenData.map((s) => ({ ...s })));
+      setStammdatenDirty(false);
+    }
+  }, [stammdatenData]);
+
+  const updateStammdatenField = (id: number, field: keyof StudentBaseData, value: unknown) => {
+    setEditRows((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
+    setStammdatenDirty(true);
+  };
+
+  const saveStammdatenMutation = useMutation({
+    mutationFn: () => stammdatenApi.saveBatch(editRows),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QK.stammdaten(stammdatenClass) });
+      setStammdatenDirty(false);
+      toast.success("Stammdaten gespeichert");
+    },
+    onError: () => toast.error("Fehler beim Speichern"),
+  });
+
+  const { data: classesData } = useQuery({
+    queryKey: QK.classes,
+    queryFn: () => competenceApi.classes().then((r) => r.data),
+    enabled: dbReady,
+  });
 
   const canLoadComp = dbReady && !!selectedClass && !!selectedSubject && !!selectedBlock;
 
@@ -105,7 +146,7 @@ export default function PublicPage() {
         </div>
 
         <nav className="flex-1 py-4 space-y-1 px-2">
-          {(["kompetenzen", "schuelerdaten"] as Tab[]).map((t) => (
+          {(["kompetenzen", "schuelerdaten", "stammdaten"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -115,22 +156,24 @@ export default function PublicPage() {
                   : "text-slate-300 hover:bg-slate-800 hover:text-white"
               }`}
             >
-              {t === "kompetenzen" ? "Kompetenzen" : "Schülerdaten"}
+              {t === "kompetenzen" ? "Kompetenzen" : t === "schuelerdaten" ? "Schülerdaten" : "Stammdaten"}
             </button>
           ))}
         </nav>
 
-        <div className="px-4 py-4 space-y-4 border-t border-slate-700">
-          <ClassSubjectFilter
-            classValue={selectedClass}
-            subjectValue={selectedSubject}
-            blockValue={selectedBlock}
-            onClassChange={handleClassChange}
-            onSubjectChange={handleSubjectChange}
-            onBlockChange={setSelectedBlock}
-            showBlock={tab === "kompetenzen"}
-          />
-        </div>
+        {tab !== "stammdaten" && (
+          <div className="px-4 py-4 space-y-4 border-t border-slate-700">
+            <ClassSubjectFilter
+              classValue={selectedClass}
+              subjectValue={selectedSubject}
+              blockValue={selectedBlock}
+              onClassChange={handleClassChange}
+              onSubjectChange={handleSubjectChange}
+              onBlockChange={setSelectedBlock}
+              showBlock={tab === "kompetenzen"}
+            />
+          </div>
+        )}
 
         <div className="px-2 pb-4">
           <a
@@ -202,6 +245,138 @@ export default function PublicPage() {
                 />
               )}
             </>
+          )}
+
+          {tab === "stammdaten" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold">Stammdaten</h2>
+                {stammdatenDirty && (
+                  <button
+                    onClick={() => saveStammdatenMutation.mutate()}
+                    disabled={saveStammdatenMutation.isPending}
+                    className="flex items-center gap-2 bg-primary text-white px-4 py-1.5 rounded-md text-sm hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    <Save className="h-4 w-4" />
+                    {saveStammdatenMutation.isPending ? "Speichern…" : "Änderungen speichern"}
+                  </button>
+                )}
+              </div>
+
+              <div className="flex gap-3 items-center">
+                <label className="text-sm font-medium">Klasse:</label>
+                <select
+                  value={stammdatenClass}
+                  onChange={(e) => {
+                    setStammdatenClass(e.target.value);
+                    setSelectedStudentId(null);
+                  }}
+                  className="border rounded-md px-2 py-1.5 text-sm"
+                >
+                  <option value="">– Klasse –</option>
+                  {(classesData?.classes ?? []).map((c: string) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+
+              {stammdatenClass && stammdatenLoading && (
+                <p className="text-muted-foreground text-sm animate-pulse">Laden…</p>
+              )}
+
+              {editRows.length > 0 && (
+                <div className="overflow-x-auto border rounded-xl">
+                  <table className="text-sm w-full border-collapse">
+                    <thead>
+                      <tr className="bg-muted/50 text-xs">
+                        <th className="text-left px-3 py-2 border-b font-medium">Nachname</th>
+                        <th className="text-left px-3 py-2 border-b font-medium">Vorname</th>
+                        <th className="px-2 py-2 border-b font-medium">Geb.</th>
+                        <th className="px-2 py-2 border-b font-medium">T.e.</th>
+                        <th className="px-2 py-2 border-b font-medium">T.u.</th>
+                        <th className="px-2 py-2 border-b font-medium">S.e.</th>
+                        <th className="px-2 py-2 border-b font-medium">S.u.</th>
+                        <th className="px-2 py-2 border-b font-medium">LB</th>
+                        <th className="px-2 py-2 border-b font-medium">GB</th>
+                        <th className="text-left px-2 py-2 border-b font-medium">Bemerkungen</th>
+                        <th className="px-2 py-2 border-b font-medium">Text</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {editRows.map((stu, ri) => (
+                        <tr key={stu.id} className={ri % 2 === 0 ? "bg-white" : "bg-muted/20"}>
+                          <td className="px-3 py-1 border-b font-medium">{stu.last_name}</td>
+                          <td className="px-3 py-1 border-b">{stu.first_name}</td>
+                          <td className="px-1 py-1 border-b">
+                            <input
+                              type="text"
+                              value={stu.birthday ?? ""}
+                              onChange={(e) => updateStammdatenField(stu.id, "birthday", e.target.value)}
+                              className="w-24 border rounded px-1 py-0.5 text-xs"
+                              placeholder="TT.MM.JJJJ"
+                            />
+                          </td>
+                          {(["days_absent_excused", "days_absent_unexcused", "lessons_absent_excused", "lessons_absent_unexcused"] as const).map((f) => (
+                            <td key={f} className="px-1 py-1 border-b">
+                              <input
+                                type="number"
+                                min={0}
+                                value={stu[f]}
+                                onChange={(e) => updateStammdatenField(stu.id, f, parseInt(e.target.value) || 0)}
+                                className="w-12 border rounded px-1 py-0.5 text-xs text-center"
+                              />
+                            </td>
+                          ))}
+                          <td className="px-2 py-1 border-b text-center">
+                            <input
+                              type="checkbox"
+                              checked={stu.lb}
+                              onChange={(e) => updateStammdatenField(stu.id, "lb", e.target.checked)}
+                              className="h-4 w-4"
+                            />
+                          </td>
+                          <td className="px-2 py-1 border-b text-center">
+                            <input
+                              type="checkbox"
+                              checked={stu.gb}
+                              onChange={(e) => updateStammdatenField(stu.id, "gb", e.target.checked)}
+                              className="h-4 w-4"
+                            />
+                          </td>
+                          <td className="px-1 py-1 border-b">
+                            <input
+                              type="text"
+                              value={stu.remarks}
+                              onChange={(e) => updateStammdatenField(stu.id, "remarks", e.target.value)}
+                              className="w-32 border rounded px-1 py-0.5 text-xs"
+                            />
+                          </td>
+                          <td className="px-2 py-1 border-b text-center">
+                            <button
+                              onClick={() => setSelectedStudentId(stu.id === selectedStudentId ? null : stu.id)}
+                              className="text-xs text-blue-600 hover:underline"
+                            >
+                              {stu.id === selectedStudentId ? "▲" : "✏️"}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {selectedStudentId && (
+                <ReportTextEditor
+                  studentId={selectedStudentId}
+                  studentName={
+                    editRows.find((s) => s.id === selectedStudentId)
+                      ? `${editRows.find((s) => s.id === selectedStudentId)!.last_name}, ${editRows.find((s) => s.id === selectedStudentId)!.first_name}`
+                      : ""
+                  }
+                />
+              )}
+            </div>
           )}
         </div>
       </main>
