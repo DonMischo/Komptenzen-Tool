@@ -246,7 +246,7 @@ $lanIP = (Get-NetIPAddress -AddressFamily IPv4 |
           Select-Object -First 1).IPAddress
 
 Write-Host ""
-Write-Host "  App:     http://localhost:$APP_PORT" -ForegroundColor White
+Write-Host "  App:      http://localhost:$APP_PORT" -ForegroundColor White
 if ($lanIP) {
     Write-Host "  Netzwerk: http://${lanIP}:$APP_PORT" -ForegroundColor White
 }
