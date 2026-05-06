@@ -1,43 +1,51 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ExportProgressEvent } from "@/types/api";
+import api from "@/lib/api";
 
 export function useExportSSE(jobId: string | null) {
   const [events, setEvents] = useState<ExportProgressEvent[]>([]);
   const [isDone, setIsDone] = useState(false);
-  const esRef = useRef<EventSource | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const stop = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = null;
+    if (jobId) api.post(`/admin/export/cancel/${jobId}`).catch(() => {});
+    setIsDone(true);
+  }, [jobId]);
 
   useEffect(() => {
-    if (!jobId) return;
+    if (!jobId) {
+      setEvents([]);
+      setIsDone(false);
+      return;
+    }
 
     setEvents([]);
     setIsDone(false);
 
-    const es = new EventSource(`/api/admin/export/stream/${jobId}`);
-    esRef.current = es;
-
-    es.onmessage = (e) => {
-      const data = JSON.parse(e.data) as ExportProgressEvent;
-      setEvents((prev) => [...prev, data]);
-      if (data.type === "done") {
+    timerRef.current = setInterval(async () => {
+      try {
+        const res = await api.get(`/admin/export/progress/${jobId}`);
+        const { done, results } = res.data;
+        setEvents(results);
+        if (done) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          timerRef.current = null;
+          setIsDone(true);
+        }
+      } catch {
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = null;
         setIsDone(true);
-        es.close();
       }
-    };
-
-    es.onerror = () => {
-      setIsDone(true);
-      es.close();
-    };
+    }, 800);
 
     return () => {
-      es.close();
+      if (timerRef.current) clearInterval(timerRef.current);
+      timerRef.current = null;
     };
   }, [jobId]);
-
-  const stop = () => {
-    esRef.current?.close();
-    setIsDone(true);
-  };
 
   return { events, isDone, stop };
 }

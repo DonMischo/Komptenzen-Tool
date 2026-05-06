@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [selectedClass, setSelectedClass] = useState("");
   const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
   const [jobId, setJobId] = useState<string | null>(null);
+  const [jobTotal, setJobTotal] = useState(0);
 
   const { data: classesData } = useQuery({
     queryKey: QK.classes,
@@ -35,6 +36,7 @@ export default function AdminPage() {
     mutationFn: (ids: number[]) =>
       adminApi.prepareExport(ids, selectedClass).then((r) => r.data),
     onSuccess: (data) => {
+      setJobTotal(data.total);
       setJobId(data.job_id);
     },
     onError: () => toast.error("Export-Vorbereitung fehlgeschlagen"),
@@ -167,6 +169,7 @@ export default function AdminPage() {
         {jobId && (
           <ExportProgress
             events={events}
+            total={jobTotal}
             isDone={isDone}
             onStop={stop}
             onClose={closeExport}

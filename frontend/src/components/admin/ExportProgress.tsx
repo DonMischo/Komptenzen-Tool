@@ -6,14 +6,14 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   events: ExportProgressEvent[];
+  total: number;
   isDone: boolean;
   onStop: () => void;
   onClose: () => void;
 }
 
-export function ExportProgress({ events, isDone, onStop, onClose }: Props) {
+export function ExportProgress({ events, total, isDone, onStop, onClose }: Props) {
   const progressEvents = events.filter((e) => e.type === "progress");
-  const total = progressEvents[0]?.total ?? 0;
   const current = progressEvents.length;
   const pct = total > 0 ? Math.round((current / total) * 100) : 0;
 
