@@ -9,7 +9,8 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP_PORT=1337
+APP_PORT=8501
+APP_PUBLIC_PORT=8502
 DB_PORT=5432
 REPO_URL="https://github.com/DonMischo/Komptenzen-Tool.git"
 
@@ -170,17 +171,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
     read -rsp "    PostgreSQL-Passwort: " PG_PASS; echo
     [[ -z "$PG_PASS" ]] && die "Passwort darf nicht leer sein."
 
-    # Generate a random JWT secret; fall back to prompting if openssl not available
-    JWT_SECRET_DEFAULT="$(openssl rand -hex 32 2>/dev/null || echo "")"
-    if [[ -n "$JWT_SECRET_DEFAULT" ]]; then
-        ok "JWT-Secret automatisch generiert"
-        JWT_SECRET="$JWT_SECRET_DEFAULT"
-    else
-        read -rsp "    JWT-Secret (mind. 32 Zeichen): " JWT_SECRET; echo
-        [[ ${#JWT_SECRET} -lt 32 ]] && die "JWT-Secret zu kurz (mind. 32 Zeichen)."
-    fi
-
-    read -rp "    Port [$APP_PORT]: " IN_APP_PORT
+    read -rp "    App-Port [$APP_PORT]: " IN_APP_PORT
     APP_PORT="${IN_APP_PORT:-$APP_PORT}"
 
     read -rp "    DB-Port [$DB_PORT]: " IN_DB_PORT
@@ -191,40 +182,47 @@ POSTGRES_USER=${PG_USER}
 POSTGRES_PASSWORD=${PG_PASS}
 APP_PORT=${APP_PORT}
 DB_PORT=${DB_PORT}
-JWT_SECRET=${JWT_SECRET}
 POSTGRES_URL=postgresql://${PG_USER}:${PG_PASS}@localhost:5432
 EOF
     chmod 600 "$ENV_FILE"
     ok ".env erstellt (Berechtigungen: 600)"
 else
     ok ".env bereits vorhanden"
+    # Read port for firewall
     APP_PORT=$(grep "^APP_PORT=" "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]') || true
-    APP_PORT="${APP_PORT:-1337}"
+    APP_PORT="${APP_PORT:-8501}"
 fi
 
 # ---------------------------------------------------------------------------
 # 8. Firewall (ufw)
 # ---------------------------------------------------------------------------
-step "Firewall – Port $APP_PORT"
+step "Firewall – Port $APP_PUBLIC_PORT (Public)"
+
+# Read actual public port from .env if overridden
+APP_PUBLIC_PORT_ENV=$(grep "^APP_PUBLIC_PORT=" "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]') || true
+APP_PUBLIC_PORT="${APP_PUBLIC_PORT_ENV:-$APP_PUBLIC_PORT}"
 
 if command -v ufw &>/dev/null; then
     UFW_STATUS=$($SUDO ufw status | head -1)
     if echo "$UFW_STATUS" | grep -q "active"; then
-        $SUDO ufw allow "$APP_PORT"/tcp comment "Kompetenzen-Tool" 2>/dev/null || true
-        ok "UFW: Port $APP_PORT freigegeben"
+        # Admin port (8501) is localhost-only — no inbound rule needed
+        ok "UFW: Port $APP_PORT (Admin) ist localhost-gebunden, keine Regel noetig"
+        # Public port — open to network
+        $SUDO ufw allow "$APP_PUBLIC_PORT"/tcp comment "Kompetenzen-Tool Public" 2>/dev/null || true
+        ok "UFW: Port $APP_PUBLIC_PORT (Public) freigegeben"
     else
-        warn "UFW ist inaktiv – Port wird nicht geblockt, aber auch nicht explizit freigegeben."
+        warn "UFW ist inaktiv – Ports werden nicht geblockt, aber auch nicht explizit freigegeben."
         warn "Aktivieren mit: sudo ufw enable"
     fi
 else
-    warn "ufw nicht gefunden – Firewall manuell konfigurieren (Port $APP_PORT/tcp)."
+    warn "ufw nicht gefunden – Firewall manuell konfigurieren (Port $APP_PUBLIC_PORT/tcp)."
 fi
 
 # ---------------------------------------------------------------------------
-# 10. Required directories
+# 9. Required directories
 # ---------------------------------------------------------------------------
 step "Verzeichnisse pruefen"
-for dir in data app/TexTemplate; do
+for dir in app/student_data app/data app/TexTemplate; do
     full="$REPO_DIR/$dir"
     if [[ ! -d "$full" ]]; then
         mkdir -p "$full"
@@ -235,7 +233,7 @@ for dir in data app/TexTemplate; do
 done
 
 # ---------------------------------------------------------------------------
-# 11. Build & start
+# 10. Build & start
 # ---------------------------------------------------------------------------
 step "Docker-Container bauen und starten"
 cd "$REPO_DIR"
@@ -243,61 +241,17 @@ $SUDO_DOCKER compose up --build -d
 ok "Container gestartet"
 
 # ---------------------------------------------------------------------------
-# 12. Admin-Konto anlegen (falls noch keins vorhanden)
-# ---------------------------------------------------------------------------
-step "Warte auf Backend"
-BACKEND_READY=0
-printf "    "
-for i in $(seq 1 30); do
-    if curl -sf "http://localhost:${APP_PORT}/api/health" > /dev/null 2>&1; then
-        BACKEND_READY=1
-        break
-    fi
-    sleep 2
-    printf "."
-done
-echo ""
-
-if [[ $BACKEND_READY -eq 0 ]]; then
-    warn "Backend nicht erreichbar. Admin-Konto bitte manuell unter http://localhost:${APP_PORT}/login anlegen."
-else
-    ok "Backend bereit"
-    NEEDS_SETUP=$(curl -sf "http://localhost:${APP_PORT}/api/auth/status" \
-        | grep -o '"needs_setup":true' || true)
-    if [[ -n "$NEEDS_SETUP" ]]; then
-        step "Admin-Konto anlegen"
-        read -rp "    Admin-Benutzername [admin]: " ADMIN_USER
-        ADMIN_USER="${ADMIN_USER:-admin}"
-        while true; do
-            read -rsp "    Admin-Passwort (mind. 8 Zeichen): " ADMIN_PASS; echo
-            [[ ${#ADMIN_PASS} -ge 8 ]] && break
-            warn "Passwort zu kurz, bitte erneut eingeben."
-        done
-        HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" \
-            -X POST "http://localhost:${APP_PORT}/api/auth/setup" \
-            -H "Content-Type: application/json" \
-            -d "{\"username\":\"${ADMIN_USER}\",\"password\":\"${ADMIN_PASS}\"}" || echo "000")
-        if [[ "$HTTP_CODE" == "200" ]]; then
-            ok "Admin-Konto '${ADMIN_USER}' angelegt"
-        else
-            warn "Fehler beim Anlegen (HTTP $HTTP_CODE). Bitte manuell unter http://localhost:${APP_PORT}/login anlegen."
-        fi
-    else
-        ok "Admin-Konto bereits vorhanden"
-    fi
-fi
-
-# ---------------------------------------------------------------------------
-# 13. Access info
+# 11. Access info
 # ---------------------------------------------------------------------------
 step "Fertig!"
 
 LAN_IP=$(hostname -I 2>/dev/null | awk '{print $1}') || LAN_IP=""
 
 echo ""
-echo -e "  ${GREEN}App:      ${NC}http://localhost:${APP_PORT}"
+echo -e "  ${GREEN}Admin:      ${NC}http://localhost:${APP_PORT}  (nur lokal)"
+echo -e "  ${GREEN}Public:     ${NC}http://localhost:${APP_PUBLIC_PORT}"
 if [[ -n "$LAN_IP" ]]; then
-    echo -e "  ${GREEN}Netzwerk: ${NC}http://${LAN_IP}:${APP_PORT}"
+    echo -e "  ${GREEN}Public LAN: ${NC}http://${LAN_IP}:${APP_PUBLIC_PORT}"
 fi
 echo ""
 echo -e "  ${NC}Logs:       docker compose logs -f"
