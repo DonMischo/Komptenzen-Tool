@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: postgres          # maintenance DB; report DBs are created by the app
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -17,46 +17,51 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
+  backend:
     build:
       context: .
+      dockerfile: backend/Dockerfile
       network: host
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:${APP_PORT:-8501}:8501"   # admin — localhost only
-    environment:
-      POSTGRES_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432
+    # --workers 1 is mandatory: db_schema.py uses a global ENGINE variable
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      POSTGRES_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-8}
+      DATA_DIR: /backend/data
     volumes:
-      - ./student_data:/app/student_data      # CSV imports survive rebuilds
-      - ./data:/app/data                      # holiday ICS cache
-      - ./app/TexTemplate:/app/TexTemplate    # LaTeX templates
-      - ./Zeugnisse:/home/appuser/Zeugnisse   # PDF output, host-accessible
-    command: >
-      streamlit run KompetenzenTool.py
-      --server.address=0.0.0.0
-      --server.port=8501
+      - ./data:/backend/data                      # holiday ICS cache
+      - ./app/TexTemplate:/backend/TexTemplate    # LaTeX templates
+      - ./zeugnisse:/home/appuser/Zeugnisse       # PDF output, host-accessible
 
-  app-public:
+  frontend:
     build:
-      context: .
+      context: ./frontend
+      dockerfile: Dockerfile
       network: host
+      args:
+        BACKEND_URL: http://backend:8000
     restart: unless-stopped
-    ports:
-      - "${APP_PUBLIC_PORT:-8502}:8502"
-    environment:
-      POSTGRES_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432
     depends_on:
-      db:
-        condition: service_healthy
+      - backend
+    environment:
+      BACKEND_URL: http://backend:8000
+    # No ports exposed — nginx is the only entry point
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - frontend
+    ports:
+      - "${APP_PORT:-1337}:443"
     volumes:
-      - ./data:/app/data
-    command: >
-      streamlit run KompetenzenToolPublic.py
-      --server.address=0.0.0.0
-      --server.port=8502
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
 
 volumes:
   pgdata:

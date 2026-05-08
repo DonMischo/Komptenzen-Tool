@@ -7,10 +7,9 @@
 #Requires -RunAsAdministrator
 
 $ErrorActionPreference = "Stop"
-$REPO_DIR        = Split-Path -Parent $MyInvocation.MyCommand.Path
-$APP_PORT        = 8501
-$APP_PUBLIC_PORT = 8502
-$DB_PORT         = 5432
+$REPO_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
+$APP_PORT = 1337
+$DB_PORT  = 5432
 
 function Write-Step { param($msg) Write-Host "`n==> $msg" -ForegroundColor Cyan }
 function Write-OK   { param($msg) Write-Host "    [OK] $msg" -ForegroundColor Green }
@@ -51,7 +50,7 @@ if (-not $dockerCmd) {
     Write-Warn "Docker nicht gefunden - installiere ueber winget..."
 
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        Write-Error "winget nicht gefunden. Bitte App-Installer aus dem Microsoft Store installieren oder Docker Desktop manuell von https://docs.docker.com/desktop/install/windows-install/"
+        Write-Error "winget nicht gefunden. Bitte App-Installer aus dem Microsoft Store installieren oder Docker Desktop manuell installieren."
     }
 
     winget install --id Docker.DockerDesktop --exact --silent --accept-package-agreements --accept-source-agreements
@@ -61,7 +60,6 @@ if (-not $dockerCmd) {
     exit 0
 }
 
-# Docker installed - make sure daemon is running
 $dockerRunning = $false
 try { docker info 2>&1 | Out-Null; $dockerRunning = $true } catch {}
 
@@ -111,11 +109,14 @@ if (-not (Test-Path $envFile)) {
         Write-Error "Passwort darf nicht leer sein."
     }
 
-    $appPort = Read-Host "Admin-Port [$APP_PORT]"
-    if ([string]::IsNullOrWhiteSpace($appPort)) { $appPort = $APP_PORT }
+    # Auto-generate JWT secret
+    $jwtBytes = New-Object byte[] 32
+    [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($jwtBytes)
+    $jwtSecret = [BitConverter]::ToString($jwtBytes) -replace '-',''
+    Write-OK "JWT-Secret automatisch generiert"
 
-    $pubPort = Read-Host "Public-Port [$APP_PUBLIC_PORT]"
-    if ([string]::IsNullOrWhiteSpace($pubPort)) { $pubPort = $APP_PUBLIC_PORT }
+    $appPort = Read-Host "Port [$APP_PORT]"
+    if ([string]::IsNullOrWhiteSpace($appPort)) { $appPort = $APP_PORT }
 
     $dbPort = Read-Host "DB-Port [$DB_PORT]"
     if ([string]::IsNullOrWhiteSpace($dbPort)) { $dbPort = $DB_PORT }
@@ -124,39 +125,111 @@ if (-not (Test-Path $envFile)) {
 POSTGRES_USER=$pgUser
 POSTGRES_PASSWORD=$pgPassPlain
 APP_PORT=$appPort
-APP_PUBLIC_PORT=$pubPort
 DB_PORT=$dbPort
+JWT_SECRET=$jwtSecret
 POSTGRES_URL=postgresql://${pgUser}:${pgPassPlain}@localhost:5432
 "@
     [System.IO.File]::WriteAllText($envFile, $envContent, [System.Text.Encoding]::UTF8)
     Write-OK ".env erstellt"
+
+    # Fresh credentials — remove old DB volume so PostgreSQL initialises with new password
+    $volumeName = (Split-Path -Leaf $REPO_DIR).ToLower() -replace '[^a-z0-9]',''
+    $volumeName = "${volumeName}_pgdata"
+    $volExists = docker volume ls --quiet --filter "name=$volumeName" 2>&1
+    if ($volExists) {
+        docker compose down --volumes 2>&1 | Out-Null
+        Write-OK "Altes Datenbankvolume entfernt (neue Zugangsdaten erfordern frische DB)"
+    }
 } else {
     Write-OK ".env bereits vorhanden"
 }
 
 # ---------------------------------------------------------------------------
-# 5. Windows Firewall rule for public port
+# Admin credentials (collected now, applied after containers start)
+# ---------------------------------------------------------------------------
+Write-Step "Admin-Konto konfigurieren"
+$adminUser = Read-Host "    Admin-Benutzername [admin]"
+if ([string]::IsNullOrWhiteSpace($adminUser)) { $adminUser = "admin" }
+do {
+    $adminPass = Read-Host "    Admin-Passwort (mind. 8 Zeichen)" -AsSecureString
+    $adminPassPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($adminPass)
+    )
+    if ($adminPassPlain.Length -lt 8) { Write-Warn "Passwort zu kurz, bitte erneut eingeben." }
+} while ($adminPassPlain.Length -lt 8)
+Write-OK "Admin-Konto vorgemerkt: $adminUser"
+
+Write-Step "Benutzer-Konto konfigurieren (oeffentliche Ansicht)"
+$publicUser = Read-Host "    Benutzername [lehrer]"
+if ([string]::IsNullOrWhiteSpace($publicUser)) { $publicUser = "lehrer" }
+do {
+    $publicPass = Read-Host "    Passwort (mind. 8 Zeichen)" -AsSecureString
+    $publicPassPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($publicPass)
+    )
+    if ($publicPassPlain.Length -lt 8) { Write-Warn "Passwort zu kurz, bitte erneut eingeben." }
+} while ($publicPassPlain.Length -lt 8)
+Write-OK "Benutzer-Konto vorgemerkt: $publicUser"
+
+# Read actual port from .env
+$envLines = Get-Content $envFile
+$portLine = $envLines | Where-Object { $_ -match "^APP_PORT=" } | Select-Object -First 1
+if ($portLine) { $APP_PORT = [int](($portLine -split "=",2)[1] -replace "#.*","" -replace "\s","") }
+
+# ---------------------------------------------------------------------------
+# SSL-Zertifikat (selbstsigniert)
+# ---------------------------------------------------------------------------
+Write-Step "SSL-Zertifikat pruefen"
+$sslDir = Join-Path $REPO_DIR "ssl"
+if (-not (Test-Path $sslDir)) { New-Item -ItemType Directory -Path $sslDir | Out-Null }
+$certFile = Join-Path $sslDir "cert.pem"
+$keyFile  = Join-Path $sslDir "key.pem"
+if (-not (Test-Path $certFile) -or -not (Test-Path $keyFile)) {
+    # Use .NET to create a self-signed cert and export as PEM
+    $cert = New-SelfSignedCertificate `
+        -DnsName "kompetenzen-tool" `
+        -CertStoreLocation "Cert:\LocalMachine\My" `
+        -NotAfter (Get-Date).AddYears(10) `
+        -KeyAlgorithm RSA -KeyLength 2048
+    # Export cert (public) as PEM
+    $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+    $certB64   = [Convert]::ToBase64String($certBytes, 'InsertLineBreaks')
+    [IO.File]::WriteAllText($certFile, "-----BEGIN CERTIFICATE-----`n$certB64`n-----END CERTIFICATE-----`n")
+    # Export private key as PEM via openssl if available, else use certutil
+    $pfxPath = Join-Path $env:TEMP "kt_tmp.pfx"
+    $pfxPwd  = ConvertTo-SecureString "tmp" -AsPlainText -Force
+    Export-PfxCertificate -Cert $cert -FilePath $pfxPath -Password $pfxPwd | Out-Null
+    $opensslCmd = Get-Command openssl -ErrorAction SilentlyContinue
+    if ($opensslCmd) {
+        & openssl pkcs12 -in $pfxPath -nocerts -nodes -passin pass:tmp -out $keyFile 2>$null
+    } else {
+        # Fallback: use Docker to run openssl
+        docker run --rm -v "${env:TEMP}:/tmp" alpine/openssl `
+            pkcs12 -in /tmp/kt_tmp.pfx -nocerts -nodes -passin pass:tmp -out /tmp/kt_key.pem 2>$null
+        Copy-Item (Join-Path $env:TEMP "kt_key.pem") $keyFile
+    }
+    Remove-Item $pfxPath -ErrorAction SilentlyContinue
+    # Clean up from cert store
+    Remove-Item "Cert:\LocalMachine\My\$($cert.Thumbprint)" -ErrorAction SilentlyContinue
+    Write-OK "Selbstsigniertes Zertifikat erstellt (gueltig 10 Jahre)"
+} else {
+    Write-OK "SSL-Zertifikat bereits vorhanden"
+}
+
+# ---------------------------------------------------------------------------
+# 5. Windows Firewall
 # ---------------------------------------------------------------------------
 Write-Step "Windows Firewall"
 
-# Read actual ports from .env
-$envLines    = Get-Content $envFile
-$portLine    = $envLines | Where-Object { $_ -match "^APP_PORT=" }
-$pubPortLine = $envLines | Where-Object { $_ -match "^APP_PUBLIC_PORT=" }
-if ($portLine)    { $APP_PORT        = [int]($portLine    -split "=")[1].Trim() }
-if ($pubPortLine) { $APP_PUBLIC_PORT = [int]($pubPortLine -split "=")[1].Trim() }
-
-Write-OK "Port $APP_PORT (Admin) ist auf localhost gebunden - keine Firewall-Regel noetig"
-
-$pubRuleName = "Kompetenzen-Tool Public (Port $APP_PUBLIC_PORT)"
-$existingPub = Get-NetFirewallRule -DisplayName $pubRuleName -ErrorAction SilentlyContinue
-if (-not $existingPub) {
-    New-NetFirewallRule -DisplayName $pubRuleName `
-        -Direction Inbound -Protocol TCP -LocalPort $APP_PUBLIC_PORT `
+$ruleName = "Kompetenzen-Tool (Port $APP_PORT)"
+$existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
+if (-not $existing) {
+    New-NetFirewallRule -DisplayName $ruleName `
+        -Direction Inbound -Protocol TCP -LocalPort $APP_PORT `
         -Action Allow -Profile Any | Out-Null
-    Write-OK "Firewall-Regel angelegt: $pubRuleName"
+    Write-OK "Firewall-Regel angelegt: $ruleName"
 } else {
-    Write-OK "Firewall-Regel bereits vorhanden: $pubRuleName"
+    Write-OK "Firewall-Regel bereits vorhanden: $ruleName"
 }
 
 # ---------------------------------------------------------------------------
@@ -172,7 +245,7 @@ Write-Host "    (Einmalig manuell zu pruefen)"
 # 7. Required directories
 # ---------------------------------------------------------------------------
 Write-Step "Verzeichnisse pruefen"
-@("app\student_data", "app\data", "app\TexTemplate") | ForEach-Object {
+@("data", "app\TexTemplate", "zeugnisse") | ForEach-Object {
     $dir = Join-Path $REPO_DIR $_
     if (-not (Test-Path $dir)) {
         New-Item -ItemType Directory -Path $dir | Out-Null
@@ -191,7 +264,48 @@ docker compose up --build -d
 Write-OK "Container gestartet"
 
 # ---------------------------------------------------------------------------
-# 9. Access info
+# 9. Admin-Konto anlegen
+# ---------------------------------------------------------------------------
+Write-Step "Warte auf Backend"
+Write-Host "    " -NoNewline
+$backendReady = $false
+for ($i = 0; $i -lt 120; $i++) {
+    Start-Sleep 3
+    $logs = docker compose logs backend 2>&1
+    if ($logs -match "Application startup complete") { $backendReady = $true; break }
+    Write-Host "." -NoNewline
+}
+Write-Host ""
+
+if (-not $backendReady) {
+    Write-Warn "Timeout — versuche Admin-Erstellung trotzdem..."
+}
+
+Write-Step "Konten anlegen"
+
+function Create-AppUser {
+    param($uname, $upass, $urole)
+    # Write script to a temp file inside the container via stdin to avoid -c multiline issues
+    $py = "import auth_pure`nfrom sqlalchemy.orm import Session`nexists = Session(auth_pure._auth_engine).query(auth_pure.AdminUser).filter_by(username='$uname').first()`nif not exists:`n    auth_pure.create_user('$uname', '$upass', role='$urole')`n    print('created')`nelse:`n    print('exists')"
+    $tmpFile = Join-Path $env:TEMP "kt_create_user.py"
+    [IO.File]::WriteAllText($tmpFile, $py)
+    $result = Get-Content $tmpFile | docker compose exec -T backend python 2>&1
+    Remove-Item $tmpFile -ErrorAction SilentlyContinue
+    return $result
+}
+
+$rAdmin = Create-AppUser $adminUser $adminPassPlain "admin"
+if ($rAdmin -match "created") { Write-OK "Admin-Konto '$adminUser' angelegt" }
+elseif ($rAdmin -match "exists") { Write-OK "Admin-Konto '$adminUser' bereits vorhanden" }
+else { Write-Warn "Fehler beim Anlegen des Admin-Kontos: $rAdmin" }
+
+$rUser = Create-AppUser $publicUser $publicPassPlain "user"
+if ($rUser -match "created") { Write-OK "Benutzer-Konto '$publicUser' angelegt" }
+elseif ($rUser -match "exists") { Write-OK "Benutzer-Konto '$publicUser' bereits vorhanden" }
+else { Write-Warn "Fehler beim Anlegen des Benutzer-Kontos: $rUser" }
+
+# ---------------------------------------------------------------------------
+# 10. Access info
 # ---------------------------------------------------------------------------
 Write-Step "Fertig!"
 
@@ -201,11 +315,11 @@ $lanIP = (Get-NetIPAddress -AddressFamily IPv4 |
           Select-Object -First 1).IPAddress
 
 Write-Host ""
-Write-Host "  Admin  (nur lokal): http://localhost:$APP_PORT" -ForegroundColor White
-Write-Host "  Public (lokal):     http://localhost:$APP_PUBLIC_PORT" -ForegroundColor White
+Write-Host "  App:      https://localhost:$APP_PORT" -ForegroundColor White
 if ($lanIP) {
-    Write-Host "  Public (Netzwerk):  http://${lanIP}:$APP_PUBLIC_PORT" -ForegroundColor White
+    Write-Host "  Netzwerk: https://${lanIP}:$APP_PORT" -ForegroundColor White
 }
+Write-Warn "Zertifikat ist selbstsigniert - Browser-Warnung einmalig bestaetigen."
 Write-Host ""
 Write-Host "  Logs:       docker compose logs -f" -ForegroundColor DarkGray
 Write-Host "  Stoppen:    docker compose down" -ForegroundColor DarkGray

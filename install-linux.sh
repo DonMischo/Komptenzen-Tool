@@ -9,10 +9,8 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP_PORT=8501
-APP_PUBLIC_PORT=8502
+APP_PORT=1337
 DB_PORT=5432
-REPO_URL="https://github.com/DonMischo/Komptenzen-Tool.git"
 
 GREEN='\033[0;32m'; CYAN='\033[0;36m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 step()  { echo -e "\n${CYAN}==> $*${NC}"; }
@@ -90,7 +88,6 @@ else
     warn "Docker nicht gefunden – installiere Docker Engine..."
 
     if [[ "$PKG_MGR" == "apt-get" ]]; then
-        # Official Docker repo
         $SUDO install -m 0755 -d /etc/apt/keyrings
         curl -fsSL https://download.docker.com/linux/${DISTRO}/gpg \
             | $SUDO gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -119,7 +116,6 @@ $(lsb_release -cs) stable" \
     ok "Docker installiert: $(docker --version)"
 fi
 
-# Docker Compose plugin
 if ! docker compose version &>/dev/null; then
     die "Docker Compose nicht verfuegbar. Bitte manuell nachinstallieren."
 fi
@@ -134,7 +130,6 @@ if [[ $EUID -ne 0 ]]; then
         $SUDO usermod -aG docker "$USER"
         warn "Benutzer '$USER' zur Gruppe 'docker' hinzugefuegt."
         warn "Bitte neu einloggen oder 'newgrp docker' ausfuehren, dann Skript erneut starten."
-        # Allow continuing in same session via newgrp trick
         SUDO_DOCKER="sudo docker"
     else
         ok "Bereits in docker-Gruppe"
@@ -171,7 +166,15 @@ if [[ ! -f "$ENV_FILE" ]]; then
     read -rsp "    PostgreSQL-Passwort: " PG_PASS; echo
     [[ -z "$PG_PASS" ]] && die "Passwort darf nicht leer sein."
 
-    read -rp "    App-Port [$APP_PORT]: " IN_APP_PORT
+    JWT_SECRET="$(openssl rand -hex 32 2>/dev/null || true)"
+    if [[ -n "$JWT_SECRET" ]]; then
+        ok "JWT-Secret automatisch generiert"
+    else
+        read -rsp "    JWT-Secret (mind. 32 Zeichen): " JWT_SECRET; echo
+        [[ ${#JWT_SECRET} -lt 32 ]] && die "JWT-Secret zu kurz (mind. 32 Zeichen)."
+    fi
+
+    read -rp "    Port [$APP_PORT]: " IN_APP_PORT
     APP_PORT="${IN_APP_PORT:-$APP_PORT}"
 
     read -rp "    DB-Port [$DB_PORT]: " IN_DB_PORT
@@ -182,47 +185,87 @@ POSTGRES_USER=${PG_USER}
 POSTGRES_PASSWORD=${PG_PASS}
 APP_PORT=${APP_PORT}
 DB_PORT=${DB_PORT}
+JWT_SECRET=${JWT_SECRET}
 POSTGRES_URL=postgresql://${PG_USER}:${PG_PASS}@localhost:5432
 EOF
     chmod 600 "$ENV_FILE"
     ok ".env erstellt (Berechtigungen: 600)"
+
+    # Fresh credentials — remove old DB volume so PostgreSQL initialises with new password
+    if $SUDO_DOCKER volume ls --quiet | grep -q "pgdata"; then
+        $SUDO_DOCKER compose down --volumes 2>/dev/null || true
+        ok "Altes Datenbankvolume entfernt (neue Zugangsdaten erfordern frische DB)"
+    fi
 else
     ok ".env bereits vorhanden"
-    # Read port for firewall
     APP_PORT=$(grep "^APP_PORT=" "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]') || true
-    APP_PORT="${APP_PORT:-8501}"
+    APP_PORT="${APP_PORT:-1337}"
 fi
+
+# ---------------------------------------------------------------------------
+# SSL-Zertifikat (selbstsigniert)
+# ---------------------------------------------------------------------------
+step "SSL-Zertifikat pruefen"
+SSL_DIR="$REPO_DIR/ssl"
+mkdir -p "$SSL_DIR"
+if [[ ! -f "$SSL_DIR/cert.pem" || ! -f "$SSL_DIR/key.pem" ]]; then
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+        -keyout "$SSL_DIR/key.pem" \
+        -out    "$SSL_DIR/cert.pem" \
+        -subj   "/CN=kompetenzen-tool" \
+        2>/dev/null
+    chmod 600 "$SSL_DIR/key.pem"
+    ok "Selbstsigniertes Zertifikat erstellt (gueltig 10 Jahre)"
+else
+    ok "SSL-Zertifikat bereits vorhanden"
+fi
+
+# ---------------------------------------------------------------------------
+# Admin credentials (collected now, applied after containers start)
+# ---------------------------------------------------------------------------
+step "Admin-Konto konfigurieren"
+read -rp "    Admin-Benutzername [admin]: " ADMIN_USER
+ADMIN_USER="${ADMIN_USER:-admin}"
+while true; do
+    read -rsp "    Admin-Passwort (mind. 8 Zeichen): " ADMIN_PASS; echo
+    [[ ${#ADMIN_PASS} -ge 8 ]] && break
+    warn "Passwort zu kurz, bitte erneut eingeben."
+done
+ok "Admin-Konto vorgemerkt: $ADMIN_USER"
+
+step "Benutzer-Konto konfigurieren (oeffentliche Ansicht)"
+read -rp "    Benutzername [lehrer]: " PUBLIC_USER
+PUBLIC_USER="${PUBLIC_USER:-lehrer}"
+while true; do
+    read -rsp "    Passwort (mind. 8 Zeichen): " PUBLIC_PASS; echo
+    [[ ${#PUBLIC_PASS} -ge 8 ]] && break
+    warn "Passwort zu kurz, bitte erneut eingeben."
+done
+ok "Benutzer-Konto vorgemerkt: $PUBLIC_USER"
 
 # ---------------------------------------------------------------------------
 # 8. Firewall (ufw)
 # ---------------------------------------------------------------------------
-step "Firewall – Port $APP_PUBLIC_PORT (Public)"
-
-# Read actual public port from .env if overridden
-APP_PUBLIC_PORT_ENV=$(grep "^APP_PUBLIC_PORT=" "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]') || true
-APP_PUBLIC_PORT="${APP_PUBLIC_PORT_ENV:-$APP_PUBLIC_PORT}"
+step "Firewall – Port $APP_PORT"
 
 if command -v ufw &>/dev/null; then
     UFW_STATUS=$($SUDO ufw status | head -1)
     if echo "$UFW_STATUS" | grep -q "active"; then
-        # Admin port (8501) is localhost-only — no inbound rule needed
-        ok "UFW: Port $APP_PORT (Admin) ist localhost-gebunden, keine Regel noetig"
-        # Public port — open to network
-        $SUDO ufw allow "$APP_PUBLIC_PORT"/tcp comment "Kompetenzen-Tool Public" 2>/dev/null || true
-        ok "UFW: Port $APP_PUBLIC_PORT (Public) freigegeben"
+        $SUDO ufw allow "$APP_PORT"/tcp comment "Kompetenzen-Tool" 2>/dev/null || true
+        ok "UFW: Port $APP_PORT freigegeben"
     else
-        warn "UFW ist inaktiv – Ports werden nicht geblockt, aber auch nicht explizit freigegeben."
+        warn "UFW ist inaktiv – Port wird nicht geblockt, aber auch nicht explizit freigegeben."
         warn "Aktivieren mit: sudo ufw enable"
     fi
 else
-    warn "ufw nicht gefunden – Firewall manuell konfigurieren (Port $APP_PUBLIC_PORT/tcp)."
+    warn "ufw nicht gefunden – Firewall manuell konfigurieren (Port $APP_PORT/tcp)."
 fi
 
 # ---------------------------------------------------------------------------
 # 9. Required directories
 # ---------------------------------------------------------------------------
 step "Verzeichnisse pruefen"
-for dir in app/student_data app/data app/TexTemplate; do
+for dir in data app/TexTemplate zeugnisse ssl; do
     full="$REPO_DIR/$dir"
     if [[ ! -d "$full" ]]; then
         mkdir -p "$full"
@@ -241,18 +284,69 @@ $SUDO_DOCKER compose up --build -d
 ok "Container gestartet"
 
 # ---------------------------------------------------------------------------
-# 11. Access info
+# 11. Admin-Konto anlegen
+# ---------------------------------------------------------------------------
+step "Warte auf Backend"
+BACKEND_READY=0
+printf "    "
+for i in $(seq 1 120); do
+    if $SUDO_DOCKER compose logs backend 2>&1 | grep -q "Application startup complete"; then
+        BACKEND_READY=1
+        break
+    fi
+    sleep 3
+    printf "."
+done
+echo ""
+
+if [[ $BACKEND_READY -eq 0 ]]; then
+    warn "Timeout — versuche Admin-Erstellung trotzdem..."
+else
+    ok "Backend bereit"
+fi
+
+step "Konten anlegen"
+_create_user() {
+    local uname="$1" upass="$2" urole="$3"
+    $SUDO_DOCKER compose exec -T backend python -c "
+import auth_pure
+from sqlalchemy.orm import Session
+exists = Session(auth_pure._auth_engine).query(auth_pure.AdminUser).filter_by(username='${uname}').first()
+if not exists:
+    auth_pure.create_user('${uname}', '${upass}', role='${urole}')
+    print('created')
+else:
+    print('exists')
+" 2>/dev/null || echo "error"
+}
+
+R_ADMIN=$(_create_user "${ADMIN_USER}" "${ADMIN_PASS}" "admin")
+case "$R_ADMIN" in
+    created) ok "Admin-Konto '${ADMIN_USER}' angelegt" ;;
+    exists)  ok "Admin-Konto '${ADMIN_USER}' bereits vorhanden" ;;
+    *)       warn "Fehler beim Anlegen des Admin-Kontos. Bitte manuell unter https://localhost:${APP_PORT}/login anlegen." ;;
+esac
+
+R_USER=$(_create_user "${PUBLIC_USER}" "${PUBLIC_PASS}" "user")
+case "$R_USER" in
+    created) ok "Benutzer-Konto '${PUBLIC_USER}' angelegt" ;;
+    exists)  ok "Benutzer-Konto '${PUBLIC_USER}' bereits vorhanden" ;;
+    *)       warn "Fehler beim Anlegen des Benutzer-Kontos." ;;
+esac
+
+# ---------------------------------------------------------------------------
+# 12. Access info
 # ---------------------------------------------------------------------------
 step "Fertig!"
 
 LAN_IP=$(hostname -I 2>/dev/null | awk '{print $1}') || LAN_IP=""
 
 echo ""
-echo -e "  ${GREEN}Admin:      ${NC}http://localhost:${APP_PORT}  (nur lokal)"
-echo -e "  ${GREEN}Public:     ${NC}http://localhost:${APP_PUBLIC_PORT}"
+echo -e "  ${GREEN}App:      ${NC}https://localhost:${APP_PORT}"
 if [[ -n "$LAN_IP" ]]; then
-    echo -e "  ${GREEN}Public LAN: ${NC}http://${LAN_IP}:${APP_PUBLIC_PORT}"
+    echo -e "  ${GREEN}Netzwerk: ${NC}https://${LAN_IP}:${APP_PORT}"
 fi
+echo -e "  ${YELLOW}Hinweis:  ${NC}Zertifikat ist selbstsigniert – Browser-Warnung einmalig bestaetigen."
 echo ""
 echo -e "  ${NC}Logs:       docker compose logs -f"
 echo -e "  ${NC}Stoppen:    docker compose down"
