@@ -285,11 +285,24 @@ Write-Step "Konten anlegen"
 
 function Create-AppUser {
     param($uname, $upass, $urole)
-    # Write script to a temp file inside the container via stdin to avoid -c multiline issues
-    $py = "import auth_pure`nfrom sqlalchemy.orm import Session`nexists = Session(auth_pure._auth_engine).query(auth_pure.AdminUser).filter_by(username='$uname').first()`nif not exists:`n    auth_pure.create_user('$uname', '$upass', role='$urole')`n    print('created')`nelse:`n    print('exists')"
     $tmpFile = Join-Path $env:TEMP "kt_create_user.py"
-    [IO.File]::WriteAllText($tmpFile, $py)
-    $result = Get-Content $tmpFile | docker compose exec -T backend python 2>&1
+    # Single-quoted here-string: no PowerShell variable expansion, no quoting conflicts
+    @'
+import auth_pure, os
+from sqlalchemy.orm import Session
+uname = os.environ["KT_UNAME"]
+upass = os.environ["KT_UPASS"]
+urole = os.environ["KT_UROLE"]
+exists = Session(auth_pure._auth_engine).query(auth_pure.AdminUser).filter_by(username=uname).first()
+if not exists:
+    auth_pure.create_user(uname, upass, role=urole)
+    print("created")
+else:
+    print("exists")
+'@ | Set-Content $tmpFile -Encoding UTF8
+    $result = Get-Content $tmpFile | docker compose exec -T `
+        -e KT_UNAME=$uname -e KT_UPASS=$upass -e KT_UROLE=$urole `
+        backend python 2>&1
     Remove-Item $tmpFile -ErrorAction SilentlyContinue
     return $result
 }
