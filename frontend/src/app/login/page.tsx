@@ -25,9 +25,9 @@ export default function LoginPage() {
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: QK.authStatus });
       if (res.data.role === "admin") {
-        router.replace("/kompetenzen");
+        router.replace("/setup");
       } else {
-        router.replace("/public");
+        router.replace("/kompetenzen");
       }
     },
     onError: () => toast.error("Ungültige Anmeldedaten"),

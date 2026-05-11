@@ -20,6 +20,12 @@ class AuthSetupRequest(BaseModel):
     password: str
 
 
+class CreateUserRequest(BaseModel):
+    username: str
+    password: str
+    role: str = "lehrer"
+
+
 class AuthStatusResponse(BaseModel):
     authenticated: bool
     username: Optional[str]

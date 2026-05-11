@@ -181,7 +181,35 @@ Write-Step "Verzeichnisse pruefen"
 }
 
 # ---------------------------------------------------------------------------
-# 9. Build & start containers
+# 9. Benutzerkonten abfragen (VOR dem Build, damit der lange Build nicht
+#    mitten in der Eingabe unterbrochen werden muss)
+# ---------------------------------------------------------------------------
+Write-Step "Benutzerkonten konfigurieren"
+
+$adminUser = Read-Host "    Admin-Benutzername [admin]"
+if ([string]::IsNullOrWhiteSpace($adminUser)) { $adminUser = "admin" }
+do {
+    $adminPassSec = Read-Host "    Admin-Passwort (mind. 8 Zeichen)" -AsSecureString
+    $adminPassPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($adminPassSec)
+    )
+    if ($adminPassPlain.Length -lt 8) { Write-Warn "Passwort zu kurz, bitte erneut." }
+} while ($adminPassPlain.Length -lt 8)
+
+$lehrerUser = Read-Host "    Lehrer-Benutzername [lehrer]"
+if ([string]::IsNullOrWhiteSpace($lehrerUser)) { $lehrerUser = "lehrer" }
+do {
+    $lehrerPassSec = Read-Host "    Lehrer-Passwort (mind. 6 Zeichen)" -AsSecureString
+    $lehrerPassPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($lehrerPassSec)
+    )
+    if ($lehrerPassPlain.Length -lt 6) { Write-Warn "Passwort zu kurz, bitte erneut." }
+} while ($lehrerPassPlain.Length -lt 6)
+
+Write-OK "Zugangsdaten erfasst"
+
+# ---------------------------------------------------------------------------
+# 10. Build & start containers
 # ---------------------------------------------------------------------------
 Write-Step "Docker-Container bauen und starten"
 Set-Location $REPO_DIR
@@ -189,13 +217,13 @@ docker compose up --build -d
 Write-OK "Container gestartet"
 
 # ---------------------------------------------------------------------------
-# 10. Admin-Konto anlegen (falls noch keins vorhanden)
+# 11. Warte auf Backend, lege Konten an
 # ---------------------------------------------------------------------------
 Write-Step "Warte auf Backend"
 Write-Host "    " -NoNewline
 $backendReady = $false
-for ($i = 0; $i -lt 30; $i++) {
-    Start-Sleep 2
+for ($i = 0; $i -lt 60; $i++) {
+    Start-Sleep 3
     try {
         $null = Invoke-RestMethod "http://localhost:$APP_PORT/api/health" -ErrorAction Stop
         $backendReady = $true
@@ -206,32 +234,39 @@ for ($i = 0; $i -lt 30; $i++) {
 Write-Host ""
 
 if (-not $backendReady) {
-    Write-Warn "Backend nicht erreichbar. Admin-Konto bitte manuell unter http://localhost:$APP_PORT/login anlegen."
+    Write-Warn "Backend nicht erreichbar nach 3 Minuten."
+    Write-Warn "Bitte Konten manuell unter http://localhost:$APP_PORT/login anlegen."
 } else {
     Write-OK "Backend bereit"
-    $status = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/status" -ErrorAction SilentlyContinue
-    if ($status -and $status.needs_setup) {
-        Write-Step "Admin-Konto anlegen"
-        $adminUser = Read-Host "    Admin-Benutzername"
-        if ([string]::IsNullOrWhiteSpace($adminUser)) { $adminUser = "admin" }
-        do {
-            $adminPass = Read-Host "    Admin-Passwort (mind. 8 Zeichen)" -AsSecureString
-            $adminPassPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
-                [Runtime.InteropServices.Marshal]::SecureStringToBSTR($adminPass)
-            )
-            if ($adminPassPlain.Length -lt 8) { Write-Warn "Passwort zu kurz, bitte erneut eingeben." }
-        } while ($adminPassPlain.Length -lt 8)
+
+    # -- Admin-Konto --
+    $authStatus = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/status" -ErrorAction SilentlyContinue
+    if ($authStatus -and $authStatus.needs_setup) {
         $body = @{ username = $adminUser; password = $adminPassPlain } | ConvertTo-Json
         try {
+            # Capture cookie from setup response
+            $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
             $null = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/setup" `
-                -Method POST -Body $body -ContentType "application/json"
+                -Method POST -Body $body -ContentType "application/json" `
+                -WebSession $session
             Write-OK "Admin-Konto '$adminUser' angelegt"
+
+            # -- Lehrer-Konto (mit Admin-Cookie) --
+            $lehrerBody = @{ username = $lehrerUser; password = $lehrerPassPlain; role = "lehrer" } | ConvertTo-Json
+            try {
+                $null = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/users" `
+                    -Method POST -Body $lehrerBody -ContentType "application/json" `
+                    -WebSession $session
+                Write-OK "Lehrer-Konto '$lehrerUser' angelegt"
+            } catch {
+                Write-Warn "Lehrer-Konto konnte nicht angelegt werden: $_"
+            }
         } catch {
             Write-Warn "Fehler beim Anlegen des Admin-Kontos: $_"
             Write-Warn "Bitte manuell unter http://localhost:$APP_PORT/login anlegen."
         }
     } else {
-        Write-OK "Admin-Konto bereits vorhanden"
+        Write-OK "Konten bereits vorhanden (kein Setup noetig)"
     }
 }
 

@@ -15,9 +15,9 @@ export default function Home() {
         if (!data.authenticated) {
           router.replace("/login");
         } else if (data.role === "admin") {
-          router.replace("/kompetenzen");
+          router.replace("/setup");
         } else {
-          router.replace("/public");
+          router.replace("/kompetenzen");
         }
       })
       .catch(() => {

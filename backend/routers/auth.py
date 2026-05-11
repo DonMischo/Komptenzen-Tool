@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.responses import JSONResponse
 
 import auth_pure
-from deps import create_token, optional_user, optional_user_role
-from schemas import AuthSetupRequest, AuthStatusResponse, LoginRequest
+from deps import create_token, get_current_admin, optional_user, optional_user_role
+from schemas import AuthSetupRequest, AuthStatusResponse, CreateUserRequest, LoginRequest
 
 router = APIRouter()
 
@@ -77,3 +77,22 @@ def setup(req: AuthSetupRequest, response: Response):
         max_age=8 * 3600,
     )
     return AuthStatusResponse(authenticated=True, username=req.username, needs_setup=False, role="admin")
+
+
+@router.post("/users")
+def create_user(req: CreateUserRequest, _: str = Depends(get_current_admin)):
+    """Admin-only: create an additional user account (e.g. lehrer)."""
+    if not req.username or not req.password:
+        raise HTTPException(status_code=400, detail="Benutzername und Passwort erforderlich")
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="Passwort muss mindestens 6 Zeichen lang sein")
+    if req.role not in ("admin", "lehrer"):
+        raise HTTPException(status_code=400, detail="Ungültige Rolle (admin oder lehrer)")
+    existing = auth_pure.user_count()
+    # Check if username already exists by trying to get role; simpler: just try create and catch
+    from sqlalchemy.exc import IntegrityError
+    try:
+        auth_pure.create_user(req.username, req.password, role=req.role)
+    except IntegrityError:
+        raise HTTPException(status_code=409, detail=f"Benutzer '{req.username}' existiert bereits")
+    return {"ok": True, "username": req.username, "role": req.role}

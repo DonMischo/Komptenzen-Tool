@@ -62,6 +62,19 @@ def get_current_user(access_token: Optional[str] = Cookie(default=None)) -> str:
     return result[0]
 
 
+def get_current_admin(access_token: Optional[str] = Cookie(default=None)) -> str:
+    """Like get_current_user but raises 403 if the caller is not an admin."""
+    if not access_token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    result = _decode_token(access_token)
+    if not result:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+    username, role = result
+    if role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin-Berechtigung erforderlich")
+    return username
+
+
 def optional_user(access_token: Optional[str] = Cookie(default=None)) -> Optional[str]:
     if not access_token:
         return None

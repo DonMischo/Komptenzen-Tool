@@ -16,12 +16,19 @@ import {
   LogOut,
 } from "lucide-react";
 
-const NAV = [
+const ADMIN_ONLY_PATHS = ["/setup", "/schuelerdaten", "/admin"];
+
+const ADMIN_NAV = [
   { href: "/setup",         label: "Setup",         icon: Settings },
   { href: "/kompetenzen",   label: "Kompetenzen",   icon: CheckSquare },
   { href: "/schuelerdaten", label: "Schülerdaten",  icon: Users },
   { href: "/stammdaten",    label: "Stammdaten",    icon: ClipboardList },
   { href: "/admin",         label: "Admin",         icon: ShieldCheck },
+];
+
+const LEHRER_NAV = [
+  { href: "/kompetenzen",   label: "Kompetenzen",   icon: CheckSquare },
+  { href: "/stammdaten",    label: "Stammdaten",    icon: ClipboardList },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -34,11 +41,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     queryFn: () => authApi.me().then((r) => r.data),
   });
 
+  const isAdmin = auth?.role === "admin";
+  const NAV = isAdmin ? ADMIN_NAV : LEHRER_NAV;
+
   useEffect(() => {
     if (!auth) return;
     if (!auth.authenticated) { router.replace("/login"); return; }
-    if (auth.role !== "admin") { router.replace("/public"); }
-  }, [auth, router]);
+    // Redirect lehrer away from admin-only pages
+    if (!isAdmin && ADMIN_ONLY_PATHS.some((p) => pathname.startsWith(p))) {
+      router.replace("/kompetenzen");
+    }
+  }, [auth, isAdmin, pathname, router]);
 
   const logout = useMutation({
     mutationFn: () => authApi.logout(),

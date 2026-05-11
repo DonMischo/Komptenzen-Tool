@@ -24,13 +24,18 @@ WORKDIR /backend
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy backend source (FastAPI app)
 COPY backend/ /backend/
 
-ENV PYTHONPATH=/backend
+# Copy existing business-logic modules so the backend can import
+# db_schema, db_helpers, student_loader, time_functions, export, etc.
+COPY app/ /app/
+
+ENV PYTHONPATH=/backend:/app
 
 RUN useradd -m appuser \
     && mkdir -p /home/appuser/Zeugnisse \
-    && chown -R appuser /backend /home/appuser/Zeugnisse
+    && chown -R appuser /backend /app /home/appuser/Zeugnisse
 USER appuser
 
 EXPOSE 8000
