@@ -24,6 +24,7 @@ class AuthStatusResponse(BaseModel):
     authenticated: bool
     username: Optional[str]
     needs_setup: bool
+    role: Optional[str] = None
 
 
 # ---------------------------------------------------------------------------

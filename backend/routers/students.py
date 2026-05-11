@@ -9,12 +9,12 @@ from db_helpers import (
     get_students_by_class, get_topics_by_subject,
     fetch_grade_matrix, persist_grade_matrix,
 )
-from deps import get_db
+from deps import get_db, get_current_user
 from schemas import (
     GradeMatrixColumn, GradeMatrixResponse, GradeMatrixRow, GradeMatrixSaveRequest,
 )
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @router.get("/matrix", response_model=GradeMatrixResponse)

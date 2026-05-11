@@ -12,14 +12,16 @@ export default function Home() {
       .me()
       .then((res) => {
         const data = res.data;
-        if (data.authenticated) {
+        if (!data.authenticated) {
+          router.replace("/login");
+        } else if (data.role === "admin") {
           router.replace("/kompetenzen");
         } else {
           router.replace("/public");
         }
       })
       .catch(() => {
-        router.replace("/public");
+        router.replace("/login");
       });
   }, [router]);
 

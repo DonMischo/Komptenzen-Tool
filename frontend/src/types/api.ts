@@ -4,6 +4,7 @@ export interface AuthStatusResponse {
   authenticated: boolean;
   username: string | null;
   needs_setup: boolean;
+  role: string | null;
 }
 
 export interface DatabaseListResponse {

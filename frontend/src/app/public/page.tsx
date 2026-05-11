@@ -3,21 +3,23 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { competenceApi, stammdatenApi } from "@/lib/api";
+import { competenceApi, stammdatenApi, authApi } from "@/lib/api";
 import { ClassSubjectFilter } from "@/components/layout/ClassSubjectFilter";
 import { TopicAccordion } from "@/components/kompetenzen/TopicAccordion";
 import { GradeMatrixTable } from "@/components/schuelerdaten/GradeMatrixTable";
 import { ReportTextEditor } from "@/components/stammdaten/ReportTextEditor";
 import { QK } from "@/lib/queries";
-import { CompetenceListResponse, StudentBaseData } from "@/types/api";
-import { Save, LogIn } from "lucide-react";
+import { AuthStatusResponse, CompetenceListResponse, StudentBaseData } from "@/types/api";
+import { Save, LogOut } from "lucide-react";
 import api from "@/lib/api";
+import { useRouter } from "next/navigation";
 
 type Change = [number, boolean];
 type Tab = "kompetenzen" | "schuelerdaten" | "stammdaten";
 
 export default function PublicPage() {
   const qc = useQueryClient();
+  const router = useRouter();
   const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState(false);
 
@@ -27,20 +29,32 @@ export default function PublicPage() {
   const [selectedBlock, setSelectedBlock] = useState("");
   const [pendingChanges, setPendingChanges] = useState<Map<number, boolean>>(new Map());
 
-  // Auto-connect to latest DB on mount
+  const { data: auth } = useQuery<AuthStatusResponse>({
+    queryKey: QK.authStatus,
+    queryFn: () => authApi.me().then((r) => r.data),
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: () => authApi.logout(),
+    onSuccess: () => { qc.clear(); router.replace("/login"); },
+  });
+
+  // Redirect if not authenticated
   useEffect(() => {
+    if (!auth) return;
+    if (!auth.authenticated) router.replace("/login");
+  }, [auth, router]);
+
+  // Auto-connect to latest DB once authenticated
+  useEffect(() => {
+    if (!auth?.authenticated) return;
     api.get("/public/latest-db").then((res) => {
       const db = res.data.db as string | null;
-      if (!db) {
-        setDbError(true);
-        return;
-      }
-      if (typeof window !== "undefined") {
-        localStorage.setItem("activeDb", db);
-      }
+      if (!db) { setDbError(true); return; }
+      if (typeof window !== "undefined") localStorage.setItem("activeDb", db);
       setDbReady(true);
     }).catch(() => setDbError(true));
-  }, []);
+  }, [auth?.authenticated]);
 
   // Stammdaten state
   const [stammdatenClass, setStammdatenClass] = useState("");
@@ -171,18 +185,19 @@ export default function PublicPage() {
               onSubjectChange={handleSubjectChange}
               onBlockChange={setSelectedBlock}
               showBlock={tab === "kompetenzen"}
+              selectClassName="text-gray-600"
             />
           </div>
         )}
 
-        <div className="px-2 pb-4">
-          <a
-            href="/login"
+        <div className="px-2 pb-4 border-t border-slate-700 pt-4">
+          <button
+            onClick={() => logoutMutation.mutate()}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
           >
-            <LogIn className="h-4 w-4" />
-            Admin-Login
-          </a>
+            <LogOut className="h-4 w-4" />
+            Abmelden
+          </button>
         </div>
       </aside>
 
@@ -271,7 +286,7 @@ export default function PublicPage() {
                     setStammdatenClass(e.target.value);
                     setSelectedStudentId(null);
                   }}
-                  className="border rounded-md px-2 py-1.5 text-sm"
+                  className="border rounded-md px-2 py-1.5 text-sm text-gray-600"
                 >
                   <option value="">– Klasse –</option>
                   {(classesData?.classes ?? []).map((c: string) => (

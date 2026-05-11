@@ -32,15 +32,19 @@ def get_db(request: Request):
 # JWT helpers
 # ---------------------------------------------------------------------------
 
-def create_token(username: str) -> str:
+def create_token(username: str, role: str = "admin") -> str:
     expire = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRE)
-    return jwt.encode({"sub": username, "exp": expire}, JWT_SECRET, algorithm=JWT_ALG)
+    return jwt.encode({"sub": username, "role": role, "exp": expire}, JWT_SECRET, algorithm=JWT_ALG)
 
 
-def _decode_token(token: str) -> Optional[str]:
+def _decode_token(token: str) -> Optional[tuple[str, str]]:
     try:
         payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALG])
-        return payload.get("sub")
+        sub = payload.get("sub")
+        role = payload.get("role", "admin")
+        if not sub:
+            return None
+        return sub, role
     except JWTError:
         return None
 
@@ -52,13 +56,21 @@ def _decode_token(token: str) -> Optional[str]:
 def get_current_user(access_token: Optional[str] = Cookie(default=None)) -> str:
     if not access_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-    username = _decode_token(access_token)
-    if not username:
+    result = _decode_token(access_token)
+    if not result:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
-    return username
+    return result[0]
 
 
 def optional_user(access_token: Optional[str] = Cookie(default=None)) -> Optional[str]:
+    if not access_token:
+        return None
+    result = _decode_token(access_token)
+    return result[0] if result else None
+
+
+def optional_user_role(access_token: Optional[str] = Cookie(default=None)) -> Optional[tuple[str, str]]:
+    """Returns (username, role) or None."""
     if not access_token:
         return None
     return _decode_token(access_token)

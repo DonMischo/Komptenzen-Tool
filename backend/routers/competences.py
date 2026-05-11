@@ -12,14 +12,14 @@ from db_helpers import (
     _get_or_create_class_id,
 )
 from db_schema import Topic, Subject
-from deps import get_db
+from deps import get_db, get_current_user
 from schemas import (
     ClassListResponse, SubjectListResponse, BlockListResponse,
     CompetenceListResponse, CompetenceSaveRequest, CompetenceRow,
     CustomCompetenceCreate, CustomCompetenceItem, ToggleTopicRequest, TopicGroup,
 )
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 @router.get("/classes", response_model=ClassListResponse)

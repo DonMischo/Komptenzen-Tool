@@ -8,10 +8,10 @@ from sqlalchemy.orm import Session
 
 from db_helpers import get_students_by_class
 from db_schema import Student
-from deps import get_db
+from deps import get_db, get_current_user
 from schemas import StudentBaseData, StudentBaseDataUpdate, ReportTextUpdate
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 
 def _student_to_schema(stu: Student) -> StudentBaseData:

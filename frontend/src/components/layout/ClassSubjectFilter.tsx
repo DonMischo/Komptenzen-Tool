@@ -12,6 +12,7 @@ interface Props {
   onSubjectChange: (v: string) => void;
   onBlockChange: (v: string) => void;
   showBlock?: boolean;
+  selectClassName?: string;
 }
 
 export function ClassSubjectFilter({
@@ -22,6 +23,7 @@ export function ClassSubjectFilter({
   onSubjectChange,
   onBlockChange,
   showBlock = true,
+  selectClassName = "",
 }: Props) {
   const { data: classesData } = useQuery({
     queryKey: QK.classes,
@@ -52,7 +54,7 @@ export function ClassSubjectFilter({
         <select
           value={classValue}
           onChange={(e) => onClassChange(e.target.value)}
-          className="w-full border rounded-md px-2 py-1.5 text-sm bg-white"
+          className={`w-full border rounded-md px-2 py-1.5 text-sm bg-white ${selectClassName}`}
         >
           <option value="">– Klasse –</option>
           {classes.map((c) => (
@@ -70,7 +72,7 @@ export function ClassSubjectFilter({
         <select
           value={subjectValue}
           onChange={(e) => onSubjectChange(e.target.value)}
-          className="w-full border rounded-md px-2 py-1.5 text-sm bg-white"
+          className={`w-full border rounded-md px-2 py-1.5 text-sm bg-white ${selectClassName}`}
         >
           <option value="">– Fach –</option>
           {subjects.map((s) => (
@@ -89,7 +91,7 @@ export function ClassSubjectFilter({
           <select
             value={blockValue}
             onChange={(e) => onBlockChange(e.target.value)}
-            className="w-full border rounded-md px-2 py-1.5 text-sm bg-white"
+            className={`w-full border rounded-md px-2 py-1.5 text-sm bg-white ${selectClassName}`}
             disabled={!subjectValue}
           >
             <option value="">– Block –</option>

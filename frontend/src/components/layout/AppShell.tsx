@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "@/lib/api";
 import { QK } from "@/lib/queries";
 import { cn } from "@/lib/utils";
+import { AuthStatusResponse } from "@/types/api";
 import {
   Settings,
   CheckSquare,
@@ -26,6 +28,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const qc = useQueryClient();
+
+  const { data: auth } = useQuery<AuthStatusResponse>({
+    queryKey: QK.authStatus,
+    queryFn: () => authApi.me().then((r) => r.data),
+  });
+
+  useEffect(() => {
+    if (!auth) return;
+    if (!auth.authenticated) { router.replace("/login"); return; }
+    if (auth.role !== "admin") { router.replace("/public"); }
+  }, [auth, router]);
 
   const logout = useMutation({
     mutationFn: () => authApi.logout(),

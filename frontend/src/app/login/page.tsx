@@ -22,9 +22,13 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: () => authApi.login(username, password),
-    onSuccess: () => {
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: QK.authStatus });
-      router.replace("/kompetenzen");
+      if (res.data.role === "admin") {
+        router.replace("/kompetenzen");
+      } else {
+        router.replace("/public");
+      }
     },
     onError: () => toast.error("Ungültige Anmeldedaten"),
   });
@@ -76,7 +80,7 @@ export default function LoginPage() {
         <div className="text-center space-y-1">
           <h1 className="text-2xl font-bold">Kompetenzen-Tool</h1>
           <p className="text-sm text-muted-foreground">
-            {isSetup ? "Erstes Admin-Konto anlegen" : "Admin-Login"}
+            {isSetup ? "Erstes Admin-Konto anlegen" : "Anmelden"}
           </p>
         </div>
 
