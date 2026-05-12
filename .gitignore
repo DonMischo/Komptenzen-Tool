@@ -43,3 +43,6 @@ app/student_data/*
 app/kompetenzen.db
 app//Test/New
 app/Test/
+
+nginx/ssl/*.pem
+nginx/ssl/*.key
