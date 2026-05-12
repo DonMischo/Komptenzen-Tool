@@ -44,7 +44,7 @@ def login(req: LoginRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
-        secure=True,
+        secure=False,
         samesite="lax",
         max_age=8 * 3600,
     )
@@ -72,7 +72,7 @@ def setup(req: AuthSetupRequest, response: Response):
         key="access_token",
         value=token,
         httponly=True,
-        secure=True,
+        secure=False,
         samesite="lax",
         max_age=8 * 3600,
     )
@@ -88,8 +88,6 @@ def create_user(req: CreateUserRequest, _: str = Depends(get_current_admin)):
         raise HTTPException(status_code=400, detail="Passwort muss mindestens 6 Zeichen lang sein")
     if req.role not in ("admin", "lehrer"):
         raise HTTPException(status_code=400, detail="Ungültige Rolle (admin oder lehrer)")
-    existing = auth_pure.user_count()
-    # Check if username already exists by trying to get role; simpler: just try create and catch
     from sqlalchemy.exc import IntegrityError
     try:
         auth_pure.create_user(req.username, req.password, role=req.role)

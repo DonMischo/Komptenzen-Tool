@@ -7,11 +7,11 @@
 #Requires -RunAsAdministrator
 
 $ErrorActionPreference = "Stop"
-$REPO_DIR        = Split-Path -Parent $MyInvocation.MyCommand.Path
+$REPO_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
 $APP_PORT = 1337
 $DB_PORT  = 5432
 
-function Write-Step { param($msg) Write-Host "`n==> $msg" -ForegroundColor Cyan }
+function Write-Step { param($msg) Write-Host ""; Write-Host "==> $msg" -ForegroundColor Cyan }
 function Write-OK   { param($msg) Write-Host "    [OK] $msg" -ForegroundColor Green }
 function Write-Warn { param($msg) Write-Host "    [!!] $msg" -ForegroundColor Yellow }
 
@@ -116,7 +116,7 @@ if (-not (Test-Path $envFile)) {
     $jwtSecret = [BitConverter]::ToString($jwtBytes) -replace '-',''
     Write-OK "JWT-Secret automatisch generiert"
 
-    $appPort = Read-Host "Port [$APP_PORT]"
+    $appPort = Read-Host "App-Port [$APP_PORT]"
     if ([string]::IsNullOrWhiteSpace($appPort)) { $appPort = $APP_PORT }
 
     $dbPort = Read-Host "DB-Port [$DB_PORT]"
@@ -137,11 +137,10 @@ POSTGRES_URL=postgresql://${pgUser}:${pgPassPlain}@localhost:5432
 }
 
 # ---------------------------------------------------------------------------
-# 5. Windows Firewall rule for public port
+# 5. Windows Firewall rule for app port
 # ---------------------------------------------------------------------------
 Write-Step "Windows Firewall"
 
-# Read actual port from .env
 $envLines = Get-Content $envFile
 $portLine = $envLines | Where-Object { $_ -match "^APP_PORT=" } | Select-Object -First 1
 if ($portLine) { $APP_PORT = [int](($portLine -split "=",2)[1] -replace "#.*","" -replace "\s","") }
@@ -170,7 +169,7 @@ Write-Host "    (Einmalig manuell zu pruefen)"
 # 7. Required directories
 # ---------------------------------------------------------------------------
 Write-Step "Verzeichnisse pruefen"
-@("data", "app\TexTemplate") | ForEach-Object {
+@("data", "app\TexTemplate", "nginx\ssl") | ForEach-Object {
     $dir = Join-Path $REPO_DIR $_
     if (-not (Test-Path $dir)) {
         New-Item -ItemType Directory -Path $dir | Out-Null
@@ -203,7 +202,12 @@ do {
     $lehrerPassPlain = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
         [Runtime.InteropServices.Marshal]::SecureStringToBSTR($lehrerPassSec)
     )
-    if ($lehrerPassPlain.Length -lt 6) { Write-Warn "Passwort zu kurz, bitte erneut." }
+    if ($lehrerPassPlain.Length -lt 6) { Write-Warn "Passwort zu kurz, bitte erneut."; continue }
+    $lehrerPassSec2 = Read-Host "    Lehrer-Passwort bestaetigen" -AsSecureString
+    $lehrerPassPlain2 = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
+        [Runtime.InteropServices.Marshal]::SecureStringToBSTR($lehrerPassSec2)
+    )
+    if ($lehrerPassPlain -ne $lehrerPassPlain2) { Write-Warn "Passwoerter stimmen nicht ueberein, bitte erneut."; $lehrerPassPlain = "" }
 } while ($lehrerPassPlain.Length -lt 6)
 
 Write-OK "Zugangsdaten erfasst"
@@ -219,16 +223,41 @@ Write-OK "Container gestartet"
 # ---------------------------------------------------------------------------
 # 11. Warte auf Backend, lege Konten an
 # ---------------------------------------------------------------------------
+
+# Helper: create a user directly via docker exec (no HTTPS needed)
+function Create-AppUser {
+    param($uname, $upass, $urole)
+    $tmpFile = Join-Path $env:TEMP "kt_create_user.py"
+    [System.IO.File]::WriteAllLines($tmpFile, @(
+        "import os, auth_pure",
+        "from sqlalchemy.exc import IntegrityError",
+        "try:",
+        "    auth_pure.create_user(os.environ['KT_U'], os.environ['KT_P'], role=os.environ['KT_R'])",
+        "    print('created')",
+        "except IntegrityError:",
+        "    print('exists')"
+    ), [System.Text.UTF8Encoding]::new($false))
+    $prev = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+    $result = Get-Content $tmpFile | docker compose exec -T `
+        -e KT_U=$uname -e KT_P=$upass -e KT_R=$urole `
+        backend python 2>&1
+    $ErrorActionPreference = $prev
+    Remove-Item $tmpFile -ErrorAction SilentlyContinue
+    return ($result -join "").Trim()
+}
+
 Write-Step "Warte auf Backend"
 Write-Host "    " -NoNewline
 $backendReady = $false
 for ($i = 0; $i -lt 60; $i++) {
     Start-Sleep 3
-    try {
-        $null = Invoke-RestMethod "http://localhost:$APP_PORT/api/health" -ErrorAction Stop
+    $prev = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+    $check = Invoke-RestMethod "http://localhost:$APP_PORT/api/health" -ErrorAction SilentlyContinue 2>&1
+    $ErrorActionPreference = $prev
+    if ($check -and $check.status -eq "ok") {
         $backendReady = $true
         break
-    } catch {}
+    }
     Write-Host "." -NoNewline
 }
 Write-Host ""
@@ -239,39 +268,21 @@ if (-not $backendReady) {
 } else {
     Write-OK "Backend bereit"
 
-    # -- Admin-Konto --
-    $authStatus = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/status" -ErrorAction SilentlyContinue
-    if ($authStatus -and $authStatus.needs_setup) {
-        $body = @{ username = $adminUser; password = $adminPassPlain } | ConvertTo-Json
-        try {
-            # Capture cookie from setup response
-            $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
-            $null = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/setup" `
-                -Method POST -Body $body -ContentType "application/json" `
-                -WebSession $session
-            Write-OK "Admin-Konto '$adminUser' angelegt"
+    $prev = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+    $authStatus = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/status" -ErrorAction SilentlyContinue 2>&1
+    $ErrorActionPreference = $prev
 
-            # -- Lehrer-Konto (mit Admin-Cookie) --
-            $lehrerBody = @{ username = $lehrerUser; password = $lehrerPassPlain; role = "lehrer" } | ConvertTo-Json
-            try {
-                $null = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/users" `
-                    -Method POST -Body $lehrerBody -ContentType "application/json" `
-                    -WebSession $session
-                Write-OK "Lehrer-Konto '$lehrerUser' angelegt"
-            } catch {
-                Write-Warn "Lehrer-Konto konnte nicht angelegt werden: $_"
-            }
-        } catch {
-            Write-Warn "Fehler beim Anlegen des Admin-Kontos: $_"
-            Write-Warn "Bitte manuell unter http://localhost:$APP_PORT/login anlegen."
-        }
-    } else {
-        Write-OK "Konten bereits vorhanden (kein Setup noetig)"
-    }
+    $r = Create-AppUser $adminUser $adminPassPlain "admin"
+    if ($r -eq "created") { Write-OK "Admin-Konto '$adminUser' angelegt" }
+    else                  { Write-OK "Admin-Konto '$adminUser' bereits vorhanden" }
+
+    $r = Create-AppUser $lehrerUser $lehrerPassPlain "lehrer"
+    if ($r -eq "created") { Write-OK "Lehrer-Konto '$lehrerUser' angelegt" }
+    else                  { Write-OK "Lehrer-Konto '$lehrerUser' bereits vorhanden" }
 }
 
 # ---------------------------------------------------------------------------
-# 11. Access info
+# 12. Access info
 # ---------------------------------------------------------------------------
 Write-Step "Fertig!"
 
