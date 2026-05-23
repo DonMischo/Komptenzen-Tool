@@ -145,6 +145,58 @@ $envLines = Get-Content $envFile
 $portLine = $envLines | Where-Object { $_ -match "^APP_PORT=" } | Select-Object -First 1
 if ($portLine) { $APP_PORT = [int](($portLine -split "=",2)[1] -replace "#.*","" -replace "\s","") }
 
+# ---------------------------------------------------------------------------
+# SSL-Zertifikat (selbstsigniert)
+# ---------------------------------------------------------------------------
+Write-Step "SSL-Zertifikat pruefen"
+$sslDir = Join-Path $REPO_DIR "ssl"
+if (-not (Test-Path $sslDir)) { New-Item -ItemType Directory -Path $sslDir | Out-Null }
+$certFile = Join-Path $sslDir "cert.pem"
+$keyFile  = Join-Path $sslDir "key.pem"
+if (-not (Test-Path $certFile) -or -not (Test-Path $keyFile)) {
+    # Use .NET to create a self-signed cert and export as PEM
+    $cert = New-SelfSignedCertificate `
+        -DnsName "kompetenzen-tool" `
+        -CertStoreLocation "Cert:\LocalMachine\My" `
+        -NotAfter (Get-Date).AddYears(10) `
+        -KeyAlgorithm RSA -KeyLength 2048
+    # Export cert (public) as PEM
+    $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Cert)
+    $certB64   = [Convert]::ToBase64String($certBytes, 'InsertLineBreaks')
+    [IO.File]::WriteAllText($certFile, "-----BEGIN CERTIFICATE-----`n$certB64`n-----END CERTIFICATE-----`n")
+    # Export private key as PEM via openssl if available, else use certutil
+    $pfxPath = Join-Path $env:TEMP "kt_tmp.pfx"
+    $pfxPwd  = ConvertTo-SecureString "tmp" -AsPlainText -Force
+    Export-PfxCertificate -Cert $cert -FilePath $pfxPath -Password $pfxPwd | Out-Null
+    $opensslExe = $null
+    if (Get-Command openssl -ErrorAction SilentlyContinue) { $opensslExe = "openssl" }
+    elseif (Test-Path "C:\Program Files\Git\usr\bin\openssl.exe") { $opensslExe = "C:\Program Files\Git\usr\bin\openssl.exe" }
+    if ($opensslExe) {
+        & $opensslExe pkcs12 -in $pfxPath -nocerts -nodes -passin pass:tmp -out $keyFile 2>$null
+    } else {
+        # Fallback: export private key via Windows CNG (no external tools needed)
+        $pfxCert2 = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(
+            $pfxPath, "tmp",
+            [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable
+        )
+        $rsaCng = [System.Security.Cryptography.X509Certificates.RSACertificateExtensions]::GetRSAPrivateKey($pfxCert2)
+        $pkcs8  = $rsaCng.Key.Export([System.Security.Cryptography.CngKeyBlobFormat]::Pkcs8PrivateBlob)
+        $keyB64 = [Convert]::ToBase64String($pkcs8, 'InsertLineBreaks')
+        [IO.File]::WriteAllText($keyFile, "-----BEGIN PRIVATE KEY-----`n$keyB64`n-----END PRIVATE KEY-----`n")
+    }
+    Remove-Item $pfxPath -ErrorAction SilentlyContinue
+    # Clean up from cert store
+    Remove-Item "Cert:\LocalMachine\My\$($cert.Thumbprint)" -ErrorAction SilentlyContinue
+    Write-OK "Selbstsigniertes Zertifikat erstellt (gueltig 10 Jahre)"
+} else {
+    Write-OK "SSL-Zertifikat bereits vorhanden"
+}
+
+# ---------------------------------------------------------------------------
+# 5. Windows Firewall
+# ---------------------------------------------------------------------------
+Write-Step "Windows Firewall"
+
 $ruleName = "Kompetenzen-Tool (Port $APP_PORT)"
 $existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
 if (-not $existing) {
@@ -263,6 +315,7 @@ for ($i = 0; $i -lt 60; $i++) {
 Write-Host ""
 
 if (-not $backendReady) {
+<<<<<<< HEAD
     Write-Warn "Backend nicht erreichbar nach 3 Minuten."
     Write-Warn "Bitte Konten manuell unter http://localhost:$APP_PORT/login anlegen."
 } else {
@@ -281,6 +334,46 @@ if (-not $backendReady) {
     else                  { Write-OK "Lehrer-Konto '$lehrerUser' bereits vorhanden" }
 }
 
+=======
+    Write-Warn "Timeout - versuche Admin-Erstellung trotzdem..."
+}
+
+Write-Step "Konten anlegen"
+
+function Create-AppUser {
+    param($uname, $upass, $urole)
+    $tmpFile = Join-Path $env:TEMP "kt_create_user.py"
+    Set-Content $tmpFile -Encoding UTF8 -Value @(
+        'import auth_pure, os',
+        'from sqlalchemy.orm import Session',
+        'uname = os.environ["KT_UNAME"]',
+        'upass = os.environ["KT_UPASS"]',
+        'urole = os.environ["KT_UROLE"]',
+        'exists = Session(auth_pure._auth_engine).query(auth_pure.AdminUser).filter_by(username=uname).first()',
+        'if not exists:',
+        '    auth_pure.create_user(uname, upass, role=urole)',
+        '    print("created")',
+        'else:',
+        '    print("exists")'
+    )
+    $result = Get-Content $tmpFile | docker compose exec -T `
+        -e KT_UNAME=$uname -e KT_UPASS=$upass -e KT_UROLE=$urole `
+        backend python 2>&1
+    Remove-Item $tmpFile -ErrorAction SilentlyContinue
+    return $result
+}
+
+$rAdmin = Create-AppUser $adminUser $adminPassPlain "admin"
+if ($rAdmin -match "created") { Write-OK "Admin-Konto '$adminUser' angelegt" }
+elseif ($rAdmin -match "exists") { Write-OK "Admin-Konto '$adminUser' bereits vorhanden" }
+else { Write-Warn "Fehler beim Anlegen des Admin-Kontos: $rAdmin" }
+
+$rUser = Create-AppUser $publicUser $publicPassPlain "user"
+if ($rUser -match "created") { Write-OK "Benutzer-Konto '$publicUser' angelegt" }
+elseif ($rUser -match "exists") { Write-OK "Benutzer-Konto '$publicUser' bereits vorhanden" }
+else { Write-Warn "Fehler beim Anlegen des Benutzer-Kontos: $rUser" }
+
+>>>>>>> 20090dc (Improve SSL key export and user creation script robustness)
 # ---------------------------------------------------------------------------
 # 12. Access info
 # ---------------------------------------------------------------------------
