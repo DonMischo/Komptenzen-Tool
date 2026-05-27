@@ -64,12 +64,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <aside className="w-56 bg-slate-900 text-slate-100 flex flex-col shrink-0">
-        <div className="px-4 py-5 border-b border-slate-700">
+      <aside className="w-56 bg-slate-900 text-slate-100 flex flex-col shrink-0 h-screen sticky top-0">
+        <div className="px-4 py-5 border-b border-slate-700 shrink-0">
           <h1 className="font-bold text-base leading-tight">Kompetenzen-Tool</h1>
         </div>
 
-        <nav className="flex-1 py-4 space-y-1 px-2">
+        <nav className="flex-1 min-h-0 py-4 space-y-1 px-2 overflow-y-auto">
           {NAV.map(({ href, label, icon: Icon }) => (
             <button
               key={href}
