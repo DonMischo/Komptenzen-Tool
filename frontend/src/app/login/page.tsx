@@ -23,7 +23,12 @@ export default function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: () => authApi.login(username, password),
     onSuccess: (res) => {
-      qc.invalidateQueries({ queryKey: QK.authStatus });
+      qc.setQueryData(QK.authStatus, {
+        authenticated: true,
+        username: res.data.username,
+        role: res.data.role,
+        needs_setup: false,
+      });
       if (res.data.role === "admin") {
         router.replace("/setup");
       } else {
@@ -35,8 +40,13 @@ export default function LoginPage() {
 
   const setupMutation = useMutation({
     mutationFn: () => authApi.setup(username, password),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QK.authStatus });
+    onSuccess: (res) => {
+      qc.setQueryData(QK.authStatus, {
+        authenticated: true,
+        username: res.data.username,
+        role: res.data.role,
+        needs_setup: false,
+      });
       router.replace("/setup");
     },
     onError: (e: unknown) => {
