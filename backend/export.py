@@ -113,6 +113,13 @@ def _latex_escape_body(txt: str) -> str:
 def format_level_text(txt: str) -> str:
     return r"{\setstretch{1.15}" + _latex_escape_body(txt) + "}"
 
+
+# Special niveau codes → LaTeX text rendered by myZeugnisTableSimple
+_SPECIAL_NIVEAU: Dict[str, str] = {
+    "ne":  "nicht erteilt",
+    "HJ2": "wird im 2.~Halbjahr belegt",
+}
+
 # ---------------------------------------------------------------------------
 # Student → Lua -------------------------------------------------------------
 # ---------------------------------------------------------------------------
@@ -181,8 +188,18 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
     for link in stu.subjects:
         subj = link.subject
         raw_level = link.niveau.strip() if link.niveau else ""
-        long_level_text = len(raw_level) > 3
-        level_val: Any = format_level_text(raw_level) if long_level_text else _numeric_or_str(raw_level)
+        is_special = raw_level in _SPECIAL_NIVEAU
+        is_html    = raw_level.startswith("<")
+        long_level_text = is_special or is_html or len(raw_level) > 3
+
+        if is_special:
+            level_val: Any = _SPECIAL_NIVEAU[raw_level]
+        elif is_html:
+            level_val = r"{\setstretch{1.15}" + html_to_latex(raw_level) + "}"
+        elif long_level_text:
+            level_val = format_level_text(raw_level)
+        else:
+            level_val = _numeric_or_str(raw_level)
         has_grade = _has_grade(subj, grade_map)
 
         if want_wp and not (has_grade or raw_level):

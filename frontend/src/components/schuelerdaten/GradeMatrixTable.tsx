@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { studentsApi } from "@/lib/api";
 import { QK } from "@/lib/queries";
 import { GradeMatrixResponse, GradeMatrixRow } from "@/types/api";
+import { NiveauSelect } from "./NiveauSelect";
 import { Save } from "lucide-react";
 
 interface Props {
@@ -27,7 +28,7 @@ export function GradeMatrixTable({ classNameValue, subject }: Props) {
 
   useEffect(() => {
     if (data) {
-      setRows(data.rows.map((r) => ({ ...r, grades: { ...r.grades } })));
+      setRows(data.rows.map((r) => ({ ...r, grades: { ...r.grades }, niveau: r.niveau || "2" })));
       setDirty(false);
     }
   }, [data]);
@@ -127,11 +128,10 @@ export function GradeMatrixTable({ classNameValue, subject }: Props) {
                   {row.first_name}
                 </td>
                 <td className="px-2 py-1 border-b">
-                  <input
-                    type="text"
+                  <NiveauSelect
                     value={row.niveau}
-                    onChange={(e) => updateNiveau(row.student_id, e.target.value)}
-                    className="w-20 border rounded px-1.5 py-0.5 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                    studentName={`${row.last_name}, ${row.first_name}`}
+                    onChange={(v) => updateNiveau(row.student_id, v)}
                   />
                 </td>
                 {data.columns.map((col) => (
