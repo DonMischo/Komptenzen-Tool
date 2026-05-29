@@ -75,20 +75,18 @@ export function GradeMatrixTable({ classNameValue, subject }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => saveMutation.mutate()}
+          disabled={!dirty || saveMutation.isPending}
+          className="flex items-center gap-2 bg-primary text-white px-4 py-1.5 rounded-md text-sm hover:bg-primary/90 disabled:opacity-40"
+        >
+          <Save className="h-4 w-4" />
+          {saveMutation.isPending ? "Speichern…" : "Speichern"}
+        </button>
         <p className="text-sm text-muted-foreground">
           {rows.length} Schüler · {data.columns.length} Themen
         </p>
-        {dirty && (
-          <button
-            onClick={() => saveMutation.mutate()}
-            disabled={saveMutation.isPending}
-            className="flex items-center gap-2 bg-primary text-white px-4 py-1.5 rounded-md text-sm hover:bg-primary/90 disabled:opacity-50"
-          >
-            <Save className="h-4 w-4" />
-            {saveMutation.isPending ? "Speichern…" : "Änderungen speichern"}
-          </button>
-        )}
       </div>
 
       <div className="overflow-x-auto border rounded-xl">
