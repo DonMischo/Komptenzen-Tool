@@ -56,6 +56,23 @@ def create_user(username: str, password: str, role: str = "admin") -> None:
         ses.commit()
 
 
+def list_users() -> list[dict]:
+    _ensure_table()
+    with Session(_auth_engine) as ses:
+        users = ses.query(AdminUser).order_by(AdminUser.username).all()
+        return [{"id": u.id, "username": u.username, "role": u.role} for u in users]
+
+
+def delete_user(username: str) -> bool:
+    with Session(_auth_engine) as ses:
+        user = ses.query(AdminUser).filter_by(username=username).first()
+        if not user:
+            return False
+        ses.delete(user)
+        ses.commit()
+        return True
+
+
 def get_role(username: str) -> str:
     with Session(_auth_engine) as ses:
         user = ses.query(AdminUser).filter_by(username=username).first()

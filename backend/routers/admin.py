@@ -7,12 +7,14 @@ import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from db_helpers import get_students_by_class
 from export import compile_one, prepare_export
-from deps import get_current_user, get_db
-from schemas import AdminStudentItem, ExportPrepareRequest, ExportPrepareResponse
+from deps import get_current_admin, get_current_user, get_db
+from schemas import AdminStudentItem, CreateUserRequest, ExportPrepareRequest, ExportPrepareResponse, UserOut
+import auth_pure
 import db_schema
 
 logger = logging.getLogger(__name__)
@@ -118,4 +120,31 @@ def export_cancel(job_id: str, _: str = Depends(get_current_user)):
     job = _jobs.get(job_id)
     if job:
         job["cancelled"] = True
+    return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# User management (admin only)
+# ---------------------------------------------------------------------------
+
+@router.get("/users", response_model=list[UserOut])
+def list_users(_: str = Depends(get_current_admin)):
+    return auth_pure.list_users()
+
+
+@router.post("/users", status_code=201)
+def create_user(body: CreateUserRequest, _: str = Depends(get_current_admin)):
+    try:
+        auth_pure.create_user(body.username, body.password, body.role)
+    except IntegrityError:
+        raise HTTPException(400, "Benutzername bereits vergeben")
+    return {"ok": True}
+
+
+@router.delete("/users/{username}")
+def delete_user(username: str, current_user: str = Depends(get_current_admin)):
+    if username == current_user:
+        raise HTTPException(400, "Eigenen Account kann nicht gelöscht werden")
+    if not auth_pure.delete_user(username):
+        raise HTTPException(404, "Benutzer nicht gefunden")
     return {"ok": True}

@@ -108,3 +108,13 @@ export const adminApi = {
   prepareExport: (student_ids: number[], classroom: string) =>
     api.post("/admin/export/prepare", { student_ids, classroom }),
 };
+
+// ---------------------------------------------------------------------------
+// User management
+// ---------------------------------------------------------------------------
+export const usersApi = {
+  list: () => api.get("/admin/users"),
+  create: (username: string, password: string, role: string) =>
+    api.post("/admin/users", { username, password, role }),
+  delete: (username: string) => api.delete(`/admin/users/${username}`),
+};

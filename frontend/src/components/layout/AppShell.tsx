@@ -16,7 +16,7 @@ import {
   LogOut,
 } from "lucide-react";
 
-const ADMIN_ONLY_PATHS = ["/setup", "/schuelerdaten", "/admin"];
+const ADMIN_ONLY_PATHS = ["/setup", "/admin"];
 
 const ADMIN_NAV = [
   { href: "/setup",         label: "Setup",         icon: Settings },
@@ -28,6 +28,7 @@ const ADMIN_NAV = [
 
 const LEHRER_NAV = [
   { href: "/kompetenzen",   label: "Kompetenzen",   icon: CheckSquare },
+  { href: "/schuelerdaten", label: "Schülerdaten",  icon: Users },
   { href: "/stammdaten",    label: "Stammdaten",    icon: ClipboardList },
 ];
 

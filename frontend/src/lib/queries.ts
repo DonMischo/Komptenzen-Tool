@@ -14,4 +14,5 @@ export const QK = {
   stammdaten: (cls: string) => ["stammdaten", cls] as const,
   reportText: (studentId: number) => ["reportText", studentId] as const,
   adminStudents: (cls: string) => ["admin", "students", cls] as const,
+  users: ["admin", "users"] as const,
 };

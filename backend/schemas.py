@@ -206,6 +206,12 @@ class ReportTextUpdate(BaseModel):
 # Admin / Export
 # ---------------------------------------------------------------------------
 
+class UserOut(BaseModel):
+    id: int
+    username: str
+    role: str
+
+
 class AdminStudentItem(BaseModel):
     id: int
     last_name: str
