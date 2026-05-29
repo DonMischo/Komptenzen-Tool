@@ -39,15 +39,17 @@ def _decode_csv(raw: bytes) -> str:
     return raw.decode("latin-1")  # always succeeds
 
 
-def _detect_delimiter(text: str) -> str:
-    """Use ';' if the header row contains more semicolons than commas (Excel DE), else ','."""
-    first_line = text.split("\n", 1)[0]
-    return ";" if first_line.count(";") > first_line.count(",") else ","
+def _detect_dialect(text: str) -> type:
+    """Use csv.Sniffer to detect delimiter and quoting style from the first 4 KB."""
+    try:
+        return csv.Sniffer().sniff(text[:4096], delimiters=",;\t|")
+    except csv.Error:
+        return csv.excel  # fallback: standard comma-separated
 
 
 def _parse_rows(text: str) -> List[Dict]:
-    delim = _detect_delimiter(text)
-    rows = list(csv.DictReader(io.StringIO(text), delimiter=delim))
+    dialect = _detect_dialect(text)
+    rows = list(csv.DictReader(io.StringIO(text), dialect=dialect))
     return [r for r in rows if r.get("Nachname", "").strip()]
 
 
