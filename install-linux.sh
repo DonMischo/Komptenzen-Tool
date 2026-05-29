@@ -11,7 +11,6 @@ set -euo pipefail
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_PORT=1337
 DB_PORT=5432
-REPO_URL="https://github.com/DonMischo/Komptenzen-Tool.git"
 
 GREEN='\033[0;32m'; CYAN='\033[0;36m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 step()  { echo -e "\n${CYAN}==> $*${NC}"; }
@@ -63,18 +62,18 @@ if [[ "$PKG_MGR" == "apt-get" ]]; then
     $SUDO apt-get update -qq
     $SUDO apt-get install -y --no-install-recommends \
         ca-certificates curl gnupg lsb-release \
-        git postgresql-client ufw
+        git postgresql-client ufw openssl
     ok "Basispakete installiert"
 
 elif [[ "$PKG_MGR" == "dnf" ]]; then
     $SUDO dnf install -y \
         ca-certificates curl gnupg git \
-        postgresql ufw
+        postgresql ufw openssl
     ok "Basispakete installiert"
 
 elif [[ "$PKG_MGR" == "pacman" ]]; then
     $SUDO pacman -Syu --noconfirm \
-        curl gnupg git postgresql-libs ufw
+        curl gnupg git postgresql-libs ufw openssl
     ok "Basispakete installiert"
 fi
 
@@ -89,7 +88,6 @@ else
     warn "Docker nicht gefunden – installiere Docker Engine..."
 
     if [[ "$PKG_MGR" == "apt-get" ]]; then
-        # Official Docker repo
         $SUDO install -m 0755 -d /etc/apt/keyrings
         curl -fsSL https://download.docker.com/linux/${DISTRO}/gpg \
             | $SUDO gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -118,7 +116,6 @@ $(lsb_release -cs) stable" \
     ok "Docker installiert: $(docker --version)"
 fi
 
-# Docker Compose plugin
 if ! docker compose version &>/dev/null; then
     die "Docker Compose nicht verfuegbar. Bitte manuell nachinstallieren."
 fi
@@ -133,7 +130,6 @@ if [[ $EUID -ne 0 ]]; then
         $SUDO usermod -aG docker "$USER"
         warn "Benutzer '$USER' zur Gruppe 'docker' hinzugefuegt."
         warn "Bitte neu einloggen oder 'newgrp docker' ausfuehren, dann Skript erneut starten."
-        # Allow continuing in same session via newgrp trick
         SUDO_DOCKER="sudo docker"
     else
         ok "Bereits in docker-Gruppe"
@@ -180,7 +176,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
         [[ ${#JWT_SECRET} -lt 32 ]] && die "JWT-Secret zu kurz (mind. 32 Zeichen)."
     fi
 
-    read -rp "    Port [$APP_PORT]: " IN_APP_PORT
+    read -rp "    App-Port [$APP_PORT]: " IN_APP_PORT
     APP_PORT="${IN_APP_PORT:-$APP_PORT}"
 
     read -rp "    DB-Port [$DB_PORT]: " IN_DB_PORT
@@ -196,6 +192,12 @@ POSTGRES_URL=postgresql://${PG_USER}:${PG_PASS}@localhost:5432
 EOF
     chmod 600 "$ENV_FILE"
     ok ".env erstellt (Berechtigungen: 600)"
+
+    # Fresh credentials — remove old DB volume so PostgreSQL initialises with new password
+    if $SUDO_DOCKER volume ls --quiet | grep -q "pgdata"; then
+        $SUDO_DOCKER compose -f "$REPO_DIR/docker-compose.yml" down --volumes 2>/dev/null || true
+        ok "Altes Datenbankvolume entfernt (neue Zugangsdaten erfordern frische DB)"
+    fi
 else
     ok ".env bereits vorhanden"
     APP_PORT=$(grep "^APP_PORT=" "$ENV_FILE" | cut -d= -f2 | tr -d '[:space:]') || true
@@ -221,10 +223,28 @@ else
 fi
 
 # ---------------------------------------------------------------------------
+# 9. SSL-Zertifikat (selbstsigniert)
+# ---------------------------------------------------------------------------
+step "SSL-Zertifikat pruefen"
+SSL_DIR="$REPO_DIR/ssl"
+mkdir -p "$SSL_DIR"
+if [[ ! -f "$SSL_DIR/cert.pem" || ! -f "$SSL_DIR/key.pem" ]]; then
+    openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+        -keyout "$SSL_DIR/key.pem" \
+        -out    "$SSL_DIR/cert.pem" \
+        -subj   "/CN=kompetenzen-tool" \
+        2>/dev/null
+    chmod 600 "$SSL_DIR/key.pem"
+    ok "Selbstsigniertes Zertifikat erstellt (gueltig 10 Jahre)"
+else
+    ok "SSL-Zertifikat bereits vorhanden"
+fi
+
+# ---------------------------------------------------------------------------
 # 10. Required directories
 # ---------------------------------------------------------------------------
 step "Verzeichnisse pruefen"
-for dir in data app/TexTemplate; do
+for dir in data app/TexTemplate zeugnisse; do
     full="$REPO_DIR/$dir"
     if [[ ! -d "$full" ]]; then
         mkdir -p "$full"
@@ -235,7 +255,37 @@ for dir in data app/TexTemplate; do
 done
 
 # ---------------------------------------------------------------------------
-# 11. Build & start
+# 11. Benutzerkonten konfigurieren (VOR dem Build)
+# ---------------------------------------------------------------------------
+step "Admin-Konto konfigurieren"
+read -rp "    Admin-Benutzername [admin]: " ADMIN_USER
+ADMIN_USER="${ADMIN_USER:-admin}"
+while true; do
+    read -rsp "    Admin-Passwort (mind. 8 Zeichen): " ADMIN_PASS; echo
+    [[ ${#ADMIN_PASS} -ge 8 ]] && break
+    warn "Passwort zu kurz, bitte erneut eingeben."
+done
+ok "Admin-Konto vorgemerkt: $ADMIN_USER"
+
+step "Lehrer-Konto konfigurieren"
+read -rp "    Lehrer-Benutzername [lehrer]: " LEHRER_USER
+LEHRER_USER="${LEHRER_USER:-lehrer}"
+while true; do
+    read -rsp "    Lehrer-Passwort (mind. 6 Zeichen): " LEHRER_PASS; echo
+    [[ ${#LEHRER_PASS} -ge 6 ]] && break
+    warn "Passwort zu kurz, bitte erneut eingeben."
+done
+# Confirm lehrer password
+while true; do
+    read -rsp "    Lehrer-Passwort bestaetigen: " LEHRER_PASS2; echo
+    [[ "$LEHRER_PASS" == "$LEHRER_PASS2" ]] && break
+    warn "Passwoerter stimmen nicht ueberein, bitte erneut."
+    read -rsp "    Lehrer-Passwort (mind. 6 Zeichen): " LEHRER_PASS; echo
+done
+ok "Lehrer-Konto vorgemerkt: $LEHRER_USER"
+
+# ---------------------------------------------------------------------------
+# 12. Build & start
 # ---------------------------------------------------------------------------
 step "Docker-Container bauen und starten"
 cd "$REPO_DIR"
@@ -243,62 +293,77 @@ $SUDO_DOCKER compose up --build -d
 ok "Container gestartet"
 
 # ---------------------------------------------------------------------------
-# 12. Admin-Konto anlegen (falls noch keins vorhanden)
+# 13. Warte auf Backend, lege Konten an
 # ---------------------------------------------------------------------------
+
+# Helper: create a user directly via docker exec (no HTTP access needed)
+_create_user() {
+    local uname="$1" upass="$2" urole="$3"
+    local tmpfile
+    tmpfile="$(mktemp /tmp/kt_create_user_XXXXXX.py)"
+    cat > "$tmpfile" <<'PYEOF'
+import os, auth_pure
+from sqlalchemy.exc import IntegrityError
+try:
+    auth_pure.create_user(os.environ['KT_U'], os.environ['KT_P'], role=os.environ['KT_R'])
+    print('created')
+except IntegrityError:
+    print('exists')
+PYEOF
+    local result
+    result=$(KT_U="$uname" KT_P="$upass" KT_R="$urole" \
+        $SUDO_DOCKER compose exec -T backend python < "$tmpfile" 2>/dev/null || echo "error")
+    rm -f "$tmpfile"
+    echo "$result"
+}
+
 step "Warte auf Backend"
 BACKEND_READY=0
 printf "    "
-for i in $(seq 1 30); do
-    if curl -sf "http://localhost:${APP_PORT}/api/health" > /dev/null 2>&1; then
+for i in $(seq 1 60); do
+    if $SUDO_DOCKER compose logs backend 2>&1 | grep -q "Application startup complete"; then
         BACKEND_READY=1
         break
     fi
-    sleep 2
+    sleep 3
     printf "."
 done
 echo ""
 
 if [[ $BACKEND_READY -eq 0 ]]; then
-    warn "Backend nicht erreichbar. Admin-Konto bitte manuell unter http://localhost:${APP_PORT}/login anlegen."
+    warn "Timeout – versuche Konto-Erstellung trotzdem..."
 else
     ok "Backend bereit"
-    NEEDS_SETUP=$(curl -sf "http://localhost:${APP_PORT}/api/auth/status" \
-        | grep -o '"needs_setup":true' || true)
-    if [[ -n "$NEEDS_SETUP" ]]; then
-        step "Admin-Konto anlegen"
-        read -rp "    Admin-Benutzername [admin]: " ADMIN_USER
-        ADMIN_USER="${ADMIN_USER:-admin}"
-        while true; do
-            read -rsp "    Admin-Passwort (mind. 8 Zeichen): " ADMIN_PASS; echo
-            [[ ${#ADMIN_PASS} -ge 8 ]] && break
-            warn "Passwort zu kurz, bitte erneut eingeben."
-        done
-        HTTP_CODE=$(curl -sf -o /dev/null -w "%{http_code}" \
-            -X POST "http://localhost:${APP_PORT}/api/auth/setup" \
-            -H "Content-Type: application/json" \
-            -d "{\"username\":\"${ADMIN_USER}\",\"password\":\"${ADMIN_PASS}\"}" || echo "000")
-        if [[ "$HTTP_CODE" == "200" ]]; then
-            ok "Admin-Konto '${ADMIN_USER}' angelegt"
-        else
-            warn "Fehler beim Anlegen (HTTP $HTTP_CODE). Bitte manuell unter http://localhost:${APP_PORT}/login anlegen."
-        fi
-    else
-        ok "Admin-Konto bereits vorhanden"
-    fi
 fi
 
+step "Konten anlegen"
+R_ADMIN=$(_create_user "$ADMIN_USER" "$ADMIN_PASS" "admin")
+case "$R_ADMIN" in
+    *created*) ok "Admin-Konto '$ADMIN_USER' angelegt" ;;
+    *exists*)  ok "Admin-Konto '$ADMIN_USER' bereits vorhanden" ;;
+    *)         warn "Fehler beim Anlegen des Admin-Kontos: $R_ADMIN" ;;
+esac
+
+R_LEHRER=$(_create_user "$LEHRER_USER" "$LEHRER_PASS" "lehrer")
+case "$R_LEHRER" in
+    *created*) ok "Lehrer-Konto '$LEHRER_USER' angelegt" ;;
+    *exists*)  ok "Lehrer-Konto '$LEHRER_USER' bereits vorhanden" ;;
+    *)         warn "Fehler beim Anlegen des Lehrer-Kontos: $R_LEHRER" ;;
+esac
+
 # ---------------------------------------------------------------------------
-# 13. Access info
+# 14. Access info
 # ---------------------------------------------------------------------------
 step "Fertig!"
 
 LAN_IP=$(hostname -I 2>/dev/null | awk '{print $1}') || LAN_IP=""
 
 echo ""
-echo -e "  ${GREEN}App:      ${NC}http://localhost:${APP_PORT}"
+echo -e "  ${GREEN}App:      ${NC}https://localhost:${APP_PORT}"
 if [[ -n "$LAN_IP" ]]; then
-    echo -e "  ${GREEN}Netzwerk: ${NC}http://${LAN_IP}:${APP_PORT}"
+    echo -e "  ${GREEN}Netzwerk: ${NC}https://${LAN_IP}:${APP_PORT}"
 fi
+echo -e "  ${YELLOW}Hinweis:  ${NC}Zertifikat ist selbstsigniert – Browser-Warnung einmalig bestaetigen."
 echo ""
 echo -e "  ${NC}Logs:       docker compose logs -f"
 echo -e "  ${NC}Stoppen:    docker compose down"
