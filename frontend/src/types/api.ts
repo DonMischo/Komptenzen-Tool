@@ -103,6 +103,49 @@ export interface ExportPrepareResponse {
   total: number;
 }
 
+// ---------------------------------------------------------------------------
+// Overview
+// ---------------------------------------------------------------------------
+
+export interface CompetenceStatusItem {
+  name: string;
+  selected_count: number;
+}
+
+export interface CompetenceStatusResponse {
+  subjects: CompetenceStatusItem[];
+}
+
+export interface SubjectGradeStatus {
+  has_niveau: boolean;
+  has_grade: boolean;
+}
+
+export interface StudentGradeStatus {
+  student_id: number;
+  last_name: string;
+  first_name: string;
+  lb: boolean;
+  gb: boolean;
+  subjects: Record<string, SubjectGradeStatus>;
+  wahlpflicht: Record<string, SubjectGradeStatus>;
+}
+
+export interface GradeStatusResponse {
+  students: StudentGradeStatus[];
+  relevant_subjects: string[];
+  wahlpflicht_subjects: string[];
+  wp_no_niveau: string[];
+  no_niveau_subjects: string[];
+}
+
+export interface CustomCompetenceGroup {
+  subject: string;
+  topic_id: number;
+  topic_name: string;
+  customs: CustomCompetenceItem[];
+}
+
 export interface ExportProgressEvent {
   type: "progress" | "done" | "error";
   index: number;

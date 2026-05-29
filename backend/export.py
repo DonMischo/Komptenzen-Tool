@@ -28,6 +28,7 @@ from db_schema import (
     SchoolYear,
     SchoolClass,
     ClassCompetence,
+    CustomCompetence,
     Subject,
 )
 
@@ -183,6 +184,11 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
 
     grade_map = {g.topic_id: _numeric_or_str(g.value) for g in ses.query(Grade).filter_by(student_id=stu.id)}
 
+    # Custom competences for this class, grouped by topic_id
+    custom_by_topic: Dict[int, List[str]] = {}
+    for cc in ses.query(CustomCompetence).filter_by(class_id=stu.school_class.id):
+        custom_by_topic.setdefault(cc.topic_id, []).append(cc.text)
+
     want_wp = stu.school_class.name.startswith("7")
 
     for link in stu.subjects:
@@ -211,13 +217,16 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
             for tp in subj.topics:
                 if sel_comp and all(c.id not in sel_comp for c in tp.competences):
                     continue
+                competences_list = [
+                    {"description": c.text} for c in tp.competences
+                    if not sel_comp or c.id in sel_comp
+                ]
+                for custom_text in custom_by_topic.get(tp.id, []):
+                    competences_list.append({"description": custom_text})
                 topics_out.append({
                     "title": tp.name,
                     "grade": grade_map.get(tp.id, ""),
-                    "competences": [
-                        {"description": c.text} for c in tp.competences
-                        if not sel_comp or c.id in sel_comp
-                    ],
+                    "competences": competences_list,
                 })
 
         data["subjects"].append({

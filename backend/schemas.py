@@ -207,6 +207,53 @@ class RemarksUpdate(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Overview
+# ---------------------------------------------------------------------------
+
+class CompetenceStatusItem(BaseModel):
+    name: str
+    selected_count: int
+
+
+class CompetenceStatusResponse(BaseModel):
+    subjects: list[CompetenceStatusItem]
+
+
+class SubjectGradeStatus(BaseModel):
+    has_niveau: bool
+    has_grade: bool
+
+
+class StudentGradeStatus(BaseModel):
+    student_id: int
+    last_name: str
+    first_name: str
+    lb: bool
+    gb: bool
+    subjects: dict[str, SubjectGradeStatus]
+    wahlpflicht: dict[str, SubjectGradeStatus]
+
+
+class GradeStatusResponse(BaseModel):
+    students: list[StudentGradeStatus]
+    relevant_subjects: list[str]
+    wahlpflicht_subjects: list[str]
+    wp_no_niveau: list[str]
+    no_niveau_subjects: list[str]
+
+
+class CustomCompetenceGroup(BaseModel):
+    subject: str
+    topic_id: int
+    topic_name: str
+    customs: list[CustomCompetenceItem]
+
+
+class CustomCompetenceUpdateRequest(BaseModel):
+    text: str
+
+
+# ---------------------------------------------------------------------------
 # Admin / Export
 # ---------------------------------------------------------------------------
 

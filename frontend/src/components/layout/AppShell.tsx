@@ -14,15 +14,17 @@ import {
   ClipboardList,
   ShieldCheck,
   LogOut,
+  LayoutDashboard,
 } from "lucide-react";
 
-const ADMIN_ONLY_PATHS = ["/setup", "/admin"];
+const ADMIN_ONLY_PATHS = ["/setup", "/admin", "/overview"];
 
 const ADMIN_NAV = [
   { href: "/setup",         label: "Setup",         icon: Settings },
   { href: "/kompetenzen",   label: "Kompetenzen",   icon: CheckSquare },
   { href: "/schuelerdaten", label: "Schülerdaten",  icon: Users },
   { href: "/stammdaten",    label: "Stammdaten",    icon: ClipboardList },
+  { href: "/overview",      label: "Übersicht",     icon: LayoutDashboard },
   { href: "/admin",         label: "Admin",         icon: ShieldCheck },
 ];
 

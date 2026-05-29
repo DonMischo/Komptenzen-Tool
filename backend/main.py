@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 import auth_pure
-from routers import auth, setup, competences, students, stammdaten, admin
+from routers import auth, setup, competences, students, stammdaten, admin, overview
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,7 @@ app.include_router(competences.router, prefix="/api",            tags=["competen
 app.include_router(students.router,    prefix="/api/students",   tags=["students"])
 app.include_router(stammdaten.router,  prefix="/api/stammdaten", tags=["stammdaten"])
 app.include_router(admin.router,       prefix="/api/admin",      tags=["admin"])
+app.include_router(overview.router,    prefix="/api/overview",   tags=["overview"])
 
 
 @app.get("/api/health")

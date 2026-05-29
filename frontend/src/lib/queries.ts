@@ -16,4 +16,7 @@ export const QK = {
   remarks: (studentId: number) => ["remarks", studentId] as const,
   adminStudents: (cls: string) => ["admin", "students", cls] as const,
   users: ["admin", "users"] as const,
+  overviewCompetences: (cls: string) => ["overview", "competences", cls] as const,
+  overviewGrades: (cls: string) => ["overview", "grades", cls] as const,
+  overviewCustom: (cls: string) => ["overview", "custom", cls] as const,
 };

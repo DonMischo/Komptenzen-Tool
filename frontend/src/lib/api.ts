@@ -114,6 +114,22 @@ export const adminApi = {
 };
 
 // ---------------------------------------------------------------------------
+// Overview
+// ---------------------------------------------------------------------------
+export const overviewApi = {
+  competences: (class_name: string) =>
+    api.get("/overview/competences", { params: { class_name } }),
+  grades: (class_name: string) =>
+    api.get("/overview/grades", { params: { class_name } }),
+  customCompetences: (class_name: string) =>
+    api.get("/overview/custom-competences", { params: { class_name } }),
+  updateCustom: (id: number, text: string) =>
+    api.put(`/overview/custom-competences/${id}`, { text }),
+  deleteCustom: (id: number) =>
+    api.delete(`/competences/custom/${id}`),
+};
+
+// ---------------------------------------------------------------------------
 // User management
 // ---------------------------------------------------------------------------
 export const usersApi = {
