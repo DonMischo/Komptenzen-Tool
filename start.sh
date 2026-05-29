@@ -1,112 +1,146 @@
 #!/usr/bin/env bash
-# start.sh — Kompetenzen-Tool Quick-Start (Linux / macOS)
-# Run this after install to start or update the app.
+# start.sh — Kompetenzen-Tool starten (setzt vorherige Installation voraus)
+# Usage: bash start.sh
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$REPO_DIR"
 
-GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; CYAN='\033[0;36m'; NC='\033[0m'
+GREEN='\033[0;32m'; CYAN='\033[0;36m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 step() { echo -e "\n${CYAN}==> $*${NC}"; }
 ok()   { echo -e "    ${GREEN}[OK]${NC} $*"; }
 warn() { echo -e "    ${YELLOW}[!!]${NC} $*"; }
 die()  { echo -e "    ${RED}[ERR]${NC} $*" >&2; exit 1; }
 
-step "Kompetenzen-Tool starten"
+# ---------------------------------------------------------------------------
+# 1. Installation pruefen
+# ---------------------------------------------------------------------------
+step "Installation pruefen"
 
-# ---------------------------------------------------------------------------
-# 1. Docker vorhanden?
-# ---------------------------------------------------------------------------
-command -v docker &>/dev/null || die "Docker nicht gefunden. Bitte installieren: https://docs.docker.com/get-docker/"
+[[ -f "$REPO_DIR/.env" ]] \
+    || die ".env nicht gefunden. Bitte zuerst install-linux.sh ausfuehren."
 
-# ---------------------------------------------------------------------------
-# 2. Docker-Daemon läuft?
-# ---------------------------------------------------------------------------
-if ! docker info &>/dev/null; then
-    warn "Docker-Daemon nicht erreichbar – versuche zu starten..."
+command -v docker &>/dev/null \
+    || die "Docker nicht gefunden. Bitte zuerst install-linux.sh ausfuehren."
 
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        open -a Docker
-    elif command -v systemctl &>/dev/null; then
-        sudo systemctl start docker
-    else
-        die "Docker-Daemon nicht aktiv. Bitte manuell starten."
-    fi
+docker compose version &>/dev/null \
+    || die "Docker Compose nicht gefunden. Bitte zuerst install-linux.sh ausfuehren."
 
-    printf "    Warte auf Docker"
-    for i in $(seq 1 20); do
-        sleep 3
-        if docker info &>/dev/null; then
-            echo ""
-            ok "Docker bereit"
-            break
-        fi
-        printf "."
-        if [[ $i -eq 20 ]]; then
-            echo ""
-            die "Docker ist nach 60 Sekunden immer noch nicht bereit."
-        fi
-    done
-else
-    ok "Docker läuft"
-fi
+ok ".env gefunden"
 
-# ---------------------------------------------------------------------------
-# 3. Docker Compose verfügbar?
-# ---------------------------------------------------------------------------
-if ! docker compose version &>/dev/null; then
-    die "Docker Compose nicht gefunden. Bitte Docker (>= 23) neu installieren."
-fi
-
-# ---------------------------------------------------------------------------
-# 4. .env prüfen
-# ---------------------------------------------------------------------------
-step ".env prüfen"
-if [[ ! -f "$SCRIPT_DIR/.env" ]]; then
-    if [[ -f "$SCRIPT_DIR/.env.example" ]]; then
-        cp "$SCRIPT_DIR/.env.example" "$SCRIPT_DIR/.env"
-        warn ".env wurde aus .env.example erstellt."
-        warn "Bitte .env anpassen (Passwörter, JWT_SECRET), dann Skript erneut starten."
-        warn "  nano $SCRIPT_DIR/.env"
-        exit 0
-    else
-        die ".env fehlt und keine .env.example gefunden. Bitte .env manuell erstellen."
-    fi
-else
-    ok ".env gefunden"
-fi
-
-# ---------------------------------------------------------------------------
-# 5. APP_PORT aus .env lesen
-# ---------------------------------------------------------------------------
-APP_PORT=$(grep "^APP_PORT=" "$SCRIPT_DIR/.env" | cut -d= -f2 | tr -d '[:space:]') || true
+# Read APP_PORT from .env
+APP_PORT=$(grep "^APP_PORT=" "$REPO_DIR/.env" | cut -d= -f2 | tr -d '[:space:]') || true
 APP_PORT="${APP_PORT:-1337}"
 
 # ---------------------------------------------------------------------------
-# 6. Container bauen und starten
+# 2. Docker-Daemon pruefen
 # ---------------------------------------------------------------------------
-step "Container starten (docker compose up --build -d)"
-docker compose up --build -d
-ok "Container laufen"
+step "Docker pruefen"
 
-# ---------------------------------------------------------------------------
-# 7. Browser öffnen
-# ---------------------------------------------------------------------------
-URL="http://localhost:${APP_PORT}"
-step "Fertig!"
-echo ""
-echo -e "  ${GREEN}App:${NC} $URL"
-echo ""
-echo "  Nützliche Befehle:"
-echo "    Logs:      docker compose logs -f"
-echo "    Stoppen:   docker compose down"
-echo "    Neubauen:  docker compose up --build -d"
-echo ""
-
-# Try to open browser (non-fatal)
-if command -v xdg-open &>/dev/null; then
-    xdg-open "$URL" &>/dev/null &
-elif command -v open &>/dev/null; then
-    open "$URL"
+if ! docker info &>/dev/null; then
+    warn "Docker-Daemon nicht aktiv – versuche zu starten..."
+    if command -v systemctl &>/dev/null; then
+        sudo systemctl start docker
+        sleep 3
+    fi
+    docker info &>/dev/null || die "Docker-Daemon konnte nicht gestartet werden. Bitte manuell starten: sudo systemctl start docker"
 fi
+ok "Docker laeuft"
+
+# ---------------------------------------------------------------------------
+# 3. Images pruefen (gebaut?)
+# ---------------------------------------------------------------------------
+step "Docker-Images pruefen"
+
+IMG_COUNT=$(docker compose images -q 2>/dev/null | wc -l | tr -d ' ')
+if [[ "$IMG_COUNT" -lt 2 ]]; then
+    die "Docker-Images fehlen ($IMG_COUNT/3 gefunden). Bitte zuerst install-linux.sh ausfuehren."
+fi
+ok "Images vorhanden"
+
+# ---------------------------------------------------------------------------
+# 4. Container starten
+# ---------------------------------------------------------------------------
+step "Container starten"
+
+RUNNING=$(docker compose ps --status running -q 2>/dev/null | wc -l | tr -d ' ')
+if [[ "$RUNNING" -ge 3 ]]; then
+    ok "Alle Container laufen bereits"
+else
+    docker compose up -d
+    ok "Container gestartet"
+fi
+
+# ---------------------------------------------------------------------------
+# 5. Datenbank-Health pruefen
+# ---------------------------------------------------------------------------
+step "Datenbank pruefen"
+
+printf "    "
+DB_OK=0
+for i in $(seq 1 20); do
+    HEALTH=$(docker compose ps --format '{{.Health}}' db 2>/dev/null || echo "")
+    if [[ "$HEALTH" == "healthy" ]]; then
+        DB_OK=1
+        break
+    fi
+    printf "."
+    sleep 2
+done
+echo ""
+[[ $DB_OK -eq 1 ]] && ok "Datenbank gesund" \
+    || warn "Datenbank-Health-Check schlug fehl (docker compose logs db)"
+
+# ---------------------------------------------------------------------------
+# 6. Backend pruefen
+# ---------------------------------------------------------------------------
+step "Backend pruefen"
+
+printf "    "
+BACKEND_OK=0
+for i in $(seq 1 30); do
+    if docker compose logs backend 2>&1 | grep -q "Application startup complete"; then
+        BACKEND_OK=1
+        break
+    fi
+    printf "."
+    sleep 3
+done
+echo ""
+[[ $BACKEND_OK -eq 1 ]] && ok "Backend bereit" \
+    || warn "Backend antwortet noch nicht (docker compose logs backend)"
+
+# ---------------------------------------------------------------------------
+# 7. Frontend pruefen
+# ---------------------------------------------------------------------------
+step "Frontend pruefen"
+
+printf "    "
+FRONTEND_OK=0
+for i in $(seq 1 15); do
+    if curl -s --max-time 2 "http://localhost:${APP_PORT}" -o /dev/null 2>/dev/null; then
+        FRONTEND_OK=1
+        break
+    fi
+    printf "."
+    sleep 2
+done
+echo ""
+[[ $FRONTEND_OK -eq 1 ]] && ok "Frontend erreichbar" \
+    || warn "Frontend noch nicht erreichbar unter Port $APP_PORT (docker compose logs frontend)"
+
+# ---------------------------------------------------------------------------
+# 8. Fertig
+# ---------------------------------------------------------------------------
+step "Fertig!"
+
+LAN_IP=$(hostname -I 2>/dev/null | awk '{print $1}') || LAN_IP=""
+
+echo ""
+echo -e "  ${GREEN}App:      ${NC}http://localhost:${APP_PORT}"
+[[ -n "$LAN_IP" ]] && echo -e "  ${GREEN}Netzwerk: ${NC}http://${LAN_IP}:${APP_PORT}"
+echo ""
+echo -e "  ${NC}Logs:     docker compose logs -f"
+echo -e "  ${NC}Stoppen:  docker compose down"
+echo ""
