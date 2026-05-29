@@ -29,8 +29,25 @@ def _parse_date(raw: str) -> date:
         raise ValueError(f"Ungültiges Geburtsdatum: {raw!r}")
 
 
+def _decode_csv(raw: bytes) -> str:
+    """Decode CSV bytes trying common Windows/Excel encodings in order."""
+    for enc in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
+        try:
+            return raw.decode(enc)
+        except (UnicodeDecodeError, LookupError):
+            continue
+    return raw.decode("latin-1")  # always succeeds
+
+
+def _detect_delimiter(text: str) -> str:
+    """Use ';' if the header row contains more semicolons than commas (Excel DE), else ','."""
+    first_line = text.split("\n", 1)[0]
+    return ";" if first_line.count(";") > first_line.count(",") else ","
+
+
 def _parse_rows(text: str) -> List[Dict]:
-    rows = list(csv.DictReader(io.StringIO(text)))
+    delim = _detect_delimiter(text)
+    rows = list(csv.DictReader(io.StringIO(text), delimiter=delim))
     return [r for r in rows if r.get("Nachname", "").strip()]
 
 
@@ -112,17 +129,14 @@ def sync_students(remove_missing: bool = False) -> Tuple[int, int, int]:
     if not CSV_FILE.exists():
         print("⚠️  students.csv nicht gefunden – Sync übersprungen")
         return 0, 0, 0
-    with CSV_FILE.open(encoding="utf-8", newline="") as fh:
-        text = fh.read()
-    rows = _parse_rows(text)
+    rows = _parse_rows(_decode_csv(CSV_FILE.read_bytes()))
     added, updated, removed, _ = _sync_rows(rows, remove_missing=remove_missing)
     return added, updated, removed
 
 
 def sync_students_from_upload(csv_bytes: bytes, remove_missing: bool = True) -> Tuple[int, int, int, list]:
     """Sync from uploaded CSV bytes. Returns (added, updated, removed, errors)."""
-    text = csv_bytes.decode("utf-8", errors="replace")
-    rows = _parse_rows(text)
+    rows = _parse_rows(_decode_csv(csv_bytes))
     return _sync_rows(rows, remove_missing=remove_missing)
 
 
