@@ -13,6 +13,7 @@ export const QK = {
   matrix: (cls: string, subject: string) => ["matrix", cls, subject] as const,
   stammdaten: (cls: string) => ["stammdaten", cls] as const,
   reportText: (studentId: number) => ["reportText", studentId] as const,
+  remarks: (studentId: number) => ["remarks", studentId] as const,
   adminStudents: (cls: string) => ["admin", "students", cls] as const,
   users: ["admin", "users"] as const,
 };

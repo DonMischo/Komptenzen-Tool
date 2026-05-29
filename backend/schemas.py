@@ -202,6 +202,10 @@ class ReportTextUpdate(BaseModel):
     report_text: str
 
 
+class RemarksUpdate(BaseModel):
+    remarks: str
+
+
 # ---------------------------------------------------------------------------
 # Admin / Export
 # ---------------------------------------------------------------------------

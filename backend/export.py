@@ -20,6 +20,7 @@ from typing import Any, Dict, List, Set, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
+from html_to_latex import html_to_latex
 from db_schema import (
     ENGINE,
     Student,
@@ -162,8 +163,8 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
         "school_year": sy.name,
         "part_of_year": "Endjahr" if sy.endjahr else "Halbjahr",
         "report_date": sy.report_day.strftime("%d.%m.%Y") if sy.report_day else "",
-        "personal_text": _latex_escape_body(stu.report_text or ""),
-        "comment": stu.remarks or "",
+        "personal_text": html_to_latex(stu.report_text or ""),
+        "comment": html_to_latex(stu.remarks or ""),
         "absenceDaysTotal": (stu.days_absent_excused or 0) + (stu.days_absent_unexcused or 0),
         "absenceDaysUnauthorized": stu.days_absent_unexcused or 0,
         "absenceHoursTotal": (stu.lessons_absent_excused or 0) + (stu.lessons_absent_unexcused or 0),

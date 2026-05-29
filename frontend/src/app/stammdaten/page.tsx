@@ -8,6 +8,7 @@ import { stammdatenApi, competenceApi } from "@/lib/api";
 import { QK } from "@/lib/queries";
 import { StudentBaseData } from "@/types/api";
 import { ReportTextEditor } from "@/components/stammdaten/ReportTextEditor";
+import { RemarksEditor } from "@/components/stammdaten/RemarksEditor";
 import { Save } from "lucide-react";
 
 export default function StammdatenPage() {
@@ -16,6 +17,7 @@ export default function StammdatenPage() {
   const [editRows, setEditRows] = useState<StudentBaseData[]>([]);
   const [dirty, setDirty] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [remarksStudentId, setRemarksStudentId] = useState<number | null>(null);
 
   const { data: classesData } = useQuery({
     queryKey: QK.classes,
@@ -79,6 +81,7 @@ export default function StammdatenPage() {
             onChange={(e) => {
               setSelectedClass(e.target.value);
               setSelectedStudentId(null);
+              setRemarksStudentId(null);
             }}
             className="border rounded-md px-2 py-1.5 text-sm"
           >
@@ -152,20 +155,22 @@ export default function StammdatenPage() {
                         className="h-4 w-4"
                       />
                     </td>
-                    <td className="px-1 py-1 border-b">
-                      <input
-                        type="text"
-                        value={stu.remarks}
-                        onChange={(e) => updateField(stu.id, "remarks", e.target.value)}
-                        className="w-32 border rounded px-1 py-0.5 text-xs"
-                      />
+                    <td className="px-2 py-1 border-b text-center">
+                      <button
+                        onClick={() => setRemarksStudentId(stu.id)}
+                        className="text-xs text-blue-600 hover:underline"
+                        title="Bemerkungen bearbeiten"
+                      >
+                        ✏️
+                      </button>
                     </td>
                     <td className="px-2 py-1 border-b text-center">
                       <button
-                        onClick={() => setSelectedStudentId(stu.id === selectedStudentId ? null : stu.id)}
+                        onClick={() => setSelectedStudentId(stu.id)}
                         className="text-xs text-blue-600 hover:underline"
+                        title="Zeugnistext bearbeiten"
                       >
-                        {stu.id === selectedStudentId ? "▲" : "✏️"}
+                        📝
                       </button>
                     </td>
                   </tr>
@@ -175,17 +180,29 @@ export default function StammdatenPage() {
           </div>
         )}
 
-        {/* Report text editor */}
-        {selectedStudentId && (
-          <ReportTextEditor
-            studentId={selectedStudentId}
-            studentName={
-              editRows.find((s) => s.id === selectedStudentId)
-                ? `${editRows.find((s) => s.id === selectedStudentId)!.last_name}, ${editRows.find((s) => s.id === selectedStudentId)!.first_name}`
-                : ""
-            }
-          />
-        )}
+        {/* Zeugnistext modal */}
+        {selectedStudentId && (() => {
+          const stu = editRows.find((s) => s.id === selectedStudentId);
+          return stu ? (
+            <ReportTextEditor
+              studentId={selectedStudentId}
+              studentName={`${stu.last_name}, ${stu.first_name}`}
+              onClose={() => setSelectedStudentId(null)}
+            />
+          ) : null;
+        })()}
+
+        {/* Bemerkungen modal */}
+        {remarksStudentId && (() => {
+          const stu = editRows.find((s) => s.id === remarksStudentId);
+          return stu ? (
+            <RemarksEditor
+              studentId={remarksStudentId}
+              studentName={`${stu.last_name}, ${stu.first_name}`}
+              onClose={() => setRemarksStudentId(null)}
+            />
+          ) : null;
+        })()}
       </div>
     </AppShell>
   );

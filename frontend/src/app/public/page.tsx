@@ -381,16 +381,16 @@ export default function PublicPage() {
                 </div>
               )}
 
-              {selectedStudentId && (
-                <ReportTextEditor
-                  studentId={selectedStudentId}
-                  studentName={
-                    editRows.find((s) => s.id === selectedStudentId)
-                      ? `${editRows.find((s) => s.id === selectedStudentId)!.last_name}, ${editRows.find((s) => s.id === selectedStudentId)!.first_name}`
-                      : ""
-                  }
-                />
-              )}
+              {selectedStudentId && (() => {
+                const stu = editRows.find((s) => s.id === selectedStudentId);
+                return stu ? (
+                  <ReportTextEditor
+                    studentId={selectedStudentId}
+                    studentName={`${stu.last_name}, ${stu.first_name}`}
+                    onClose={() => setSelectedStudentId(null)}
+                  />
+                ) : null;
+              })()}
             </div>
           )}
         </div>

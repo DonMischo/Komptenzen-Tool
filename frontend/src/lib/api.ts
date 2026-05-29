@@ -97,6 +97,10 @@ export const stammdatenApi = {
     api.get(`/stammdaten/${student_id}/report-text`),
   saveReportText: (student_id: number, report_text: string) =>
     api.put(`/stammdaten/${student_id}/report-text`, { report_text }),
+  getRemarks: (student_id: number) =>
+    api.get(`/stammdaten/${student_id}/remarks`),
+  saveRemarks: (student_id: number, remarks: string) =>
+    api.put(`/stammdaten/${student_id}/remarks`, { remarks }),
 };
 
 // ---------------------------------------------------------------------------

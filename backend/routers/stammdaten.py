@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from db_helpers import get_students_by_class
 from db_schema import Student
 from deps import get_db, get_current_user
-from schemas import StudentBaseData, StudentBaseDataUpdate, ReportTextUpdate
+from schemas import StudentBaseData, StudentBaseDataUpdate, ReportTextUpdate, RemarksUpdate
 
 router = APIRouter(dependencies=[Depends(get_current_user)])
 
@@ -110,6 +110,31 @@ def get_report_text(
     if stu is None:
         raise HTTPException(404, "Schüler nicht gefunden")
     return {"report_text": stu.report_text or ""}
+
+
+@router.get("/{student_id}/remarks")
+def get_remarks(
+    student_id: int,
+    db: Session = Depends(get_db),
+):
+    stu = db.get(Student, student_id)
+    if stu is None:
+        raise HTTPException(404, "Schüler nicht gefunden")
+    return {"remarks": stu.remarks or ""}
+
+
+@router.put("/{student_id}/remarks")
+def save_remarks(
+    student_id: int,
+    req: RemarksUpdate,
+    db: Session = Depends(get_db),
+):
+    stu = db.get(Student, student_id)
+    if stu is None:
+        raise HTTPException(404, "Schüler nicht gefunden")
+    stu.remarks = req.remarks
+    db.commit()
+    return {"ok": True}
 
 
 @router.put("/{student_id}/report-text")
