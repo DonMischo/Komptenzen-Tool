@@ -4,12 +4,13 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: Request,
-  { params }: { params: { job_id: string } }
+  { params }: { params: Promise<{ job_id: string }> }
 ) {
   const backendUrl = process.env.BACKEND_URL || "http://localhost:8000";
+  const { job_id } = await params;
 
   const upstream = await fetch(
-    `${backendUrl}/api/admin/export/stream/${params.job_id}`,
+    `${backendUrl}/api/admin/export/stream/${job_id}`,
     { headers: { Accept: "text/event-stream" } }
   );
 
