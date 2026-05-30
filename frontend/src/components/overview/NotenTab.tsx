@@ -9,7 +9,6 @@ interface Props {
   classNameValue: string;
 }
 
-// Short subject labels for table headers
 function shortLabel(name: string): string {
   const MAP: Record<string, string> = {
     "Deutsch": "DE",
@@ -29,7 +28,6 @@ function shortLabel(name: string): string {
   return MAP[name] ?? name.slice(0, 6);
 }
 
-// Short codes for Wahlpflicht subjects shown inside the single WP cell
 const WP_SHORT: Record<string, string> = {
   "Wahlpflichtbereich - Französisch": "FR",
   "Wahlpflichtbereich - Spanisch": "SP",
@@ -37,17 +35,20 @@ const WP_SHORT: Record<string, string> = {
   "Wahlpflichtbereich - Natur und Technik": "NT",
 };
 
-function isDone(s: SubjectGradeStatus | undefined, noNiveau: boolean): boolean {
-  if (!s) return false;
-  return noNiveau ? s.has_grade : (s.has_niveau && s.has_grade);
+// Fraction label + colour
+function GradeFraction({ s }: { s: SubjectGradeStatus }) {
+  if (s.total_grades === 0) return <span className="text-slate-300 text-xs">–</span>;
+  const allDone = s.grades_given === s.total_grades;
+  const color = allDone ? "text-green-600" : s.grades_given === 0 ? "text-red-400" : "text-slate-600";
+  return <span className={`text-xs font-medium ${color}`}>{s.grades_given}/{s.total_grades}</span>;
 }
 
-function isPartial(s: SubjectGradeStatus | undefined, noNiveau: boolean): boolean {
-  if (!s || isDone(s, noNiveau)) return false;
-  return s.has_grade || s.has_niveau;
+// Orange ! if niveau missing and subject requires one
+function NiveauWarn({ has_niveau, noNiveau }: { has_niveau: boolean; noNiveau: boolean }) {
+  if (noNiveau || has_niveau) return null;
+  return <span className="ml-0.5 text-orange-500 text-xs font-bold">!</span>;
 }
 
-// Regular subject cell
 function SubjectCell({
   status,
   lb,
@@ -66,12 +67,15 @@ function SubjectCell({
       </td>
     );
   }
-  if (isDone(status, noNiveau)) return <td className="px-2 py-1 border-b text-center text-green-600">✓</td>;
-  if (isPartial(status, noNiveau)) return <td className="px-2 py-1 border-b text-center text-yellow-500">⚠</td>;
-  return <td className="px-2 py-1 border-b text-center text-red-400">✗</td>;
+  if (!status) return <td className="px-2 py-1 border-b text-center text-slate-300 text-xs">–</td>;
+  return (
+    <td className="px-2 py-1 border-b text-center whitespace-nowrap">
+      <GradeFraction s={status} />
+      <NiveauWarn has_niveau={status.has_niveau} noNiveau={noNiveau} />
+    </td>
+  );
 }
 
-// Single WP cell: find the active WP subject and show its short code
 function WPCell({
   stu,
   wpSubjects,
@@ -89,23 +93,29 @@ function WPCell({
     );
   }
 
-  // Find the WP subject with any data
   for (const name of wpSubjects) {
     const s = stu.wahlpflicht[name];
-    if (!s || (!s.has_grade && !s.has_niveau)) continue;
+    if (!s || (s.grades_given === 0 && !s.has_niveau)) continue;
     const noNiveau = wpNoNiveauSet.has(name);
-    const done = isDone(s, noNiveau);
     const short = WP_SHORT[name] ?? name.slice(0, 2);
+    const allDone = s.total_grades > 0 && s.grades_given === s.total_grades;
+    const codeColor = allDone ? "text-green-600" : "text-orange-500";
     return (
-      <td className="px-2 py-1 border-b text-center">
-        <span className={`text-xs font-semibold ${done ? "text-green-600" : "text-red-500"}`}>
-          {short}
-        </span>
+      <td className="px-2 py-1 border-b text-center whitespace-nowrap">
+        <span className={`text-xs font-semibold ${codeColor}`}>{short} </span>
+        <GradeFraction s={s} />
+        <NiveauWarn has_niveau={s.has_niveau} noNiveau={noNiveau} />
       </td>
     );
   }
 
   return <td className="px-2 py-1 border-b text-center text-red-400 text-xs">✗</td>;
+}
+
+function isDone(s: SubjectGradeStatus | undefined, noNiveau: boolean): boolean {
+  if (!s) return false;
+  if (s.total_grades === 0) return true;
+  return s.grades_given === s.total_grades && (noNiveau || s.has_niveau);
 }
 
 export function NotenTab({ classNameValue }: Props) {
@@ -134,11 +144,10 @@ export function NotenTab({ classNameValue }: Props) {
     }
     if (hasWP) {
       total++;
-      const wpDone = wahlpflicht_subjects.some((name) =>
-        isDone(stu.wahlpflicht[name], wpNoNiveauSet.has(name))
-      );
-      if (wpDone) done++;
+      if (wahlpflicht_subjects.some((n) => isDone(stu.wahlpflicht[n], wpNoNiveauSet.has(n)))) done++;
     }
+    total++;
+    if (stu.has_report_text) done++;
     return { done, total };
   }
 
@@ -165,6 +174,9 @@ export function NotenTab({ classNameValue }: Props) {
                 WP
               </th>
             )}
+            <th title="Zeugnistext" className="px-2 py-2 font-medium border-b text-center text-xs whitespace-nowrap">
+              ZT
+            </th>
             <th className="px-3 py-2 font-medium border-b text-center text-xs whitespace-nowrap">
               Gesamt
             </th>
@@ -193,12 +205,13 @@ export function NotenTab({ classNameValue }: Props) {
                   />
                 ))}
                 {hasWP && (
-                  <WPCell
-                    stu={stu}
-                    wpSubjects={wahlpflicht_subjects}
-                    wpNoNiveauSet={wpNoNiveauSet}
-                  />
+                  <WPCell stu={stu} wpSubjects={wahlpflicht_subjects} wpNoNiveauSet={wpNoNiveauSet} />
                 )}
+                <td className="px-2 py-1 border-b text-center">
+                  {stu.has_report_text
+                    ? <span className="text-green-600 text-sm">✓</span>
+                    : <span className="text-red-400 text-sm">✗</span>}
+                </td>
                 <td className="px-3 py-1 border-b text-center text-xs whitespace-nowrap">
                   {summary === null ? (
                     <span className="text-slate-400">–</span>

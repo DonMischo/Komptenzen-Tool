@@ -26,12 +26,19 @@ export function GradeMatrixTable({ classNameValue, subject }: Props) {
   const [rows, setRows] = useState<GradeMatrixRow[]>([]);
   const [dirty, setDirty] = useState(false);
 
+  const NO_NIVEAU_SUBJECTS = new Set([
+    "Sport",
+    "Werkstätten",
+    "Wahlpflichtbereich - Darstellen und Gestalten",
+  ]);
+  const defaultNiveau = NO_NIVEAU_SUBJECTS.has(subject) ? "" : "2";
+
   useEffect(() => {
     if (data) {
-      setRows(data.rows.map((r) => ({ ...r, grades: { ...r.grades }, niveau: r.niveau || "2" })));
+      setRows(data.rows.map((r) => ({ ...r, grades: { ...r.grades }, niveau: r.niveau || defaultNiveau })));
       setDirty(false);
     }
-  }, [data]);
+  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const saveMutation = useMutation({
     mutationFn: () => studentsApi.saveMatrix(classNameValue, subject, rows),

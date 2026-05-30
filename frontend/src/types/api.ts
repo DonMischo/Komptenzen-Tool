@@ -110,6 +110,8 @@ export interface ExportPrepareResponse {
 export interface CompetenceStatusItem {
   name: string;
   selected_count: number;
+  custom_count: number;
+  total_count: number;
 }
 
 export interface CompetenceStatusResponse {
@@ -118,7 +120,8 @@ export interface CompetenceStatusResponse {
 
 export interface SubjectGradeStatus {
   has_niveau: boolean;
-  has_grade: boolean;
+  grades_given: number;
+  total_grades: number;
 }
 
 export interface StudentGradeStatus {
@@ -127,6 +130,7 @@ export interface StudentGradeStatus {
   first_name: string;
   lb: boolean;
   gb: boolean;
+  has_report_text: boolean;
   subjects: Record<string, SubjectGradeStatus>;
   wahlpflicht: Record<string, SubjectGradeStatus>;
 }

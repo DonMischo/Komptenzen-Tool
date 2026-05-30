@@ -213,6 +213,8 @@ class RemarksUpdate(BaseModel):
 class CompetenceStatusItem(BaseModel):
     name: str
     selected_count: int
+    custom_count: int
+    total_count: int
 
 
 class CompetenceStatusResponse(BaseModel):
@@ -221,7 +223,8 @@ class CompetenceStatusResponse(BaseModel):
 
 class SubjectGradeStatus(BaseModel):
     has_niveau: bool
-    has_grade: bool
+    grades_given: int
+    total_grades: int
 
 
 class StudentGradeStatus(BaseModel):
@@ -230,6 +233,7 @@ class StudentGradeStatus(BaseModel):
     first_name: str
     lb: bool
     gb: bool
+    has_report_text: bool
     subjects: dict[str, SubjectGradeStatus]
     wahlpflicht: dict[str, SubjectGradeStatus]
 

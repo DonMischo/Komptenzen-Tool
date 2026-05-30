@@ -79,19 +79,40 @@ def get_competence_status(class_name: str, db: Session = Depends(get_db)):
     items: list[CompetenceStatusItem] = []
     for subj_name in relevant:
         sid = db.scalar(select(Subject.id).where(Subject.name == subj_name))
-        count = 0
-        if sid and class_row:
-            count = db.execute(
-                select(func.count(ClassCompetence.competence_id))
-                .join(Competence, ClassCompetence.competence_id == Competence.id)
+        selected_count = 0
+        total_count = 0
+        custom_count = 0
+        if sid:
+            total_count = db.execute(
+                select(func.count(Competence.id))
                 .join(Topic, Competence.topic_id == Topic.id)
-                .where(
-                    ClassCompetence.class_id == class_row.id,
-                    ClassCompetence.selected.is_(True),
-                    Topic.subject_id == sid,
-                )
+                .where(Topic.subject_id == sid)
             ).scalar() or 0
-        items.append(CompetenceStatusItem(name=subj_name, selected_count=count))
+            if class_row:
+                selected_count = db.execute(
+                    select(func.count(ClassCompetence.competence_id))
+                    .join(Competence, ClassCompetence.competence_id == Competence.id)
+                    .join(Topic, Competence.topic_id == Topic.id)
+                    .where(
+                        ClassCompetence.class_id == class_row.id,
+                        ClassCompetence.selected.is_(True),
+                        Topic.subject_id == sid,
+                    )
+                ).scalar() or 0
+                custom_count = db.execute(
+                    select(func.count(CustomCompetence.id))
+                    .join(Topic, CustomCompetence.topic_id == Topic.id)
+                    .where(
+                        CustomCompetence.class_id == class_row.id,
+                        Topic.subject_id == sid,
+                    )
+                ).scalar() or 0
+        items.append(CompetenceStatusItem(
+            name=subj_name,
+            selected_count=selected_count,
+            custom_count=custom_count,
+            total_count=total_count,
+        ))
 
     return CompetenceStatusResponse(subjects=items)
 
@@ -144,47 +165,61 @@ def get_grade_status(class_name: str, db: Session = Depends(get_db)):
     ):
         niveau_map[(ss.student_id, ss.subject_id)] = ss.niveau or ""
 
-    # Batch: which (student_id, subject_id) have non-empty grades
-    grade_has: set[tuple[int, int]] = set()
-    for row in db.execute(
-        select(Grade.student_id, Topic.subject_id)
-        .join(Topic, Grade.topic_id == Topic.id)
-        .where(
-            Grade.student_id.in_(all_student_ids),
-            Topic.subject_id.in_(all_subject_ids),
-            Grade.value.isnot(None),
-            Grade.value != "",
-            Grade.value != " ",
+    # Active topics per subject (topics with ≥1 selected competence for this class)
+    active_topic_count: dict[int, int] = {}  # subject_id → count
+    active_topic_ids: list[int] = []
+    topic_to_subject: dict[int, int] = {}
+    for sid in all_subject_ids:
+        tids = list(db.scalars(
+            select(Topic.id)
+            .join(Competence, Topic.id == Competence.topic_id)
+            .join(ClassCompetence,
+                  (ClassCompetence.class_id == class_row.id) &
+                  (ClassCompetence.competence_id == Competence.id) &
+                  ClassCompetence.selected.is_(True))
+            .where(Topic.subject_id == sid)
+            .distinct()
+        ))
+        active_topic_count[sid] = len(tids)
+        for tid in tids:
+            active_topic_ids.append(tid)
+            topic_to_subject[tid] = sid
+
+    # Batch: count non-empty grades per (student_id, subject_id)
+    grade_count_map: dict[tuple[int, int], int] = {}
+    if active_topic_ids:
+        for row in db.execute(
+            select(Grade.student_id, Topic.subject_id, func.count(Grade.id).label("cnt"))
+            .join(Topic, Grade.topic_id == Topic.id)
+            .where(
+                Grade.student_id.in_(all_student_ids),
+                Grade.topic_id.in_(active_topic_ids),
+                Grade.value.isnot(None),
+                Grade.value != "",
+                Grade.value != " ",
+            )
+            .group_by(Grade.student_id, Topic.subject_id)
+        ):
+            grade_count_map[(row.student_id, row.subject_id)] = row.cnt
+
+    def _make_status(stu_id: int, sid: int | None) -> SubjectGradeStatus:
+        if sid is None:
+            return SubjectGradeStatus(has_niveau=False, grades_given=0, total_grades=0)
+        niveau = niveau_map.get((stu_id, sid), "")
+        return SubjectGradeStatus(
+            has_niveau=bool(niveau.strip()),
+            grades_given=grade_count_map.get((stu_id, sid), 0),
+            total_grades=active_topic_count.get(sid, 0),
         )
-        .distinct()
-    ):
-        grade_has.add((row.student_id, row.subject_id))
 
     result: list[StudentGradeStatus] = []
     for stu in students:
-        subj_status: dict[str, SubjectGradeStatus] = {}
-        for name in relevant:
-            sid = subj_id_map.get(name)
-            if sid is None:
-                subj_status[name] = SubjectGradeStatus(has_niveau=False, has_grade=False)
-                continue
-            niveau = niveau_map.get((stu.id, sid), "")
-            subj_status[name] = SubjectGradeStatus(
-                has_niveau=bool(niveau.strip()),
-                has_grade=(stu.id, sid) in grade_has,
-            )
-
-        wp_status: dict[str, SubjectGradeStatus] = {}
-        for name in wahlpflicht:
-            sid = subj_id_map.get(name)
-            if sid is None:
-                wp_status[name] = SubjectGradeStatus(has_niveau=False, has_grade=False)
-                continue
-            niveau = niveau_map.get((stu.id, sid), "")
-            wp_status[name] = SubjectGradeStatus(
-                has_niveau=bool(niveau.strip()),
-                has_grade=(stu.id, sid) in grade_has,
-            )
+        subj_status: dict[str, SubjectGradeStatus] = {
+            name: _make_status(stu.id, subj_id_map.get(name)) for name in relevant
+        }
+        wp_status: dict[str, SubjectGradeStatus] = {
+            name: _make_status(stu.id, subj_id_map.get(name)) for name in wahlpflicht
+        }
 
         result.append(StudentGradeStatus(
             student_id=stu.id,
@@ -192,6 +227,7 @@ def get_grade_status(class_name: str, db: Session = Depends(get_db)):
             first_name=stu.first_name,
             lb=bool(stu.lb),
             gb=bool(stu.gb),
+            has_report_text=bool(stu.report_text and stu.report_text.strip()),
             subjects=subj_status,
             wahlpflicht=wp_status,
         ))
