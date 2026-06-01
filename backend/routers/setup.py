@@ -179,8 +179,15 @@ def fetch_report_day(type: str = "hj", _: str = Depends(get_current_user)):
 
 @router.post("/setup/testdata")
 def generate_testdata(_: str = Depends(get_current_user)):
-    from generate_test_data import generate_class_7a
-    msg = generate_class_7a()
+    from generate_test_data import generate_class_7ef
+    msg = generate_class_7ef()
+    return {"message": msg}
+
+
+@router.delete("/setup/testdata")
+def remove_testdata(_: str = Depends(get_current_user)):
+    from generate_test_data import clear_class_7ef
+    msg = clear_class_7ef()
     return {"message": msg}
 
 

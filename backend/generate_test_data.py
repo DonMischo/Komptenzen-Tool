@@ -1,12 +1,13 @@
 # generate_test_data.py
 """
-Generates realistic test data for class 7a.
+Generates realistic test data for class 7ef.
 Run from setup_ui or directly:  python generate_test_data.py
 """
 from __future__ import annotations
 import random
+from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import select, delete as sql_delete
 from sqlalchemy.orm import Session
 
 from db_schema import (
@@ -18,6 +19,7 @@ from db_schema import (
 # Constants
 # ---------------------------------------------------------------------------
 
+CLASS_NAME = "7ef"
 BLOCK = "7/8"
 
 # Subjects without a numeric Niveau
@@ -52,10 +54,18 @@ MAIN_SUBJECTS = [
     "Mitarbeit und Verhalten",
 ]
 
-FEMALE_FIRST_NAMES = {
-    "Friederike", "Lina", "Hanni", "Lana", "Lucie",
-    "Kira", "Leony", "Larissa", "Bisan",
-}
+FEMALE_FIRST_NAMES = {"Anna", "Clara", "Eva", "Lina", "Hanni"}
+
+# Fixed test students — deterministic birthdays so remove can target them
+TEST_STUDENTS = [
+    {"first_name": "Anna",      "last_name": "Muster",   "birthday": date(2012, 3, 15)},
+    {"first_name": "Ben",       "last_name": "Muster",   "birthday": date(2012, 5, 22)},
+    {"first_name": "Clara",     "last_name": "Test",     "birthday": date(2012, 1, 8)},
+    {"first_name": "David",     "last_name": "Test",     "birthday": date(2012, 7, 30)},
+    {"first_name": "Eva",       "last_name": "Probe",    "birthday": date(2012, 9, 14)},
+    {"first_name": "Felix",     "last_name": "Probe",    "birthday": date(2012, 11, 3)},
+    {"first_name": "Alexander", "last_name": "Herrmann", "birthday": date(2012, 4, 17)},
+]
 
 # ---------------------------------------------------------------------------
 # Text templates
@@ -153,6 +163,32 @@ NIVEAU_WORTURTEIL_ALEXANDER = (
 # Helper functions
 # ---------------------------------------------------------------------------
 
+def _get_or_create_class(ses: Session) -> SchoolClass:
+    school_class = ses.query(SchoolClass).filter_by(name=CLASS_NAME).first()
+    if school_class is None:
+        school_class = SchoolClass(name=CLASS_NAME)
+        ses.add(school_class)
+        ses.flush()
+    return school_class
+
+
+def _upsert_student(ses: Session, class_id: int, first_name: str,
+                    last_name: str, birthday: date) -> Student:
+    stu = ses.query(Student).filter_by(
+        last_name=last_name, first_name=first_name, birthday=birthday
+    ).first()
+    if stu is None:
+        stu = Student(
+            last_name=last_name, first_name=first_name,
+            birthday=birthday, class_id=class_id,
+        )
+        ses.add(stu)
+        ses.flush()
+    else:
+        stu.class_id = class_id  # re-assign in case it moved
+    return stu
+
+
 def _upsert_student_subject(ses: Session, student_id: int, subject_id: int,
                              niveau: str | None) -> StudentSubject:
     ss = ses.query(StudentSubject).filter_by(
@@ -177,16 +213,12 @@ def _upsert_grade(ses: Session, student_id: int, topic_id: int, value: str):
 
 def _select_all_competences_for_class(ses: Session, class_id: int,
                                        subject_names: list[str]):
-    """
-    Mark all block-7/8 competences as selected for the given class.
-    Falls back to all blocks if a subject has no 7/8 topics.
-    """
     for name in subject_names:
         subj = ses.query(Subject).filter_by(name=name).first()
         if not subj:
             continue
         topics = ses.query(Topic).filter_by(subject_id=subj.id, block=BLOCK).all()
-        if not topics:                          # fallback: any block
+        if not topics:
             topics = ses.query(Topic).filter_by(subject_id=subj.id).all()
         for topic in topics:
             for comp in topic.competences:
@@ -202,7 +234,6 @@ def _select_all_competences_for_class(ses: Session, class_id: int,
 
 
 def _topics_for(ses: Session, subject_id: int) -> list[Topic]:
-    """Return block-7/8 topics, falling back to all topics."""
     topics = ses.query(Topic).filter_by(subject_id=subject_id, block=BLOCK).all()
     if not topics:
         topics = ses.query(Topic).filter_by(subject_id=subject_id).all()
@@ -210,42 +241,38 @@ def _topics_for(ses: Session, subject_id: int) -> list[Topic]:
 
 
 # ---------------------------------------------------------------------------
-# Main generator
+# Generate
 # ---------------------------------------------------------------------------
 
-def generate_class_7a(seed: int = 42) -> str:
+def generate_class_7ef(seed: int = 42) -> str:
     """
-    Populate test data for class 7a.
-    Idempotent — safe to call multiple times (overwrites existing values).
-    Returns a human-readable status string.
+    Create class 7ef (if needed), insert fixed test students, and populate
+    competences, niveaus and grades.
+    Idempotent — safe to call multiple times.
     """
     rng = random.Random(seed)
 
     with Session(ENGINE) as ses:
-        # --- resolve class ---
-        school_class = ses.query(SchoolClass).filter_by(name="7a").first()
-        if not school_class:
-            return "❌ Klasse 7a nicht gefunden."
+        school_class = _get_or_create_class(ses)
 
-        students = list(ses.query(Student).filter_by(class_id=school_class.id)
-                          .order_by(Student.last_name, Student.first_name).all())
-        if not students:
-            return "❌ Keine Schüler in Klasse 7a. Bitte zuerst Schülerdaten importieren."
+        # Ensure all test students exist
+        students = [
+            _upsert_student(ses, school_class.id, **s)
+            for s in TEST_STUDENTS
+        ]
+        ses.flush()
 
-        # --- resolve subjects ---
         all_subjects = {s.name: s for s in ses.query(Subject).all()}
         missing = [n for n in MAIN_SUBJECTS + WAHLPFLICHT if n not in all_subjects]
         warnings = []
         if missing:
             warnings.append(f"Fehlende Fächer (übersprungen): {', '.join(missing)}")
 
-        # --- 1. Select competences for whole class (all subjects) ---
         _select_all_competences_for_class(
             ses, school_class.id,
-            [n for n in MAIN_SUBJECTS + WAHLPFLICHT if n in all_subjects]
+            [n for n in MAIN_SUBJECTS + WAHLPFLICHT if n in all_subjects],
         )
 
-        # --- 2. Per-student data ---
         for idx, student in enumerate(students):
             is_alexander = (
                 student.first_name == "Alexander"
@@ -253,13 +280,11 @@ def generate_class_7a(seed: int = 42) -> str:
             )
             vorname = student.first_name
 
-            # Wahlpflichtfach — one per student, cycled
             wp_name = WAHLPFLICHT[idx % len(WAHLPFLICHT)]
             student_subjects = [n for n in MAIN_SUBJECTS if n in all_subjects]
             if wp_name in all_subjects:
                 student_subjects.append(wp_name)
 
-            # Report text
             if is_alexander:
                 student.report_text = REPORT_ALEXANDER
                 student.lb = True
@@ -267,21 +292,18 @@ def generate_class_7a(seed: int = 42) -> str:
                 pron     = "sie" if vorname in FEMALE_FIRST_NAMES else "er"
                 pron_akk = "ihr" if pron == "sie" else "sein"
                 student.report_text = REPORT_TEMPLATE.format(
-                    vorname=vorname, pron=pron, pron_akk=pron_akk
+                    vorname=vorname, pron=pron, pron_akk=pron_akk,
                 )
 
-            # Absence data
             student.days_absent_excused      = rng.randint(0, 6)
             student.days_absent_unexcused    = rng.randint(0, 2)
             student.lessons_absent_excused   = rng.randint(0, 12)
             student.lessons_absent_unexcused = rng.randint(0, 4)
 
-            # --- per subject ---
             for subj_name in student_subjects:
                 subj = all_subjects[subj_name]
                 no_niveau = subj_name in NO_NIVEAU
 
-                # Niveau
                 if no_niveau:
                     niveau = None
                 elif is_alexander and subj_name in ("Mathematik", "Englisch"):
@@ -291,18 +313,38 @@ def generate_class_7a(seed: int = 42) -> str:
 
                 _upsert_student_subject(ses, student.id, subj.id, niveau)
 
-                # Grades per topic — always numeric 1–4 (Worturteile live in niveau)
                 for topic in _topics_for(ses, subj.id):
-                    value = str(rng.randint(1, 4))
-                    _upsert_grade(ses, student.id, topic.id, value)
+                    _upsert_grade(ses, student.id, topic.id, str(rng.randint(1, 4)))
 
         ses.commit()
 
-    n = len(students)
-    msg = f"✅ Testdaten für Klasse 7a generiert — {n} Schüler, Niveaus 1–3, Noten 1–4."
+    msg = f"✅ Testdaten für Klasse {CLASS_NAME} generiert — {len(students)} Schüler."
     if warnings:
         msg += "\n⚠️ " + "\n⚠️ ".join(warnings)
     return msg
+
+
+# ---------------------------------------------------------------------------
+# Remove
+# ---------------------------------------------------------------------------
+
+def clear_class_7ef() -> str:
+    """Delete all test students and the 7ef class entry."""
+    with Session(ENGINE) as ses:
+        school_class = ses.query(SchoolClass).filter_by(name=CLASS_NAME).first()
+        if not school_class:
+            return f"ℹ️ Klasse {CLASS_NAME} nicht vorhanden."
+        students = ses.query(Student).filter_by(class_id=school_class.id).all()
+        count = len(students)
+        for stu in students:
+            ses.delete(stu)
+        ses.flush()
+        ses.execute(
+            sql_delete(ClassCompetence).where(ClassCompetence.class_id == school_class.id)
+        )
+        ses.delete(school_class)
+        ses.commit()
+    return f"✅ Klasse {CLASS_NAME} mit {count} Schüler(n) entfernt."
 
 
 # ---------------------------------------------------------------------------
@@ -311,4 +353,4 @@ def generate_class_7a(seed: int = 42) -> str:
 if __name__ == "__main__":
     from dotenv import load_dotenv
     load_dotenv()
-    print(generate_class_7a())
+    print(generate_class_7ef())

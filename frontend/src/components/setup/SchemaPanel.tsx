@@ -6,7 +6,6 @@ import { setupApi } from "@/lib/api";
 import { QK } from "@/lib/queries";
 import { SchemaStatusResponse } from "@/types/api";
 import { CheckCircle, AlertCircle } from "lucide-react";
-import api from "@/lib/api";
 
 export function SchemaPanel() {
   const qc = useQueryClient();
@@ -27,9 +26,15 @@ export function SchemaPanel() {
   });
 
   const testdataMutation = useMutation({
-    mutationFn: () => api.post("/setup/testdata").then((r) => r.data),
-    onSuccess: (data) => toast.success(data.message),
+    mutationFn: () => setupApi.generateTestdata().then((r) => r.data),
+    onSuccess: (data) => { toast.success(data.message); qc.invalidateQueries({ queryKey: QK.schemaStatus }); },
     onError: () => toast.error("Testdaten-Generierung fehlgeschlagen"),
+  });
+
+  const removeTestdataMutation = useMutation({
+    mutationFn: () => setupApi.removeTestdata().then((r) => r.data),
+    onSuccess: (data) => { toast.success(data.message); qc.invalidateQueries({ queryKey: QK.schemaStatus }); },
+    onError: () => toast.error("Testdaten konnten nicht entfernt werden"),
   });
 
   if (isLoading) return null;
@@ -65,13 +70,22 @@ export function SchemaPanel() {
           )}
 
           {ready && (
-            <button
-              onClick={() => testdataMutation.mutate()}
-              disabled={testdataMutation.isPending}
-              className="border text-sm px-3 py-1.5 rounded-md hover:bg-muted disabled:opacity-50"
-            >
-              {testdataMutation.isPending ? "Generiere…" : "Testdaten 7a"}
-            </button>
+            <>
+              <button
+                onClick={() => testdataMutation.mutate()}
+                disabled={testdataMutation.isPending}
+                className="border text-sm px-3 py-1.5 rounded-md hover:bg-muted disabled:opacity-50"
+              >
+                {testdataMutation.isPending ? "Generiere…" : "Testdaten 7ef"}
+              </button>
+              <button
+                onClick={() => removeTestdataMutation.mutate()}
+                disabled={removeTestdataMutation.isPending}
+                className="border text-sm px-3 py-1.5 rounded-md text-red-600 hover:bg-red-50 disabled:opacity-50"
+              >
+                {removeTestdataMutation.isPending ? "Entferne…" : "Testdaten entfernen"}
+              </button>
+            </>
           )}
         </div>
       ) : (

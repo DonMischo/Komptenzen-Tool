@@ -54,6 +54,8 @@ export const setupApi = {
     fd.append("remove_missing", String(remove_missing));
     return api.post("/setup/students/upload", fd);
   },
+  generateTestdata: () => api.post("/setup/testdata"),
+  removeTestdata: () => api.delete("/setup/testdata"),
   backupUrl: () => `/api/setup/backup`,
 };
 
