@@ -156,18 +156,17 @@ gemeinsamen Lernen. Wir freuen uns über {vorname}s Entwicklung.\
 
 LP_LB_HTML = (
     "<p>{vorname} besucht das Fach <strong>Lebenspraxis</strong> auf Grundlage "
-    "{pron_gen} individuellen Förderplans (Förderschwerpunkt Lernen).</p>"
+    "{pron_gen} individuellen Förderplans (<em>Förderschwerpunkt Lernen</em>).</p>"
     "<p>Inhalte umfassen praktische Alltagskompetenzen, soziale Interaktion und "
-    "selbstständiges Handeln in verschiedenen Lebenssituationen. {vorname} entwickelt "
-    "zunehmend Sicherheit im Umgang mit alltäglichen Anforderungen und zeigt "
-    "erkennbare Fortschritte bei der Übernahme einfacher Verantwortung.</p>"
+    "selbstständiges Handeln. {vorname} zeigt <u>erkennbare Fortschritte</u> "
+    "bei der Übernahme einfacher Verantwortung im Alltag.</p>"
 )
 
 LP_GB_HTML = (
     "<p>{vorname} nimmt aktiv am Unterricht in <strong>Lebenspraxis</strong> teil.</p>"
-    "<p>Schwerpunkte sind grundlegende Alltagskompetenzen und die Orientierung im "
-    "schulischen und sozialen Umfeld. {vorname} zeigt Freude an praktischen "
-    "Aktivitäten und reagiert positiv auf Zuwendung und Unterstützung.</p>"
+    "<p>Schwerpunkte sind <u>grundlegende Alltagskompetenzen</u> und die Orientierung im "
+    "schulischen und sozialen Umfeld. {vorname} zeigt <em>Freude an praktischen "
+    "Aktivitäten</em> und reagiert positiv auf Zuwendung und Unterstützung.</p>"
 )
 
 
@@ -259,22 +258,19 @@ def _lb_niveau_html(vorname: str, subj_name: str, topics: list, p: dict) -> str:
     from html import escape as _he
     pron_gen = p["pron_gen"]
     pron_cap = p["pron_cap"]
-    # Use <p> bullet lines instead of <ul>/<li> — avoids \begin{itemize} inside tabularray
-    topic_lines = "".join(
-        f"<p>· <strong>{_he(t.name)}</strong>: Grundlegende Inhalte auf adaptiertem Anforderungsniveau</p>"
+    items = "".join(
+        f"<li><strong>{_he(t.name)}</strong>: Grundlegende Inhalte auf adaptiertem Niveau</li>"
         for t in topics[:4]
     )
     topic_block = (
-        f"<p>{pron_cap} arbeitet an folgenden Themenbereichen des Regelunterrichts:</p>"
-        f"{topic_lines}"
-    ) if topic_lines else ""
+        f"<p>{pron_cap} arbeitet an folgenden Themenbereichen:</p><ul>{items}</ul>"
+    ) if items else ""
     return (
-        f"<p>{vorname} bearbeitet die Inhalte in <strong>{_he(subj_name)}</strong> auf Grundlage "
-        f"{pron_gen} individuellen Förderplans (Förderschwerpunkt Lernen). Die Aufgaben sind "
-        f"hinsichtlich Umfang und Komplexität individuell angepasst.</p>"
+        f"<p>{vorname} bearbeitet <strong>{_he(subj_name)}</strong> auf Grundlage "
+        f"{pron_gen} individuellen Förderplans (<em>Förderschwerpunkt Lernen</em>). "
+        f"Die Aufgaben sind <u>hinsichtlich Umfang und Komplexität</u> individuell angepasst.</p>"
         f"{topic_block}"
-        f"<p>Die Leistungsbewertung richtet sich nach {pron_gen} persönlichen Lernzielen und "
-        f"spiegelt {pron_gen} individuellen Lernfortschritt wider.</p>"
+        f"<p>Die Leistungsbewertung richtet sich nach {pron_gen} persönlichen Lernzielen.</p>"
     )
 
 
@@ -283,16 +279,17 @@ def _gb_niveau_html(vorname: str, subj_name: str, topics: list, p: dict) -> str:
     from html import escape as _he
     pron_gen = p["pron_gen"]
     pron_cap = p["pron_cap"]
-    topic_lines = "".join(
-        f"<p>· Handlungsorientierte Aktivitäten zu <strong>{_he(t.name)}</strong></p>"
+    items = "".join(
+        f"<li>Handlungsorientierte Aktivitäten zu <strong>{_he(t.name)}</strong></li>"
         for t in topics[:3]
     )
+    item_block = f"<ul>{items}</ul>" if items else ""
     return (
         f"<p>{vorname} nimmt am Unterricht in <strong>{_he(subj_name)}</strong> teil und wird durch "
-        f"differenzierte, handlungsorientierte Aufgaben einbezogen. Die Bewertung basiert auf "
-        f"{pron_gen} individuellen Förderzielen (Förderschwerpunkt geistige Entwicklung).</p>"
-        f"{topic_lines}"
-        f"<p>{pron_cap} zeigt Freude am Lernen und reagiert aufmerksam auf Unterrichtsimpulse.</p>"
+        f"<em>differenzierte, handlungsorientierte</em> Aufgaben einbezogen. Die Bewertung basiert auf "
+        f"{pron_gen} individuellen Förderzielen (<em>Förderschwerpunkt geistige Entwicklung</em>).</p>"
+        f"{item_block}"
+        f"<p>{pron_cap} zeigt <u>Freude am Lernen</u> und reagiert aufmerksam auf Unterrichtsimpulse.</p>"
     )
 
 

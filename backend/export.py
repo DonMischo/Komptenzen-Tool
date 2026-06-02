@@ -203,7 +203,13 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
         if is_special:
             level_val: Any = _SPECIAL_NIVEAU[raw_level]
         elif is_html:
-            level_val = r"{\setstretch{1.15}" + html_to_latex(raw_level) + "}"
+            # \parskip=4pt: with \parindent=0 (document default) paragraph
+            # breaks are otherwise invisible; this keeps them visible in the
+            # tabularray X[l] cell without affecting surrounding content.
+            level_val = (
+                r"{\setstretch{1.15}\setlength{\parskip}{4pt}"
+                + html_to_latex(raw_level) + "}"
+            )
         elif long_level_text:
             level_val = format_level_text(raw_level)
         else:
