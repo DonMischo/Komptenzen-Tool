@@ -202,23 +202,28 @@ def get_grade_status(class_name: str, db: Session = Depends(get_db)):
         ):
             grade_count_map[(row.student_id, row.subject_id)] = row.cnt
 
-    def _make_status(stu_id: int, sid: int | None) -> SubjectGradeStatus:
+    _STANDARD_GRADES = {"1", "2", "3", "4", "nb", "ne", ""}
+
+    def _make_status(stu_id: int, sid: int | None, lb: bool = False) -> SubjectGradeStatus:
         if sid is None:
             return SubjectGradeStatus(has_niveau=False, grades_given=0, total_grades=0)
         niveau = niveau_map.get((stu_id, sid), "")
+        # LB text mode: niveau is a long free text (not "LB", "1", "2", "3", etc.)
+        is_text_mode = lb and len(niveau.strip()) > 5
         return SubjectGradeStatus(
             has_niveau=bool(niveau.strip()),
             grades_given=grade_count_map.get((stu_id, sid), 0),
             total_grades=active_topic_count.get(sid, 0),
+            is_text_mode=is_text_mode,
         )
 
     result: list[StudentGradeStatus] = []
     for stu in students:
         subj_status: dict[str, SubjectGradeStatus] = {
-            name: _make_status(stu.id, subj_id_map.get(name)) for name in relevant
+            name: _make_status(stu.id, subj_id_map.get(name), lb=bool(stu.lb)) for name in relevant
         }
         wp_status: dict[str, SubjectGradeStatus] = {
-            name: _make_status(stu.id, subj_id_map.get(name)) for name in wahlpflicht
+            name: _make_status(stu.id, subj_id_map.get(name), lb=bool(stu.lb)) for name in wahlpflicht
         }
 
         result.append(StudentGradeStatus(

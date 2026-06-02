@@ -49,6 +49,12 @@ function NiveauWarn({ has_niveau, noNiveau }: { has_niveau: boolean; noNiveau: b
   return <span className="ml-0.5 text-orange-500 text-xs font-bold">!</span>;
 }
 
+function TextDone({ set }: { set: boolean }) {
+  return set
+    ? <span className="text-green-600 text-sm">✓</span>
+    : <span className="text-red-400 text-sm">✗</span>;
+}
+
 function SubjectCell({
   status,
   lb,
@@ -60,13 +66,23 @@ function SubjectCell({
   gb: boolean;
   noNiveau: boolean;
 }) {
-  if (lb || gb) {
+  // GB: always text-only — show ✓/✗ based on niveau text being set
+  if (gb) {
     return (
       <td className="px-2 py-1 border-b text-center">
-        <span className="text-xs text-slate-400">{lb ? "LB" : "GB"}</span>
+        <TextDone set={!!status?.has_niveau} />
       </td>
     );
   }
+  // LB text-mode subject: show ✓/✗ based on niveau text
+  if (lb && status?.is_text_mode) {
+    return (
+      <td className="px-2 py-1 border-b text-center">
+        <TextDone set={!!status.has_niveau} />
+      </td>
+    );
+  }
+  // LB grade-mode subject: show fraction like normal students
   if (!status) return <td className="px-2 py-1 border-b text-center text-slate-300 text-xs">–</td>;
   return (
     <td className="px-2 py-1 border-b text-center whitespace-nowrap">
@@ -85,12 +101,28 @@ function WPCell({
   wpSubjects: string[];
   wpNoNiveauSet: Set<string>;
 }) {
-  if (stu.lb || stu.gb) {
+  if (stu.gb) {
+    const s = wpSubjects.map((n) => stu.wahlpflicht[n]).find((s) => s);
     return (
       <td className="px-2 py-1 border-b text-center">
-        <span className="text-xs text-slate-400">{stu.lb ? "LB" : "GB"}</span>
+        <TextDone set={!!s?.has_niveau} />
       </td>
     );
+  }
+  if (stu.lb) {
+    for (const name of wpSubjects) {
+      const s = stu.wahlpflicht[name];
+      if (!s) continue;
+      if (s.is_text_mode) {
+        return (
+          <td className="px-2 py-1 border-b text-center">
+            <TextDone set={s.has_niveau} />
+          </td>
+        );
+      }
+      // grade mode — fall through to normal rendering below
+      break;
+    }
   }
 
   for (const name of wpSubjects) {
@@ -151,7 +183,33 @@ export function NotenTab({ classNameValue }: Props) {
     return { done, total };
   }
 
+  const hasLB = students.some((s) => s.lb);
+  const hasGB = students.some((s) => s.gb);
+
+  const rowBg = (stu: StudentGradeStatus, ri: number) => {
+    if (stu.lb) return ri % 2 === 0 ? "bg-green-800/10" : "bg-green-800/20";
+    if (stu.gb) return ri % 2 === 0 ? "bg-orange-700/10" : "bg-orange-700/20";
+    return ri % 2 === 0 ? "bg-white" : "bg-muted/20";
+  };
+
   return (
+    <div className="space-y-3">
+      {(hasLB || hasGB) && (
+        <div className="flex items-center gap-3">
+          {hasLB && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="inline-block w-3 h-3 rounded-sm bg-green-800/40 border border-green-800/30" />
+              LB
+            </span>
+          )}
+          {hasGB && (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="inline-block w-3 h-3 rounded-sm bg-orange-700/40 border border-orange-700/30" />
+              GB
+            </span>
+          )}
+        </div>
+      )}
     <div className="overflow-x-auto border rounded-xl">
       <table className="text-sm w-full border-collapse">
         <thead>
@@ -187,12 +245,9 @@ export function NotenTab({ classNameValue }: Props) {
             const summary = countDone(stu);
             const allDone = summary ? summary.done === summary.total : null;
             return (
-              <tr key={stu.student_id} className={ri % 2 === 0 ? "bg-white" : "bg-muted/20"}>
+              <tr key={stu.student_id} className={rowBg(stu, ri)}>
                 <td className="px-3 py-1 border-b font-medium whitespace-nowrap sticky left-0 bg-inherit">
                   {stu.last_name}
-                  {(stu.lb || stu.gb) && (
-                    <span className="ml-1 text-xs text-slate-400">[{stu.lb ? "LB" : "GB"}]</span>
-                  )}
                 </td>
                 <td className="px-3 py-1 border-b whitespace-nowrap">{stu.first_name}</td>
                 {relevant_subjects.map((name) => (
@@ -226,6 +281,7 @@ export function NotenTab({ classNameValue }: Props) {
           })}
         </tbody>
       </table>
+    </div>
     </div>
   );
 }

@@ -113,6 +113,7 @@ export default function KompetenzenPage() {
                   className={selectedClass}
                   pendingChanges={pendingChanges}
                   onToggle={handleToggle}
+                  forceSelected={selectedSubject === "Werkstätten"}
                   onRefresh={() =>
                     qc.invalidateQueries({
                       queryKey: QK.competences(selectedClass, selectedSubject, selectedBlock),

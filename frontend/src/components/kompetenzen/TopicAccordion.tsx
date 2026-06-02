@@ -14,9 +14,10 @@ interface Props {
   pendingChanges: Map<number, boolean>;
   onToggle: (compId: number, value: boolean) => void;
   onRefresh: () => void;
+  forceSelected?: boolean;
 }
 
-export function TopicAccordion({ topic, className, pendingChanges, onToggle, onRefresh }: Props) {
+export function TopicAccordion({ topic, className, pendingChanges, onToggle, onRefresh, forceSelected = false }: Props) {
   const [open, setOpen] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newText, setNewText] = useState("");
@@ -95,17 +96,19 @@ export function TopicAccordion({ topic, className, pendingChanges, onToggle, onR
       {open && (
         <div className="px-4 py-3 space-y-2">
           {topic.competences.map((comp) => {
-            const isSelected =
-              pendingChanges.get(comp.competence_id) ?? comp.selected;
+            const isSelected = forceSelected
+              ? true
+              : (pendingChanges.get(comp.competence_id) ?? comp.selected);
             return (
               <label
                 key={comp.competence_id}
-                className="flex items-start gap-3 cursor-pointer group"
+                className={cn("flex items-start gap-3", forceSelected ? "cursor-default" : "cursor-pointer group")}
               >
                 <input
                   type="checkbox"
                   checked={isSelected}
-                  onChange={(e) => onToggle(comp.competence_id, e.target.checked)}
+                  disabled={forceSelected}
+                  onChange={(e) => !forceSelected && onToggle(comp.competence_id, e.target.checked)}
                   className="mt-0.5 h-4 w-4 rounded border-gray-300"
                 />
                 <span
