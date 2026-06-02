@@ -154,16 +154,20 @@ individuellen Förderplans mit dem Förderschwerpunkt geistige Entwicklung.
 gemeinsamen Lernen. Wir freuen uns über {vorname}s Entwicklung.\
 """
 
-LB_NIVEAU_TEXT = (
-    "{vorname} besucht den Unterricht auf der Grundlage eines individuellen "
-    "Förderplans mit dem Förderschwerpunkt Lernen. Die Leistungsbewertung "
-    "erfolgt auf Basis individueller Lernziele."
+LP_LB_HTML = (
+    "<p>{vorname} besucht das Fach <strong>Lebenspraxis</strong> auf Grundlage "
+    "{pron_gen} individuellen Förderplans (Förderschwerpunkt Lernen).</p>"
+    "<p>Inhalte umfassen praktische Alltagskompetenzen, soziale Interaktion und "
+    "selbstständiges Handeln in verschiedenen Lebenssituationen. {vorname} entwickelt "
+    "zunehmend Sicherheit im Umgang mit alltäglichen Anforderungen und zeigt "
+    "erkennbare Fortschritte bei der Übernahme einfacher Verantwortung.</p>"
 )
 
-GB_NIVEAU_TEXT = (
-    "{vorname} besucht den Unterricht auf der Grundlage eines individuellen "
-    "Förderplans mit dem Förderschwerpunkt geistige Entwicklung. "
-    "{pron_cap} nimmt aktiv am Unterrichtsgeschehen teil."
+LP_GB_HTML = (
+    "<p>{vorname} nimmt aktiv am Unterricht in <strong>Lebenspraxis</strong> teil.</p>"
+    "<p>Schwerpunkte sind grundlegende Alltagskompetenzen und die Orientierung im "
+    "schulischen und sozialen Umfeld. {vorname} zeigt Freude an praktischen "
+    "Aktivitäten und reagiert positiv auf Zuwendung und Unterstützung.</p>"
 )
 
 
@@ -250,14 +254,51 @@ def _topics_for(ses: Session, subject_id: int) -> list[Topic]:
     return topics
 
 
+def _lb_niveau_html(vorname: str, subj_name: str, topics: list, p: dict) -> str:
+    """HTML-formatted niveau text for LB student, referencing actual topic names."""
+    pron_gen = p["pron_gen"]
+    pron_cap = p["pron_cap"]
+    items = "".join(
+        f"<li><strong>{t.name}</strong>: Grundlegende Inhalte auf adaptiertem Anforderungsniveau</li>"
+        for t in topics[:4]
+    )
+    topic_block = f"<p>{pron_cap} arbeitet an folgenden Themenbereichen des Regelunterrichts:</p><ul>{items}</ul>" if items else ""
+    return (
+        f"<p>{vorname} bearbeitet die Inhalte in <strong>{subj_name}</strong> auf Grundlage "
+        f"{pron_gen} individuellen Förderplans (Förderschwerpunkt Lernen). Die Aufgaben sind "
+        f"hinsichtlich Umfang und Komplexität individuell angepasst.</p>"
+        f"{topic_block}"
+        f"<p>Die Leistungsbewertung richtet sich nach {pron_gen} persönlichen Lernzielen und "
+        f"spiegelt {pron_gen} individuellen Lernfortschritt wider.</p>"
+    )
+
+
+def _gb_niveau_html(vorname: str, subj_name: str, topics: list, p: dict) -> str:
+    """HTML-formatted niveau text for GB student, referencing actual topic names."""
+    pron_gen = p["pron_gen"]
+    pron_cap = p["pron_cap"]
+    items = "".join(
+        f"<li>Handlungsorientierte Aktivitäten zu <strong>{t.name}</strong></li>"
+        for t in topics[:3]
+    )
+    topic_block = f"<ul>{items}</ul>" if items else ""
+    return (
+        f"<p>{vorname} nimmt am Unterricht in <strong>{subj_name}</strong> teil und wird durch "
+        f"differenzierte, handlungsorientierte Aufgaben einbezogen. Die Bewertung basiert auf "
+        f"{pron_gen} individuellen Förderzielen (Förderschwerpunkt geistige Entwicklung).</p>"
+        f"{topic_block}"
+        f"<p>{pron_cap} zeigt Freude am Lernen und reagiert aufmerksam auf Unterrichtsimpulse.</p>"
+    )
+
+
 def _grade_for_focus(niveau_rule: str, rng: random.Random) -> str:
     if niveau_rule == "1":
-        return rng.choice(["1", "1", "2", "nb"])
+        return rng.choice(["1", "1", "2", "ne"])
     if niveau_rule == "2":
         return rng.choice(["2", "2", "3", "4"])
     if niveau_rule == "3":
         return rng.choice(["1", "2", "3", "4"])
-    return rng.choice(["1", "2", "3", "4", "nb"])  # "mix"
+    return rng.choice(["1", "2", "3", "4", "ne"])  # "mix"
 
 
 def _fill_student(ses: Session, stu: Student, sdef: dict,
@@ -281,14 +322,14 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
     else:
         stu.report_text = REPORT_TEMPLATE.format(vorname=vorname, **p)
 
-    # Lebenspraxis: Niveau text for LB/GB
+    # Lebenspraxis: HTML niveau text for LB/GB
     if stype in ("lb", "gb"):
         lp_subj = all_subjects.get(LEBENSPRAXIS)
         if lp_subj:
             lp_text = (
-                LB_NIVEAU_TEXT.format(vorname=vorname, **p)
+                LP_LB_HTML.format(vorname=vorname, **p)
                 if stype == "lb"
-                else GB_NIVEAU_TEXT.format(vorname=vorname, **p)
+                else LP_GB_HTML.format(vorname=vorname, **p)
             )
             _upsert_student_subject(ses, stu.id, lp_subj.id, lp_text)
 
@@ -311,9 +352,11 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
         elif no_niv:
             niveau = None
         elif stype == "gb":
-            niveau = GB_NIVEAU_TEXT.format(vorname=vorname, **p)
+            topics = _topics_for(ses, subj.id)
+            niveau = _gb_niveau_html(vorname, subj_name, topics, p)
         elif stype == "lb":
-            niveau = LB_NIVEAU_TEXT.format(vorname=vorname, **p)
+            topics = _topics_for(ses, subj.id)
+            niveau = _lb_niveau_html(vorname, subj_name, topics, p)
         elif stype == "focus":
             n_rule = sdef["niveau"]
             niveau = str((subj_idx % 3) + 1) if n_rule == "mix" else n_rule
@@ -337,7 +380,8 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
             elif stype == "focus":
                 grade_val = _grade_for_focus(sdef["niveau"], rng)
             else:
-                grade_val = str(rng.randint(1, 4))
+                # ~8% chance of ne for normal students
+                grade_val = "ne" if rng.random() < 0.08 else str(rng.randint(1, 4))
 
             _upsert_grade(ses, stu.id, topic.id, grade_val)
 

@@ -323,9 +323,9 @@ export function GradeMatrixTable({ classNameValue, subject }: Props) {
             </tr>
           </thead>
           <tbody>
-            {renderSection(normalRows, hasMultipleGroups ? "Schüler" : undefined, 0)}
-            {renderSection(lbRows, lbRows.length > 0 ? "LB-Schüler" : undefined, normalRows.length)}
-            {renderSection(gbRows, gbRows.length > 0 ? "GB-Schüler" : undefined, normalRows.length + lbRows.length)}
+            {renderSection(normalRows, undefined, 0)}
+            {renderSection(lbRows, undefined, normalRows.length)}
+            {renderSection(gbRows, undefined, normalRows.length + lbRows.length)}
           </tbody>
         </table>
       </div>
