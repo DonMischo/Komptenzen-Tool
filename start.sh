@@ -66,7 +66,8 @@ step "Verzeichnisse pruefen"
 # zeugnisse is bind-mounted into Docker — ensure it exists and is writable
 # by the container's appuser (which may have a different UID than the host user).
 mkdir -p "$REPO_DIR/zeugnisse"
-chmod 777 "$REPO_DIR/zeugnisse"
+# Ensure the container's appuser (UID 1000) can write to this bind-mount.
+sudo chown 1000:1000 "$REPO_DIR/zeugnisse" 2>/dev/null || true
 ok "zeugnisse bereit"
 
 step "Container starten"

@@ -254,9 +254,9 @@ for dir in data app/TexTemplate zeugnisse; do
     fi
 done
 # zeugnisse is bind-mounted into the Docker container and must be writable
-# by the container's appuser, which may have a different UID than the host user.
-chmod 777 "$REPO_DIR/zeugnisse"
-ok "Schreibrechte gesetzt: zeugnisse (Docker bind-mount)"
+# by the container's appuser (UID 1000 from useradd -m appuser in the Dockerfile).
+$SUDO chown 1000:1000 "$REPO_DIR/zeugnisse"
+ok "Eigentuemer gesetzt: zeugnisse → UID 1000 (Docker appuser)"
 
 # ---------------------------------------------------------------------------
 # 11. Benutzerkonten konfigurieren (VOR dem Build)
