@@ -10,6 +10,7 @@ import { StudentBaseData } from "@/types/api";
 import { ReportTextEditor } from "@/components/stammdaten/ReportTextEditor";
 import { RemarksEditor } from "@/components/stammdaten/RemarksEditor";
 import { Save } from "lucide-react";
+import { HelpButton } from "@/components/help/HelpButton";
 
 export default function StammdatenPage() {
   const qc = useQueryClient();
@@ -60,7 +61,19 @@ export default function StammdatenPage() {
     <AppShell>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Stammdaten</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold">Stammdaten</h2>
+            <HelpButton
+              title="Stammdaten"
+              sections={[
+                { heading: "Fehltage & Fehlstunden", text: "Entschuldigte und unentschuldigte Abwesenheiten getrennt erfassen. Erscheinen auf der Rückseite des Zeugnisses." },
+                { heading: "LB / GB", text: "LB = Förderschwerpunkt Lernen (grün markiert), GB = Geistige Behinderung (orange). Aktivieren ändert die Bewertungsart in Schülerdaten." },
+                { heading: "Zeugnistext", text: "Persönlicher Beurteilungstext pro Schüler. Öffnet sich über den Stift-Button. Unterstützt Fett, Kursiv, Unterstrichen und Listen." },
+                { heading: "Bemerkungen", text: "Interne Notizen, die ebenfalls im Zeugnis erscheinen können. Über den Chat-Button erreichbar." },
+                { heading: "Speichern", text: "Der gelbe Speichern-Button erscheint, sobald Änderungen vorgenommen wurden. Änderungen an Texten werden direkt beim Schließen des Editors gespeichert." },
+              ]}
+            />
+          </div>
           {dirty && (
             <button
               onClick={() => saveMutation.mutate()}

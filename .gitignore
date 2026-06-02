@@ -12,7 +12,8 @@ zeugnisse/
 Zeugnisse/
 
 # ── Data / database ───────────────────────────────────────────────────────────
-data/
+data/*
+!data/guide/
 app/data/
 app/db/
 app/kompetenzen.db

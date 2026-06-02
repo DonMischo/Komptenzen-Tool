@@ -12,6 +12,7 @@ import { UserManagement } from "@/components/admin/UserManagement";
 import { useExportSSE } from "@/hooks/useExportSSE";
 import { cn } from "@/lib/utils";
 import { FileText } from "lucide-react";
+import { HelpButton } from "@/components/help/HelpButton";
 
 type Tab = "export" | "users";
 
@@ -84,7 +85,17 @@ export default function AdminPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold">Admin</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-2xl font-bold">Admin</h2>
+          <HelpButton
+            title="Admin-Bereich"
+            sections={[
+              { heading: "Export-Tab", text: "Klasse auswählen, Schüler per Checkbox markieren und „Exportieren" klicken. LuaLaTeX kompiliert die PDFs serverseitig. Die Dateien landen in ~/Zeugnisse/[Jahr]-[HJ|EJ]/[Klasse]/ auf dem Server." },
+              { heading: "Benutzer-Tab", text: "Neue Nutzer anlegen (Benutzername + Passwort + Rolle). Rolle Admin: voller Zugriff inkl. Setup und Übersicht. Rolle Lehrer: nur Kompetenzen, Schülerdaten und Stammdaten." },
+              { heading: "Hinweis zum Export", text: "Vor dem Export sicherstellen, dass für alle Schüler Niveau, Themenurteile und Zeugnistext vollständig sind. Die Übersicht zeigt den aktuellen Stand." },
+            ]}
+          />
+        </div>
 
         {/* Tabs */}
         <div className="flex gap-0 border-b">

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "@/lib/api";
 import { QK } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { AuthStatusResponse } from "@/types/api";
+import { FaqModal } from "@/components/help/FaqModal";
 import {
   Settings,
   CheckSquare,
@@ -15,6 +16,7 @@ import {
   ShieldCheck,
   LogOut,
   LayoutDashboard,
+  HelpCircle,
 } from "lucide-react";
 
 const ADMIN_ONLY_PATHS = ["/setup", "/admin", "/overview"];
@@ -38,6 +40,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const qc = useQueryClient();
+  const [faqOpen, setFaqOpen] = useState(false);
 
   const { data: auth } = useQuery<AuthStatusResponse>({
     queryKey: QK.authStatus,
@@ -90,7 +93,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        <div className="px-2 pb-4 border-t border-slate-700 pt-4">
+        <div className="px-2 pb-4 border-t border-slate-700 pt-3 space-y-1">
+          {/* FAQ */}
+          <button
+            onClick={() => setFaqOpen(true)}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+          >
+            <HelpCircle className="h-4 w-4" />
+            Hilfe &amp; FAQ
+          </button>
           <button
             onClick={() => logout.mutate()}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
@@ -99,6 +110,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             Abmelden
           </button>
         </div>
+        <FaqModal open={faqOpen} onClose={() => setFaqOpen(false)} />
       </aside>
 
       {/* Main content */}

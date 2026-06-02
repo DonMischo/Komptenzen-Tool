@@ -1,0 +1,615 @@
+% ==========================================================================
+%  Kompetenzen-Tool — Benutzerhandbuch
+%  Kompilieren:  lualatex Benutzerhandbuch.tex  (zweimal für TOC)
+% ==========================================================================
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.8cm,right=2.8cm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Sans}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage{tabularray}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{mdframed}
+\usepackage{luacode}
+
+% ---------- Farben --------------------------------------------------------
+\definecolor{primary}{RGB}{0,99,142}      % Teal-blau (wie App)
+\definecolor{accent}{RGB}{66,144,179}
+\definecolor{lightbg}{RGB}{240,248,252}
+\definecolor{warnbg}{RGB}{255,249,230}
+\definecolor{warnborder}{RGB}{200,150,0}
+\definecolor{tipbg}{RGB}{236,252,238}
+\definecolor{tipborder}{RGB}{34,139,34}
+
+% ---------- Seitenformatierung --------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{primary}\textbf{Kompetenzen-Tool} — Benutzerhandbuch}
+\fancyhead[R]{\small\color{gray}\thepage}
+\fancyfoot[C]{\small\color{gray}Theodor-Geisel-Schule Erfurt · \texttt{http://zeugnistool.tgsef.intern}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% ---------- Überschriften -------------------------------------------------
+\titleformat{\section}
+  {\Large\bfseries\color{primary}}{\thesection}{1em}{}[\vspace{0.2em}\hrule\vspace{0.5em}]
+\titleformat{\subsection}
+  {\large\bfseries\color{primary!80!black}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+% ---------- Hilfsboxen ----------------------------------------------------
+\newmdenv[
+  backgroundcolor=lightbg,
+  linecolor=primary,
+  linewidth=1.5pt,
+  leftline=true, topline=false, bottomline=false, rightline=false,
+  innerleftmargin=10pt, innerrightmargin=10pt,
+  innertopmargin=8pt, innerbottommargin=8pt,
+]{infobox}
+
+\newmdenv[
+  backgroundcolor=warnbg,
+  linecolor=warnborder,
+  linewidth=1.5pt,
+  leftline=true, topline=false, bottomline=false, rightline=false,
+  innerleftmargin=10pt, innerrightmargin=10pt,
+  innertopmargin=8pt, innerbottommargin=8pt,
+]{warnbox}
+
+\newmdenv[
+  backgroundcolor=tipbg,
+  linecolor=tipborder,
+  linewidth=1.5pt,
+  leftline=true, topline=false, bottomline=false, rightline=false,
+  innerleftmargin=10pt, innerrightmargin=10pt,
+  innertopmargin=8pt, innerbottommargin=8pt,
+]{tipbox}
+
+\newcommand{\info}[1]{\begin{infobox}\textbf{Hinweis:} #1\end{infobox}}
+\newcommand{\warn}[1]{\begin{warnbox}\textbf{Achtung:} #1\end{warnbox}}
+\newcommand{\tip}[1]{\begin{tipbox}\textbf{Tipp:} #1\end{tipbox}}
+
+% ---------- Menü-Pfad-Befehl ---------------------------------------------
+\newcommand{\menu}[1]{\textbf{\textcolor{primary}{#1}}}
+\newcommand{\key}[1]{\texttt{\small[#1]}}
+\newcommand{\field}[1]{\textit{„#1"}}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ==========================================================================
+\begin{document}
+
+% ---------- Titelseite ----------------------------------------------------
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+  {\Huge\bfseries\color{primary} Kompetenzen-Tool\par}
+  \vspace{0.5cm}
+  {\LARGE\color{primary!70!black} Benutzerhandbuch\par}
+  \vspace{1.5cm}
+  \hrule height 2pt
+  \vspace{0.5cm}
+  {\large Theodor-Geisel-Schule Erfurt\par}
+  \vspace{0.3cm}
+  {\normalsize Digitales Zeugniserfassungs- und Exportwerkzeug\par}
+  \vspace{0.5cm}
+  \hrule height 0.5pt
+  \vfill
+  \begin{infobox}
+    \textbf{Erreichbarkeit:}\\
+    Nur im lokalen Schulnetz (WLAN oder VPN)\\[4pt]
+    \texttt{http://zeugnistool.tgsef.intern}
+  \end{infobox}
+  \vspace{2cm}
+  {\small\color{gray} Stand: \today}
+\end{titlepage}
+
+% ---------- Inhaltsverzeichnis --------------------------------------------
+\tableofcontents
+\newpage
+
+% ==========================================================================
+\section{Einleitung}
+
+Das \textbf{Kompetenzen-Tool} ist eine webbasierte Anwendung zur strukturierten
+Erfassung und Verwaltung von Schülerbewertungen. Es unterstützt die Lehrkräfte der
+Theodor-Geisel-Schule bei der Erstellung kompetenzorientierter Zeugnisse gemäß dem
+Thüringer Lehrplan.
+
+\subsection{Was das Tool leistet}
+\begin{itemize}[noitemsep]
+  \item Verwaltung mehrerer Datenbankinstanzen (je Schuljahr/Halbjahr)
+  \item Kompetenzen pro Fach und Klasse auswählen
+  \item Niveau und Themenurteile pro Schüler erfassen
+  \item Persönliche Zeugnistexte mit Rich-Text-Editor schreiben
+  \item Besondere Schüler (LB, GB) mit angepassten Bewertungsfeldern
+  \item Automatische PDF-Generierung per LuaLaTeX
+\end{itemize}
+
+\subsection{Technischer Hintergrund}
+Das Tool besteht aus einem \textbf{FastAPI}-Backend (Python), einem
+\textbf{Next.js}-Frontend und einer \textbf{PostgreSQL}-Datenbank.
+Die Zeugnisse werden als LuaLaTeX-Dokumente erzeugt und serverseitig kompiliert.
+
+% ==========================================================================
+\section{Zugang und Voraussetzungen}
+
+\begin{warnbox}
+Das Tool ist \textbf{ausschließlich im lokalen Schulnetz} erreichbar.
+Voraussetzung: Laptop im Schul-WLAN \textbf{oder} VPN-Verbindung zum Schulserver.
+\end{warnbox}
+
+\subsection{Adresse}
+\begin{center}
+  \large\texttt{\textcolor{primary}{http://zeugnistool.tgsef.intern}}
+\end{center}
+
+\subsection{Empfohlene Browser}
+Aktuelle Version von Firefox, Chrome, Edge oder Safari.
+JavaScript muss aktiviert sein.
+
+% ==========================================================================
+\section{Login und Benutzerrollen}
+
+\subsection{Anmelden}
+Öffnen Sie die Adresse im Browser. Das Login-Formular erscheint automatisch.
+Geben Sie Ihren \field{Benutzernamen} und Ihr \field{Passwort} ein.
+
+Gibt es noch keinen Administrator, erscheint stattdessen ein Formular zum
+\textbf{Ersteinrichten} des Admin-Kontos.
+
+\subsection{Benutzerrollen}
+
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=3cm] X[l] X[l]},
+  hlines, vlines,
+  cell{1}{1-3}={bg=primary,fg=white,font=\bfseries},
+}
+Rolle & Zugriff & Einsatzzweck \\
+Admin & Alle Bereiche inkl. Setup, Übersicht, Admin & Schulleitung, IT-Beauftragte \\
+Lehrer & Kompetenzen, Schülerdaten, Stammdaten & Klassenlehrer, Fachlehrkräfte \\
+\end{tblr}
+
+\tip{Benutzerverwaltung: \menu{Admin} → \menu{Benutzer}.
+Passwörter können nur durch Admins geändert werden.}
+
+% ==========================================================================
+\section{Erste Schritte: Datenbank und Schuljahr}
+
+\subsection{Datenbanken}
+Das Tool unterstützt mehrere unabhängige Datenbanken — typischerweise eine
+pro Halbjahr oder Klassengruppe.
+
+\textbf{Neue Datenbank anlegen:}
+\begin{enumerate}[noitemsep]
+  \item \menu{Setup} öffnen
+  \item Im Abschnitt \field{Datenbanken} auf \key{Neue Datenbank} klicken
+  \item Namen eingeben, z.\,B. \texttt{reports\_2026\_hj1}
+  \item \key{Erstellen} bestätigen
+\end{enumerate}
+
+\info{Namenskonvention empfohlen: \texttt{reports\_[Jahr]\_[hj1|hj2|ej]}.
+Leerzeichen und Sonderzeichen im Namen vermeiden.}
+
+\subsection{Schema initialisieren}
+Nach dem Anlegen einer neuen Datenbank muss das Schema initialisiert werden:
+\menu{Setup} → \menu{Schema} → \key{Schema initialisieren}.
+Dieser Schritt legt alle Tabellen und Standardfächer an.
+
+\subsection{Datenbank wechseln}
+Im Dropdown oben in \menu{Setup} die gewünschte Datenbank auswählen.
+Die Auswahl gilt für die gesamte Browsersitzung (via HTTP-Header).
+
+% ==========================================================================
+\section{Schüler importieren}
+
+\subsection{CSV-Format}
+Eine Zeile pro Schüler, Semikolon-getrennt, \textbf{keine Kopfzeile}:
+
+\begin{center}
+\texttt{Nachname;Vorname;Klasse;TT.MM.JJJJ}
+\end{center}
+
+\textbf{Beispiel:}
+\begin{verbatim}
+Müller;Anna;7a;15.03.2012
+Schmidt;Tom;7a;22.07.2011
+Weber;Lisa;8b;01.11.2010
+\end{verbatim}
+
+\subsection{Import durchführen}
+\begin{enumerate}[noitemsep]
+  \item \menu{Setup} → \menu{Schülerimport}
+  \item CSV-Datei hochladen oder per Drag \& Drop einwerfen
+  \item Ergebnis prüfen: hinzugefügte, aktualisierte, fehlerhafte Einträge
+\end{enumerate}
+
+\warn{Der Import ist idempotent – bestehende Schüler werden aktualisiert,
+nicht doppelt angelegt. Gelöschte Schüler aus der CSV werden aus dem System entfernt.}
+
+% ==========================================================================
+\section{Kompetenzen auswählen}
+
+\subsection{Grundprinzip}
+Für jede Klasse und jedes Fach wird festgelegt, \textbf{welche Kompetenzen} im Zeugnis
+erscheinen sollen. Nur ausgewählte Kompetenzen werden im PDF dargestellt.
+
+\subsection{Vorgehen}
+\begin{enumerate}[noitemsep]
+  \item \menu{Kompetenzen} öffnen
+  \item Links \field{Klasse}, \field{Fach} und \field{Block} wählen
+  \item Themen-Akkordeons aufklappen
+  \item Relevante Kompetenzen anhaken
+  \item \key{Speichern} klicken
+\end{enumerate}
+
+\subsection{Besonderheiten}
+
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=4cm] X[l]},
+  hlines, vlines,
+  cell{1}{1-2}={bg=primary,fg=white,font=\bfseries},
+}
+Fach & Verhalten \\
+Werkstätten & Alle Kompetenzen immer ausgewählt (nicht änderbar) \\
+Eigene Kompetenzen & Am Ende jedes Themas können klassenspezifische Kompetenzen ergänzt werden \\
+\end{tblr}
+
+% ==========================================================================
+\section{Schülerdaten: Noten und Niveau}
+
+\subsection{Aufbau}
+Die Schülerdaten-Seite zeigt eine Tabelle mit allen Schülern der gewählten Klasse
+für ein bestimmtes Fach. Spalten: Niveau + eine Spalte pro Thema.
+
+\subsection{Niveau}
+
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=2.5cm] X[l]},
+  hlines, vlines,
+  cell{1}{1-2}={bg=primary,fg=white,font=\bfseries},
+}
+Wert & Bedeutung \\
+1 & Anforderungsebene 1 (grundlegend) \\
+2 & Anforderungsebene 2 (regelstandard) \\
+3 & Anforderungsebene 3 (erweiternd) \\
+9 & Sport (kein Niveau-Eintrag, nur „bis Klasse 9 ohne Anforderungsebene") \\
+ne & Nicht erteilt – ganzes Fach \\
+— & Kein Niveau (Werkstätten, DuG, Mitarbeit und Verhalten) \\
+\end{tblr}
+
+\subsection{Themenurteile}
+Pro Thema wird ein Urteil von \textbf{1} (sehr gut) bis \textbf{4} (nicht ausreichend)
+vergeben. Sonderwert \textbf{ne} = nicht erteilt (erzeugt colspan im PDF).
+
+\subsection{LB- und GB-Schüler}
+
+\begin{infobox}
+\textbf{LB (Förderschwerpunkt Lernen, grün):}
+Das Niveau-Feld enthält einen Freitext, der mit dem TipTap-Editor bearbeitet wird.
+Themenurteile sind Freitext-Eingaben.\\[6pt]
+\textbf{GB (Förderschwerpunkt geistige Entwicklung, orange):}
+Ausschließlich Freitext im Niveau-Feld. Keine Themenurteile.
+\end{infobox}
+
+\subsection{Lebenspraxis}
+Erscheint nur für LB- und GB-Schüler. Das Fach hat keine Kompetenz-Raster,
+nur ein Freitext-Feld (wird im Niveau-Feld gespeichert).
+
+% ==========================================================================
+\section{Stammdaten und Zeugnistexte}
+
+\subsection{Stammdaten-Tabelle}
+Pro Klasse wird eine Tabelle mit allen Schülern angezeigt. Editierbar:
+\begin{itemize}[noitemsep]
+  \item \textbf{Fehltage} (entschuldigt / unentschuldigt)
+  \item \textbf{Fehlstunden} (entschuldigt / unentschuldigt)
+  \item \textbf{LB / GB} Markierung
+\end{itemize}
+
+\subsection{Zeugnistext}
+Der persönliche Beurteilungstext wird pro Schüler über den \key{Stift-Button}
+in der Zeugnistext-Spalte geöffnet.
+
+\subsubsection{Unterstützte Formatierungen}
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=3cm] Q[l,wd=3cm] X[l]},
+  hlines, vlines,
+  cell{1}{1-3}={bg=primary,fg=white,font=\bfseries},
+}
+Formatierung & Tastenkürzel & LaTeX-Ausgabe \\
+Fett & Strg+B & \verb|\textbf{...}| \\
+Kursiv & Strg+I & \verb|\textit{...}| \\
+Unterstrichen & Strg+U & \verb|\underline{...}| \\
+Durchgestrichen & — & \verb|\sout{...}| \\
+Aufzählung & — & Hängend-Einzug mit \textbullet \\
+Nummerierte Liste & — & Hängend-Einzug mit Nummer \\
+Tabelle & — & \texttt{tblr}-Umgebung \\
+Zentriert & — & \verb|{\centering ...}| \\
+\end{tblr}
+
+\tip{Zeugnistexte werden sofort beim Schließen des Editors gespeichert.
+Der Hauptspeichern-Button der Stammdatenseite betrifft nur Zahlenfelder (Fehltage).}
+
+\subsection{Bemerkungen}
+Über den \key{Chat-Button} können interne Bemerkungen erfasst werden,
+die ebenfalls im Zeugnis erscheinen können.
+
+% ==========================================================================
+\section{Übersicht und Fortschrittskontrolle}
+
+\menu{Übersicht} zeigt den Bearbeitungsstand für eine Klasse in drei Tabs:
+
+\subsection{Tab: Kompetenzen}
+Tabellarische Ansicht aller Fächer mit der Anzahl ausgewählter Kompetenzen.
+Rot = noch keine Kompetenzen für dieses Fach gewählt.
+
+\subsection{Tab: Noten}
+
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=3cm] X[l]},
+  hlines, vlines,
+  cell{1}{1-2}={bg=primary,fg=white,font=\bfseries},
+}
+Anzeige & Bedeutung \\
+3/5 & 3 von 5 Themenurteilen eingetragen \\
+\textcolor{green}{5/5} & Alle Noten vollständig \\
+\textcolor{red}{0/5} & Noch keine Noten \\
+✓ & Text/Niveau vorhanden (LB/GB-Schüler) \\
+✗ & Text/Niveau fehlt noch \\
+ZT ✓ & Zeugnistext geschrieben \\
+\end{tblr}
+
+\subsection{Tab: Eigene Kompetenzen}
+Listet alle selbst hinzugefügten Kompetenzen dieser Klasse.
+Können direkt hier bearbeitet oder gelöscht werden.
+
+% ==========================================================================
+\section{Zeugnisse exportieren}
+
+\subsection{Vorbereitung}
+Vor dem Export sicherstellen:
+\begin{itemize}[noitemsep]
+  \item Zeugnistag in \menu{Setup} ist eingetragen
+  \item Alle Schüler haben Niveau und Themenurteile
+  \item Alle Zeugnistexte sind geschrieben
+  \item Kompetenzauswahl ist vollständig (Übersicht prüfen)
+\end{itemize}
+
+\subsection{Export durchführen}
+\begin{enumerate}[noitemsep]
+  \item \menu{Admin} → \menu{Export}
+  \item Klasse auswählen
+  \item Schüler per Checkbox markieren (oder alle auswählen)
+  \item \key{Exportieren} klicken
+  \item Fortschrittsanzeige abwarten
+\end{enumerate}
+
+\subsection{Speicherort der PDFs}
+Die generierten PDFs werden auf dem Server gespeichert unter:
+\begin{center}
+\texttt{\textasciitilde/Zeugnisse/[JJJJ]-[HJ|EJ]/[Klasse]/[Nachname]\_[Vorname].pdf}
+\end{center}
+
+\warn{Nach dem Export ist das Verzeichnis auf dem Server zu prüfen.
+Die PDFs sind \textbf{nicht} automatisch ausgedruckt oder versendet.}
+
+% ==========================================================================
+\section{Förder- und Integrationskinder (LB / GB)}
+
+\subsection{Unterschied LB und GB}
+
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=2.5cm] X[l] Q[l,wd=3cm]},
+  hlines, vlines,
+  cell{1}{1-3}={bg=primary,fg=white,font=\bfseries},
+}
+Status & Bewertung & Darstellung \\
+LB & Niveau als Freitext, Themenurteile als Freitext & Grüne Tabellenzeile \\
+GB & Nur Freitext im Niveau-Feld, keine Themenurteile & Orange Tabellenzeile \\
+Normal & Niveau 1–3, Themenurteile 1–4/ne & Weiße Tabellenzeile \\
+\end{tblr}
+
+\subsection{LB/GB im Zeugnis}
+Der Freitext im Niveau-Feld wird über \texttt{\textbackslash myZeugnisTableSimple} gerendert —
+als Freitext-Block ohne die 4-spaltige Kompetenztabelle.
+
+\subsection{Lebenspraxis}
+Nur für LB- und GB-Schüler sichtbar. Kein Kompetenz-Raster.
+Der Text erscheint als freies Feld im Zeugnis.
+
+% ==========================================================================
+\section{Benutzerverwaltung}
+
+\menu{Admin} → \menu{Benutzer}.
+
+\begin{itemize}[noitemsep]
+  \item \textbf{Neuen Nutzer anlegen:} Benutzername, Passwort, Rolle wählen
+  \item \textbf{Rollen:} Admin (voller Zugriff) oder Lehrer (eingeschränkt)
+  \item \textbf{Nutzer löschen:} über den Löschen-Button in der Benutzerliste
+\end{itemize}
+
+\info{Das erste Admin-Konto wird beim Erststart des Tools direkt auf der Login-Seite
+eingerichtet, wenn noch kein Admin existiert.}
+
+% ==========================================================================
+\section{Technischer Anhang: Lua-Datenformat}
+
+Dieser Abschnitt richtet sich an Entwickler und fortgeschrittene Nutzer,
+die die LaTeX-Vorlagen anpassen möchten.
+
+\subsection{Überblick}
+
+Für jeden Schüler generiert das Backend eine \texttt{.lua}-Datei mit allen
+Bewertungsdaten sowie eine \texttt{.tex}-Datei (basierend auf
+\texttt{TexTemplate/Zeugnis.tex}). LuaLaTeX lädt die Daten per
+\texttt{require("studentdata")} und rendert das Zeugnis.
+
+\subsection{Struktur der Lua-Datendatei}
+
+\begin{verbatim}
+student = {
+  first_name      = 'Anna',
+  last_name       = 'Müller',
+  classRoom       = '7a',
+  date_of_birth   = '15.03.2012',
+  school_year     = '2025/26',
+  part_of_year    = 'Halbjahr',
+  report_date     = '31.01.2026',
+  personal_text   = '...',      -- LaTeX-formatierter Zeugnistext
+  comment         = '...',
+  lb              = false,
+  gb              = false,
+  absenceDaysTotal           = 3,
+  absenceDaysUnauthorized    = 0,
+  absenceHoursTotal          = 6,
+  absenceHoursUnauthorized   = 0,
+  subjects = {
+    {
+      name   = 'Mathematik',
+      level  = 2,             -- Nummer (1-3), String oder 'nicht erteilt'
+      topics = {
+        {
+          title       = 'Arithmetik / Algebra',
+          grade       = 2,    -- 1-4, 'ne', oder ''
+          competences = {
+            { description = 'Ich kann rationale Zahlen...' },
+            ...
+          },
+        },
+        ...
+      },
+    },
+    ...
+  },
+}
+return student
+\end{verbatim}
+
+\subsection{Besondere level-Werte}
+
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=4cm] X[l]},
+  hlines, vlines,
+  cell{1}{1-2}={bg=primary,fg=white,font=\bfseries},
+}
+level-Wert & Darstellung im PDF \\
+1, 2, 3 & „Du hast vorwiegend auf Anforderungsebene N gearbeitet." \\
+7, 8, 9 & „bis Klasse N ohne Anforderungsebene" \\
+\texttt{'nicht erteilt'} & \texttt{\textbackslash myZeugnisTableSimple} mit „nicht erteilt" \\
+HTML-String (\texttt{<p>…</p>}) & Freitext (html\_to\_latex konvertiert) \\
+\texttt{''} (leer) & Kein Niveau-Block \\
+\end{tblr}
+
+\subsection{Besondere grade-Werte}
+
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=2.5cm] X[l]},
+  hlines, vlines,
+  cell{1}{1-2}={bg=primary,fg=white,font=\bfseries},
+}
+grade-Wert & Darstellung \\
+1 & ☒ ☐ ☐ ☐ (sehr gut) \\
+2 & ☐ ☒ ☐ ☐ (gut) \\
+3 & ☐ ☐ ☒ ☐ (teilweise) \\
+4 & ☐ ☐ ☐ ☒ (nicht erfüllt) \\
+\texttt{'ne'} & Colspan: „nicht erteilt" \\
+\texttt{''} & Colspan: (leer) \\
+\end{tblr}
+
+\subsection{Vorlagen-Dateien}
+
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=5cm] X[l]},
+  hlines, vlines,
+  cell{1}{1-2}={bg=primary,fg=white,font=\bfseries},
+}
+Datei & Zweck \\
+\texttt{Zeugnis.tex} & Hauptdokument; lädt alle Includes \\
+\texttt{ZeugnisPackages.tex} & Pakete, Farben, Befehle \\
+\texttt{ZeugnisTitlepage.tex} & Titelseite (Name, Klasse, Datum) \\
+\texttt{ZeugnisTables.tex} & Lua-Loop: Fächer → Tabellen \\
+\texttt{ZeugnisBack.tex} & Rückseite (Fehltage, Unterschriften) \\
+\end{tblr}
+
+\subsection{html\_to\_latex-Konvertierung}
+
+Der Backend-Modul \texttt{html\_to\_latex.py} wandelt TipTap-HTML in
+tabularray-sicheres LaTeX um:
+
+\begin{tblr}{
+  width=\linewidth,
+  colspec={Q[l,wd=3.5cm] X[l]},
+  hlines, vlines,
+  cell{1}{1-2}={bg=primary,fg=white,font=\bfseries},
+}
+HTML-Element & LaTeX-Ausgabe \\
+\texttt{<strong>} & \verb|\textbf{...}| \\
+\texttt{<em>} & \verb|\textit{...}| \\
+\texttt{<u>} & \verb|\underline{...}| \\
+\texttt{<s>} & \verb|\sout{...}| \\
+\texttt{<code>} & \verb|\texttt{...}| \\
+\texttt{<ul><li>} & \verb|\par\noindent\hangindent=...\textbullet\enspace| \\
+\texttt{<ol><li>} & \verb|\par\noindent\hangindent=...N.\enspace| \\
+\texttt{<br>} & \verb|\newline| \\
+\texttt{<table>} & \texttt{tblr}-Umgebung (tabularray) \\
+\end{tblr}
+
+\warn{Block-Level-Umgebungen (\texttt{\textbackslash begin\{itemize\}},
+\texttt{\textbackslash begin\{center\}} etc.) werden bewusst vermieden,
+da sie innerhalb von tabularray-Zellen nicht zuverlässig funktionieren.}
+
+% ==========================================================================
+\section{Häufige Fragen (FAQ)}
+
+\subsection*{Das Tool ist nicht erreichbar}
+Prüfen Sie: WLAN verbunden? VPN aktiv? Browser öffnet
+\texttt{http://zeugnistool.tgsef.intern}.
+
+\subsection*{Ich sehe keine Klassen}
+Entweder wurde noch keine Datenbank ausgewählt (Setup → Datenbank wählen)
+oder noch keine Schüler importiert.
+
+\subsection*{Der Export schlägt fehl}
+Häufigste Ursache: Zeugnistag nicht gesetzt (\menu{Setup} → \menu{Zeugnistag}).
+Prüfen Sie außerdem, ob alle Schüler Niveau und Zeugnistext haben.
+
+\subsection*{Ein LB-Schüler erscheint nicht in Lebenspraxis}
+Das Fach erscheint nur, wenn der Schüler als LB oder GB markiert ist
+(\menu{Stammdaten} → LB-Haken setzen).
+
+\subsection*{Der Zeugnistext verliert Formatierung}
+Formatierungen wie Fett, Listen etc. bleiben erhalten, sofern sie über den
+TipTap-Editor eingegeben wurden. Direkt eingefügter HTML-Code wird nicht interpretiert.
+
+\subsection*{Ich möchte eine alte Datenbank wiederherstellen}
+\menu{Setup} → \menu{Backup} → gewünschte Sicherung wiederherstellen.
+
+\vfill
+\begin{center}
+\small\color{gray}
+Kompetenzen-Tool · Theodor-Geisel-Schule Erfurt ·
+\texttt{http://zeugnistool.tgsef.intern}\\
+Quellcode und Vorlagen: internes Repository
+\end{center}
+
+\end{document}

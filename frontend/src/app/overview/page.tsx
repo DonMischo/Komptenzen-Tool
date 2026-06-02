@@ -9,6 +9,7 @@ import { KompetenzTab } from "@/components/overview/KompetenzTab";
 import { NotenTab } from "@/components/overview/NotenTab";
 import { EigeneKompetenzenTab } from "@/components/overview/EigeneKompetenzenTab";
 import { cn } from "@/lib/utils";
+import { HelpButton } from "@/components/help/HelpButton";
 
 type Tab = "kompetenzen" | "noten" | "eigene";
 
@@ -31,7 +32,19 @@ export default function OverviewPage() {
     <AppShell>
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold mb-1">Übersicht</h1>
+        <div className="flex items-center gap-3 mb-1">
+          <h1 className="text-2xl font-bold">Übersicht</h1>
+          <HelpButton
+            title="Übersicht – Bearbeitungsstand"
+            sections={[
+              { heading: "Kompetenzen-Tab", text: "Zeigt für jedes Fach, wie viele Kompetenzen ausgewählt sind. Rot = noch keine Auswahl getroffen." },
+              { heading: "Noten-Tab", text: "Zeigt pro Schüler und Fach den Notenfortschritt als Bruch (eingetragen/gesamt). ✓/✗ bei LB/GB-Schülern und Zeugnistexten." },
+              { heading: "Eigene Kompetenzen-Tab", text: "Übersicht aller selbst hinzugefügten Kompetenzen dieser Klasse. Können hier direkt bearbeitet werden." },
+              { heading: "Farbgebung", text: "Grüne Zeilen = LB-Schüler, orange = GB-Schüler. Grüne Noten-Fraktion = vollständig bewertet, Rot = fehlend." },
+              { heading: "ZT-Spalte", text: "Zeigt, ob der persönliche Zeugnistext für diesen Schüler bereits geschrieben wurde." },
+            ]}
+          />
+        </div>
         <p className="text-sm text-muted-foreground">Vollständigkeitsprüfung je Klasse</p>
       </div>
 

@@ -10,6 +10,7 @@ import { QK } from "@/lib/queries";
 import { TopicAccordion } from "@/components/kompetenzen/TopicAccordion";
 import { CompetenceListResponse } from "@/types/api";
 import { Save } from "lucide-react";
+import { HelpButton } from "@/components/help/HelpButton";
 
 type Change = [number, boolean];
 
@@ -79,7 +80,20 @@ export default function KompetenzenPage() {
         {/* Main content */}
         <div className="flex-1 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Kompetenzen</h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-bold">Kompetenzen</h2>
+              <HelpButton
+                title="Kompetenzen auswählen"
+                sections={[
+                  { heading: "Was hier passiert", text: "Sie legen fest, welche Kompetenzen für diese Klasse in jedem Fach bewertet werden. Nur ausgewählte Kompetenzen erscheinen im Zeugnis." },
+                  { heading: "Fach & Block wählen", text: "Links Klasse, Fach und Lernblock auswählen. Die Themen-Akkordeons zeigen alle verfügbaren Kompetenzen." },
+                  { heading: "Kompetenzen anhaken", text: "Einzelne Kompetenzen auswählen oder ein ganzes Thema per Titelklick aus-/abwählen." },
+                  { heading: "Werkstätten", text: "Werkstätten ist immer vollständig und unveränderlich ausgewählt." },
+                  { heading: "Eigene Kompetenzen", text: "Am Ende jedes Themas können klassenspezifische Kompetenzen ergänzt werden." },
+                  { heading: "Speichern", text: "Der Speichern-Button erscheint, sobald Änderungen vorliegen. Nicht gespeicherte Änderungen gehen beim Verlassen verloren." },
+                ]}
+              />
+            </div>
             {pendingChanges.size > 0 && (
               <button
                 onClick={() => saveMutation.mutate()}
