@@ -55,3 +55,8 @@ Thumbs.db
 
 # ── Claude Code internals ─────────────────────────────────────────────────────
 .claude/
+*.toc
+*.gz
+*.out
+data/guide/Benutzerhandbuch.aux
+data/guide/Benutzerhandbuch.log
