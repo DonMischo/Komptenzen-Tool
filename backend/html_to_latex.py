@@ -74,6 +74,10 @@ class _Conv(HTMLParser):
             self._buf().append(r"\textit{")
         elif tag == "u":
             self._buf().append(r"\underline{")
+        elif tag in ("s", "strike", "del"):
+            self._buf().append(r"\sout{")
+        elif tag == "code":
+            self._buf().append(r"\texttt{")
 
         elif tag == "ul":
             self._out.append("\n\\begin{itemize}\n")
@@ -83,7 +87,8 @@ class _Conv(HTMLParser):
             self._out.append("\\item ")
 
         elif tag == "br":
-            self._buf().append("\\\\\n")
+            # Use \newline instead of \\ to avoid tabularray row-separator interception
+            self._buf().append("\\newline\n")
 
         elif tag in ("h1", "h2"):
             self._buf().append(r"\textbf{\large ")
@@ -113,7 +118,8 @@ class _Conv(HTMLParser):
             else:
                 self._out.append(f"\n{txt}\n")
 
-        elif tag in ("strong", "b", "em", "i", "u", "h1", "h2", "h3"):
+        elif tag in ("strong", "b", "em", "i", "u", "s", "strike", "del",
+                      "h1", "h2", "h3", "code"):
             self._buf().append("}")
 
         elif tag == "ul":
@@ -134,6 +140,11 @@ class _Conv(HTMLParser):
             self._emit_table()
 
     def handle_data(self, data: str) -> None:
+        # Skip whitespace-only text nodes (TipTap indents its HTML with
+        # spaces/newlines between tags that would otherwise create \par
+        # before the first \item and trigger a LaTeX error).
+        if not data.strip():
+            return
         self._buf().append(_esc(data))
 
     # ---- table emitter -----------------------------------------------------
