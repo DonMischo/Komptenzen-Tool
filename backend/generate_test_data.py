@@ -256,15 +256,20 @@ def _topics_for(ses: Session, subject_id: int) -> list[Topic]:
 
 def _lb_niveau_html(vorname: str, subj_name: str, topics: list, p: dict) -> str:
     """HTML-formatted niveau text for LB student, referencing actual topic names."""
+    from html import escape as _he
     pron_gen = p["pron_gen"]
     pron_cap = p["pron_cap"]
-    items = "".join(
-        f"<li><strong>{t.name}</strong>: Grundlegende Inhalte auf adaptiertem Anforderungsniveau</li>"
+    # Use <p> bullet lines instead of <ul>/<li> — avoids \begin{itemize} inside tabularray
+    topic_lines = "".join(
+        f"<p>· <strong>{_he(t.name)}</strong>: Grundlegende Inhalte auf adaptiertem Anforderungsniveau</p>"
         for t in topics[:4]
     )
-    topic_block = f"<p>{pron_cap} arbeitet an folgenden Themenbereichen des Regelunterrichts:</p><ul>{items}</ul>" if items else ""
+    topic_block = (
+        f"<p>{pron_cap} arbeitet an folgenden Themenbereichen des Regelunterrichts:</p>"
+        f"{topic_lines}"
+    ) if topic_lines else ""
     return (
-        f"<p>{vorname} bearbeitet die Inhalte in <strong>{subj_name}</strong> auf Grundlage "
+        f"<p>{vorname} bearbeitet die Inhalte in <strong>{_he(subj_name)}</strong> auf Grundlage "
         f"{pron_gen} individuellen Förderplans (Förderschwerpunkt Lernen). Die Aufgaben sind "
         f"hinsichtlich Umfang und Komplexität individuell angepasst.</p>"
         f"{topic_block}"
@@ -275,18 +280,18 @@ def _lb_niveau_html(vorname: str, subj_name: str, topics: list, p: dict) -> str:
 
 def _gb_niveau_html(vorname: str, subj_name: str, topics: list, p: dict) -> str:
     """HTML-formatted niveau text for GB student, referencing actual topic names."""
+    from html import escape as _he
     pron_gen = p["pron_gen"]
     pron_cap = p["pron_cap"]
-    items = "".join(
-        f"<li>Handlungsorientierte Aktivitäten zu <strong>{t.name}</strong></li>"
+    topic_lines = "".join(
+        f"<p>· Handlungsorientierte Aktivitäten zu <strong>{_he(t.name)}</strong></p>"
         for t in topics[:3]
     )
-    topic_block = f"<ul>{items}</ul>" if items else ""
     return (
-        f"<p>{vorname} nimmt am Unterricht in <strong>{subj_name}</strong> teil und wird durch "
+        f"<p>{vorname} nimmt am Unterricht in <strong>{_he(subj_name)}</strong> teil und wird durch "
         f"differenzierte, handlungsorientierte Aufgaben einbezogen. Die Bewertung basiert auf "
         f"{pron_gen} individuellen Förderzielen (Förderschwerpunkt geistige Entwicklung).</p>"
-        f"{topic_block}"
+        f"{topic_lines}"
         f"<p>{pron_cap} zeigt Freude am Lernen und reagiert aufmerksam auf Unterrichtsimpulse.</p>"
     )
 
