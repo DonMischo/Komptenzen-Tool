@@ -62,6 +62,13 @@ ok "Images vorhanden"
 # ---------------------------------------------------------------------------
 # 4. Container starten
 # ---------------------------------------------------------------------------
+step "Verzeichnisse pruefen"
+# zeugnisse is bind-mounted into Docker — ensure it exists and is writable
+# by the container's appuser (which may have a different UID than the host user).
+mkdir -p "$REPO_DIR/zeugnisse"
+chmod 777 "$REPO_DIR/zeugnisse"
+ok "zeugnisse bereit"
+
 step "Container starten"
 
 RUNNING=$(docker compose ps --status running -q 2>/dev/null | wc -l | tr -d ' ')
