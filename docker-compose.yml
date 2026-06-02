@@ -35,7 +35,7 @@ services:
       DATA_DIR: /backend/data
     volumes:
       - ./data:/backend/data                      # holiday ICS cache
-      - ./app/TexTemplate:/backend/TexTemplate    # LaTeX templates
+      - ./TexTemplate:/backend/TexTemplate          # LaTeX templates
       - ./zeugnisse:/home/appuser/Zeugnisse         # PDF output
 
   frontend:

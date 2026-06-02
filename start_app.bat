@@ -85,13 +85,13 @@ for /f "usebackq tokens=1,* delims==" %%A in ("%SCRIPT_DIR%\.env") do (
 :: 5. Container bauen und starten
 :: ---------------------------------------------------------------------------
 echo.
-echo =^> docker compose up --build -d
+echo =^> docker-compose up --build -d
 echo.
-docker compose up --build -d
+docker-compose up --build -d
 if errorlevel 1 (
     echo.
-    echo [ERR] docker compose fehlgeschlagen.
-    echo       Logs anzeigen mit:  docker compose logs
+    echo [ERR] docker-compose fehlgeschlagen.
+    echo       Logs anzeigen mit:  docker-compose logs
     pause
     exit /b 1
 )
@@ -109,8 +109,8 @@ start "" "http://localhost:%APP_PORT%"
 
 echo.
 echo  Nuetzliche Befehle:
-echo    Logs:      docker compose logs -f
-echo    Stoppen:   docker compose down
-echo    Neubauen:  docker compose up --build -d
+echo    Logs:      docker-compose logs -f
+echo    Stoppen:   docker-compose down
+echo    Neubauen:  docker-compose up --build -d
 echo.
 endlocal
