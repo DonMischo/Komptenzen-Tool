@@ -68,6 +68,7 @@ export interface GradeMatrixRow {
   first_name: string;
   niveau: string;
   grades: Record<string, string>;
+  student_type: "normal" | "lb" | "gb";
 }
 
 export interface GradeMatrixResponse {
@@ -122,6 +123,7 @@ export interface SubjectGradeStatus {
   has_niveau: boolean;
   grades_given: number;
   total_grades: number;
+  is_text_mode: boolean;
 }
 
 export interface StudentGradeStatus {

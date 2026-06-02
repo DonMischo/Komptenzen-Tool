@@ -21,6 +21,7 @@ SUBJECTS = [
     "Evangelische Religionslehre",
     "Sport",
     "Werkstätten",
+    "Lebenspraxis",
     "Mitarbeit und Verhalten",
 ]
 

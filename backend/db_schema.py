@@ -8,7 +8,7 @@ from typing import Dict, List
 from sqlalchemy import (create_engine, Column, Integer, String, Date, Boolean,
                         ForeignKey, UniqueConstraint, text)
 from sqlalchemy.orm import declarative_base, relationship, Session
-from competence_data import COMPETENCES
+from competence_data import COMPETENCES, SUBJECTS as _SUBJECTS
 
 from datetime import datetime
 from time_functions import (
@@ -63,6 +63,13 @@ def switch_engine(db_name: str) -> None:
     except Exception as exc:
         print(f"❌  Could not connect to {db_name}: {exc}")
         raise
+
+    # Run any pending schema migrations on the newly selected DB
+    try:
+        import migrations as _mig
+        _mig.run_migrations(str(ENGINE.url))
+    except Exception as exc:
+        print(f"⚠️  migrations skipped for {db_name}: {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -241,7 +248,7 @@ class AdminUser(Base):
 class Grade(Base):
     __tablename__ = "grades"
     id         = Column(Integer, primary_key=True)
-    value      = Column(String(8), nullable=True)
+    value      = Column(String, nullable=True)
     student_id = Column(Integer, ForeignKey("students.id"), nullable=False)
     topic_id   = Column(Integer, ForeignKey("topics.id"),   nullable=False)
 
@@ -354,5 +361,10 @@ def init_db(drop: bool = False, *, populate: bool = True) -> None:
     if populate:
         with Session(ENGINE) as ses:
             populate_from_dict(COMPETENCES, ses)
+            # Ensure every SUBJECTS entry has a Subject row (e.g. Lebenspraxis has no competences)
+            for name in _SUBJECTS:
+                if not ses.query(Subject).filter_by(name=name).first():
+                    ses.add(Subject(name=name))
+            ses.commit()
 
     print(f"✅  Schema{' + Daten' if populate else ''} OK für {ENGINE.url.database}")

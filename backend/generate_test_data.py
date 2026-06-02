@@ -1,13 +1,14 @@
 # generate_test_data.py
 """
-Generates realistic test data for class 7ef.
-Run from setup_ui or directly:  python generate_test_data.py
+Self-contained test data for class 7ef.
+Creates the class and all students; safe to call multiple times (idempotent).
+Run directly:  python generate_test_data.py
 """
 from __future__ import annotations
 import random
 from datetime import date
 
-from sqlalchemy import select, delete as sql_delete
+from sqlalchemy import delete as sql_delete
 from sqlalchemy.orm import Session
 
 from db_schema import (
@@ -19,16 +20,16 @@ from db_schema import (
 # Constants
 # ---------------------------------------------------------------------------
 
+BLOCK      = "7/8"
 CLASS_NAME = "7ef"
-BLOCK = "7/8"
+LEBENSPRAXIS = "Lebenspraxis"
 
-# Subjects without a numeric Niveau
 NO_NIVEAU = {
-    "Sport",
     "Wahlpflichtbereich - Darstellen und Gestalten",
     "Werkstätten",
     "Mitarbeit und Verhalten",
 }
+SPORT = "Sport"   # always niveau "9"
 
 WAHLPFLICHT = [
     "Wahlpflichtbereich - Französisch",
@@ -54,17 +55,54 @@ MAIN_SUBJECTS = [
     "Mitarbeit und Verhalten",
 ]
 
-FEMALE_FIRST_NAMES = {"Anna", "Clara", "Eva", "Lina", "Hanni"}
+FEMALE_FIRST_NAMES = {"Emma", "Mia", "Leonie", "Clara", "Marie"}
 
-# Fixed test students — deterministic birthdays so remove can target them
-TEST_STUDENTS = [
-    {"first_name": "Anna",      "last_name": "Muster",   "birthday": date(2012, 3, 15)},
-    {"first_name": "Ben",       "last_name": "Muster",   "birthday": date(2012, 5, 22)},
-    {"first_name": "Clara",     "last_name": "Test",     "birthday": date(2012, 1, 8)},
-    {"first_name": "David",     "last_name": "Test",     "birthday": date(2012, 7, 30)},
-    {"first_name": "Eva",       "last_name": "Probe",    "birthday": date(2012, 9, 14)},
-    {"first_name": "Felix",     "last_name": "Probe",    "birthday": date(2012, 11, 3)},
-    {"first_name": "Alexander", "last_name": "Herrmann", "birthday": date(2012, 4, 17)},
+# ---------------------------------------------------------------------------
+# Student definitions
+# type: "focus"  = one of the 4 detailed normal students
+#       "lb"     = LB student (mix of text + numeric grades)
+#       "gb"     = GB student (text-only)
+#       "normal" = additional standard student
+# ---------------------------------------------------------------------------
+
+STUDENTS_DEF: list[dict] = [
+    # 4 focused normal students, one per Wahlpflicht
+    {   # niveau "1", ne for whole subject (Chemie)
+        "last": "Weber",    "first": "Jonas", "bday": date(2012, 3, 15),
+        "wp": 0, "type": "focus", "niveau": "1",
+        "ne_subj": "Chemie", "ne_topic": None,
+    },
+    {   # niveau "2", ne for single topic (Physik topic index 0)
+        "last": "Schäfer",  "first": "Emma",  "bday": date(2012, 7, 22),
+        "wp": 1, "type": "focus", "niveau": "2",
+        "ne_subj": None, "ne_topic": ("Physik", 0),
+    },
+    {   # niveau "3", DuG → no niveau
+        "last": "Neumann",  "first": "Lukas", "bday": date(2012, 11, 8),
+        "wp": 2, "type": "focus", "niveau": "3",
+        "ne_subj": None, "ne_topic": None,
+    },
+    {   # mixed niveaux 1/2/3
+        "last": "Hoffmann", "first": "Mia",   "bday": date(2013, 1, 30),
+        "wp": 3, "type": "focus", "niveau": "mix",
+        "ne_subj": None, "ne_topic": None,
+    },
+    # LB student
+    {
+        "last": "Richter", "first": "Ben",   "bday": date(2012, 5, 12),
+        "wp": 1, "type": "lb",
+    },
+    # GB student
+    {
+        "last": "Gruber",  "first": "Marie", "bday": date(2012, 9,  4),
+        "wp": 0, "type": "gb",
+    },
+    # 5 additional normal students
+    {"last": "Bauer",   "first": "Finn",   "bday": date(2012,  2, 18), "wp": 0, "type": "normal"},
+    {"last": "Koch",    "first": "Leonie", "bday": date(2012,  6,  7), "wp": 1, "type": "normal"},
+    {"last": "Braun",   "first": "Tim",    "bday": date(2013,  4, 25), "wp": 2, "type": "normal"},
+    {"last": "Wagner",  "first": "Clara",  "bday": date(2012,  8, 13), "wp": 3, "type": "normal"},
+    {"last": "Fischer", "first": "Max",    "bday": date(2012, 10,  3), "wp": 0, "type": "normal"},
 ]
 
 # ---------------------------------------------------------------------------
@@ -80,112 +118,94 @@ stets zuverlässig erledigt.
 
 Im Fach Deutsch verfügt {vorname} über ein solides Sprachgefühl. \
 Leseverständnis und schriftlicher Ausdruck entsprechen den Anforderungen der \
-Jahrgangsstufe. Grammatikalische Strukturen werden sicher angewendet, und im \
-mündlichen Bereich äußert sich {vorname} klar und verständlich. Die \
-Aufsatzerziehung hat im Laufe des Halbjahres sichtbare Fortschritte gemacht.
+Jahrgangsstufe. Grammatikalische Strukturen werden sicher angewendet.
 
-In Mathematik zeigt {vorname} ein gutes Verständnis für logische Zusammenhänge \
-und algebraische Strukturen. Aufgaben werden methodisch und strukturiert \
-bearbeitet; bei anspruchsvolleren Problemstellungen arbeitet {pron} ausdauernd \
-und zielorientiert. Die Grundrechenarten sowie der Umgang mit Variablen werden \
-sicher beherrscht.
+In Mathematik zeigt {vorname} ein gutes Verständnis für logische Zusammenhänge. \
+Aufgaben werden methodisch und strukturiert bearbeitet; bei anspruchsvolleren \
+Problemstellungen arbeitet {pron} ausdauernd und zielorientiert.
 
 Im Englischunterricht kommuniziert {vorname} zunehmend sicherer in der \
-Fremdsprache. Vokabular und Grammatik werden angemessen eingesetzt, und das \
-Hörverstehen hat sich spürbar verbessert. Schriftliche Arbeiten zeigen eine \
-gute Grundkompetenz; kreative Schreibanlässe werden mit Freude wahrgenommen.
-
-Im naturwissenschaftlichen Bereich zeichnet sich {vorname} durch Neugier und \
-sorgfältige Beobachtungsgabe aus. Experimente werden gewissenhaft durchgeführt \
-und Ergebnisse nachvollziehbar dokumentiert. Das Verständnis für \
-naturwissenschaftliche Zusammenhänge wächst kontinuierlich.
+Fremdsprache. Vokabular und Grammatik werden angemessen eingesetzt.
 
 Im sozialen Miteinander verhält sich {vorname} respektvoll und kollegial. \
-Die Zusammenarbeit mit Mitschülerinnen und Mitschülern gelingt gut; {pron} \
-übernimmt Verantwortung für das eigene Handeln und ist bereit, anderen zu \
-helfen. Das Klassenklima wird durch {vorname} positiv beeinflusst.
+Die Zusammenarbeit mit Mitschülerinnen und Mitschülern gelingt gut.
 
 Insgesamt hat {vorname} in diesem Schulhalbjahr erfreuliche Leistungen erbracht. \
-Mit weiterhin konsequentem Einsatz und Lernbereitschaft ist {vorname} auf einem \
-guten Weg, die gesetzten Ziele zu erreichen und {pron_akk} Potenzial voll \
-auszuschöpfen. Wir wünschen {vorname} für das weitere Schuljahr viel Erfolg \
-und Freude am Lernen.\
+Wir wünschen {vorname} für das weitere Schuljahr viel Erfolg und Freude am Lernen.\
 """
 
-REPORT_ALEXANDER = """\
-Alexander hat das vergangene Schulhalbjahr regelmäßig und pünktlich besucht. \
-Seine Teilnahme am Unterricht war stets engagiert und von Lernbereitschaft \
-geprägt. Er zeigt eine positive Grundeinstellung gegenüber schulischen \
-Anforderungen und arbeitet motiviert mit, auch wenn einzelne \
-Aufgabenstellungen besondere Herausforderungen darstellen.
-
-Alexander besucht den Unterricht auf der Grundlage eines individuellen \
+REPORT_LB = """\
+{vorname} hat das vergangene Schulhalbjahr regelmäßig und pünktlich besucht. \
+{pron_cap} besucht den Unterricht auf der Grundlage eines individuellen \
 Förderplans mit dem Förderschwerpunkt Lernen. Die erbrachten Leistungen \
-werden entsprechend seiner individuellen Lernziele bewertet und spiegeln \
-seinen persönlichen Lernfortschritt wider. Im Rahmen seiner Möglichkeiten \
-zeigt Alexander bemerkenswerte und ermutigende Fortschritte.
+werden entsprechend {pron_gen} individuellen Lernziele bewertet und spiegeln \
+{pron_akk} persönlichen Lernfortschritt wider.
 
-Im Fach Mathematik arbeitet Alexander mit großem Einsatz. Grundlegende \
-Rechenoperationen führt er mit wachsender Sicherheit durch. Bei komplexeren \
-Aufgaben nimmt er gezielte Unterstützung gut an und arbeitet dann ausdauernd \
-weiter. Sein Verständnis für mathematische Zusammenhänge hat sich im Laufe \
-des Halbjahres schrittweise weiterentwickelt.
-
-Im Englischunterricht zeigt Alexander Mut zur Kommunikation und beteiligt \
-sich am mündlichen Unterrichtsgeschehen. Er erweitert seinen Wortschatz \
-kontinuierlich und versteht einfache Sätze und Anweisungen sicher. \
-Schriftliche Aufgaben bewältigt er mit Hilfestellung zunehmend \
-selbstständiger.
-
-Alexander ist ein geschätztes Mitglied der Klassengemeinschaft. Er verhält \
-sich gegenüber Mitschülerinnen, Mitschülern und Lehrkräften stets \
-respektvoll und freundlich. Die Zusammenarbeit in der Gruppe gelingt ihm gut, \
-und er bringt sich aktiv in das Klassengeschehen ein.
-
-Wir freuen uns über Alexanders Entwicklung und ermutigen ihn, seinen \
-eingeschlagenen Weg mit Zuversicht und Ausdauer fortzusetzen. Mit der \
-Unterstützung aller Beteiligten wird Alexander seine individuellen Ziele \
-weiter voranbringen. Wir wünschen ihm für das kommende Schulhalbjahr \
-alles Gute und weiterhin viel Freude am Lernen.\
+{vorname} ist ein geschätztes Mitglied der Klassengemeinschaft. \
+Wir ermutigen {vorname}, den eingeschlagenen Weg mit Zuversicht fortzusetzen.\
 """
 
-NIVEAU_WORTURTEIL_ALEXANDER = (
-    "Alexander besucht den Unterricht auf der Grundlage eines individuellen "
+REPORT_GB = """\
+{vorname} hat das Schulhalbjahr regelmäßig besucht und zeigt eine freundliche, \
+offene Grundhaltung. {pron_cap} besucht den Unterricht auf der Grundlage eines \
+individuellen Förderplans mit dem Förderschwerpunkt geistige Entwicklung.
+
+{vorname} nimmt aktiv am Unterrichtsgeschehen teil und zeigt Freude am \
+gemeinsamen Lernen. Wir freuen uns über {vorname}s Entwicklung.\
+"""
+
+LB_NIVEAU_TEXT = (
+    "{vorname} besucht den Unterricht auf der Grundlage eines individuellen "
     "Förderplans mit dem Förderschwerpunkt Lernen. Die Leistungsbewertung "
-    "erfolgt auf Basis individueller Lernziele. Er zeigt erkennbare Fortschritte "
-    "und arbeitet mit großem Einsatz. Praktisches und handlungsorientiertes "
-    "Lernen gelingt ihm besonders gut. Mit gezielter Unterstützung bewältigt "
-    "er Aufgaben zunehmend selbstständig."
+    "erfolgt auf Basis individueller Lernziele."
 )
 
+GB_NIVEAU_TEXT = (
+    "{vorname} besucht den Unterricht auf der Grundlage eines individuellen "
+    "Förderplans mit dem Förderschwerpunkt geistige Entwicklung. "
+    "{pron_cap} nimmt aktiv am Unterrichtsgeschehen teil."
+)
+
+LB_GRADE_TEXTS = [
+    "zeigt erkennbare Fortschritte",
+    "arbeitet mit Unterstützung zunehmend selbstständiger",
+    "engagiert sich aktiv im Unterricht",
+    "bewältigt Grundaufgaben mit wachsender Sicherheit",
+]
+
+GB_GRADE_TEXTS = [
+    "beteiligt sich aktiv am Unterricht",
+    "zeigt Interesse und ist bemüht",
+    "arbeitet mit Unterstützung konzentriert mit",
+    "beobachtet aufmerksam und reagiert situationsgemäß",
+    "nimmt teil und zeigt Freude am Lernen",
+]
 
 # ---------------------------------------------------------------------------
-# Helper functions
+# Helpers
 # ---------------------------------------------------------------------------
 
-def _get_or_create_class(ses: Session) -> SchoolClass:
-    school_class = ses.query(SchoolClass).filter_by(name=CLASS_NAME).first()
-    if school_class is None:
-        school_class = SchoolClass(name=CLASS_NAME)
-        ses.add(school_class)
-        ses.flush()
-    return school_class
+def _pronouns(first: str) -> dict[str, str]:
+    is_female = first in FEMALE_FIRST_NAMES
+    return {
+        "pron":     "sie"   if is_female else "er",
+        "pron_cap": "Sie"   if is_female else "Er",
+        "pron_akk": "ihr"   if is_female else "sein",
+        "pron_gen": "ihrer" if is_female else "seiner",
+    }
 
 
-def _upsert_student(ses: Session, class_id: int, first_name: str,
-                    last_name: str, birthday: date) -> Student:
+def _upsert_student(ses: Session, last: str, first: str, bday: date,
+                    class_id: int) -> Student:
     stu = ses.query(Student).filter_by(
-        last_name=last_name, first_name=first_name, birthday=birthday
+        last_name=last, first_name=first, birthday=bday
     ).first()
     if stu is None:
-        stu = Student(
-            last_name=last_name, first_name=first_name,
-            birthday=birthday, class_id=class_id,
-        )
+        stu = Student(last_name=last, first_name=first, birthday=bday, class_id=class_id)
         ses.add(stu)
         ses.flush()
     else:
-        stu.class_id = class_id  # re-assign in case it moved
+        stu.class_id = class_id
     return stu
 
 
@@ -211,8 +231,12 @@ def _upsert_grade(ses: Session, student_id: int, topic_id: int, value: str):
         g.value = value
 
 
-def _select_all_competences_for_class(ses: Session, class_id: int,
-                                       subject_names: list[str]):
+def _select_random_competences(ses: Session, class_id: int,
+                                subject_names: list[str], rng: random.Random):
+    """Select ~20% of competences. Some topics skipped entirely."""
+    TOPIC_SKIP_PROB  = 0.40
+    COMP_SELECT_PROB = 0.33
+
     for name in subject_names:
         subj = ses.query(Subject).filter_by(name=name).first()
         if not subj:
@@ -221,16 +245,16 @@ def _select_all_competences_for_class(ses: Session, class_id: int,
         if not topics:
             topics = ses.query(Topic).filter_by(subject_id=subj.id).all()
         for topic in topics:
+            skip_topic = rng.random() < TOPIC_SKIP_PROB
             for comp in topic.competences:
+                selected = (not skip_topic) and (rng.random() < COMP_SELECT_PROB)
                 cc = ses.query(ClassCompetence).filter_by(
                     class_id=class_id, competence_id=comp.id
                 ).first()
                 if cc is None:
-                    ses.add(ClassCompetence(
-                        class_id=class_id, competence_id=comp.id, selected=True
-                    ))
+                    ses.add(ClassCompetence(class_id=class_id, competence_id=comp.id, selected=selected))
                 else:
-                    cc.selected = True
+                    cc.selected = selected
 
 
 def _topics_for(ses: Session, subject_id: int) -> list[Topic]:
@@ -240,27 +264,125 @@ def _topics_for(ses: Session, subject_id: int) -> list[Topic]:
     return topics
 
 
+def _grade_for_focus(niveau_rule: str, rng: random.Random) -> str:
+    if niveau_rule == "1":
+        return rng.choice(["1", "1", "2", "nb"])
+    if niveau_rule == "2":
+        return rng.choice(["2", "2", "3", "4"])
+    if niveau_rule == "3":
+        return rng.choice(["1", "2", "3", "4"])
+    return rng.choice(["1", "2", "3", "4", "nb"])  # "mix"
+
+
+def _fill_student(ses: Session, stu: Student, sdef: dict,
+                  all_subjects: dict, rng: random.Random):
+    stype   = sdef["type"]
+    vorname = stu.first_name
+    p       = _pronouns(vorname)
+
+    stu.lb = (stype == "lb")
+    stu.gb = (stype == "gb")
+
+    stu.days_absent_excused      = rng.randint(0, 6)
+    stu.days_absent_unexcused    = rng.randint(0, 2)
+    stu.lessons_absent_excused   = rng.randint(0, 12)
+    stu.lessons_absent_unexcused = rng.randint(0, 4)
+
+    if stype == "lb":
+        stu.report_text = REPORT_LB.format(vorname=vorname, **p)
+    elif stype == "gb":
+        stu.report_text = REPORT_GB.format(vorname=vorname, **p)
+    else:
+        stu.report_text = REPORT_TEMPLATE.format(vorname=vorname, **p)
+
+    # Lebenspraxis: Niveau text for LB/GB
+    if stype in ("lb", "gb"):
+        lp_subj = all_subjects.get(LEBENSPRAXIS)
+        if lp_subj:
+            lp_text = (
+                LB_NIVEAU_TEXT.format(vorname=vorname, **p)
+                if stype == "lb"
+                else GB_NIVEAU_TEXT.format(vorname=vorname, **p)
+            )
+            _upsert_student_subject(ses, stu.id, lp_subj.id, lp_text)
+
+    wp_name = WAHLPFLICHT[sdef["wp"]]
+    student_subjects = [n for n in MAIN_SUBJECTS if n in all_subjects]
+    if wp_name in all_subjects:
+        student_subjects.append(wp_name)
+
+    lb_text_subjects = {"Deutsch", "Mathematik", "Englisch"}
+
+    for subj_idx, subj_name in enumerate(student_subjects):
+        subj    = all_subjects[subj_name]
+        is_sport = subj_name == SPORT
+        no_niv   = subj_name in NO_NIVEAU
+        ne_whole = stype == "focus" and sdef.get("ne_subj") == subj_name
+
+        # For LB: decide once per subject whether all topics get text or regular grades
+        lb_use_text = stype == "lb" and rng.random() < 0.45
+
+        # Niveau
+        if ne_whole:
+            niveau = "ne"
+        elif is_sport:
+            niveau = "9"
+        elif no_niv:
+            niveau = None
+        elif stype == "gb":
+            niveau = GB_NIVEAU_TEXT.format(vorname=vorname, **p)
+        elif stype == "lb":
+            # Text-mode subjects get the LB text; grade-mode subjects get a numeric level
+            if lb_use_text:
+                niveau = LB_NIVEAU_TEXT.format(vorname=vorname, **p)
+            else:
+                niveau = str(rng.randint(1, 3))
+        elif stype == "focus":
+            n_rule = sdef["niveau"]
+            niveau = str((subj_idx % 3) + 1) if n_rule == "mix" else n_rule
+        else:
+            niveau = str(rng.randint(1, 3))
+
+        _upsert_student_subject(ses, stu.id, subj.id, niveau)
+
+        # Grades per topic
+        ne_topic = sdef.get("ne_topic") if stype == "focus" else None
+
+        for topic_idx, topic in enumerate(_topics_for(ses, subj.id)):
+            if ne_whole:
+                grade_val = "ne"
+            elif ne_topic and subj_name == ne_topic[0] and topic_idx == ne_topic[1]:
+                grade_val = "ne"
+            elif stype == "gb":
+                grade_val = GB_GRADE_TEXTS[topic_idx % len(GB_GRADE_TEXTS)]
+            elif stype == "lb":
+                grade_val = (
+                    LB_GRADE_TEXTS[topic_idx % len(LB_GRADE_TEXTS)]
+                    if lb_use_text
+                    else str(rng.randint(1, 4))
+                )
+            elif stype == "focus":
+                grade_val = _grade_for_focus(sdef["niveau"], rng)
+            else:
+                grade_val = str(rng.randint(1, 4))
+
+            _upsert_grade(ses, stu.id, topic.id, grade_val)
+
+
 # ---------------------------------------------------------------------------
-# Generate
+# Public API
 # ---------------------------------------------------------------------------
 
 def generate_class_7ef(seed: int = 42) -> str:
-    """
-    Create class 7ef (if needed), insert fixed test students, and populate
-    competences, niveaus and grades.
-    Idempotent — safe to call multiple times.
-    """
+    """Populate test data for class 7ef. Idempotent."""
     rng = random.Random(seed)
 
     with Session(ENGINE) as ses:
-        school_class = _get_or_create_class(ses)
-
-        # Ensure all test students exist
-        students = [
-            _upsert_student(ses, school_class.id, **s)
-            for s in TEST_STUDENTS
-        ]
-        ses.flush()
+        school_class = ses.query(SchoolClass).filter_by(name=CLASS_NAME).first()
+        if school_class is None:
+            school_class = SchoolClass(name=CLASS_NAME)
+            ses.add(school_class)
+            ses.flush()
 
         all_subjects = {s.name: s for s in ses.query(Subject).all()}
         missing = [n for n in MAIN_SUBJECTS + WAHLPFLICHT if n not in all_subjects]
@@ -268,89 +390,44 @@ def generate_class_7ef(seed: int = 42) -> str:
         if missing:
             warnings.append(f"Fehlende Fächer (übersprungen): {', '.join(missing)}")
 
-        _select_all_competences_for_class(
+        _select_random_competences(
             ses, school_class.id,
             [n for n in MAIN_SUBJECTS + WAHLPFLICHT if n in all_subjects],
+            rng,
         )
 
-        for idx, student in enumerate(students):
-            is_alexander = (
-                student.first_name == "Alexander"
-                and student.last_name == "Herrmann"
-            )
-            vorname = student.first_name
-
-            wp_name = WAHLPFLICHT[idx % len(WAHLPFLICHT)]
-            student_subjects = [n for n in MAIN_SUBJECTS if n in all_subjects]
-            if wp_name in all_subjects:
-                student_subjects.append(wp_name)
-
-            if is_alexander:
-                student.report_text = REPORT_ALEXANDER
-                student.lb = True
-            else:
-                pron     = "sie" if vorname in FEMALE_FIRST_NAMES else "er"
-                pron_akk = "ihr" if pron == "sie" else "sein"
-                student.report_text = REPORT_TEMPLATE.format(
-                    vorname=vorname, pron=pron, pron_akk=pron_akk,
-                )
-
-            student.days_absent_excused      = rng.randint(0, 6)
-            student.days_absent_unexcused    = rng.randint(0, 2)
-            student.lessons_absent_excused   = rng.randint(0, 12)
-            student.lessons_absent_unexcused = rng.randint(0, 4)
-
-            for subj_name in student_subjects:
-                subj = all_subjects[subj_name]
-                no_niveau = subj_name in NO_NIVEAU
-
-                if no_niveau:
-                    niveau = None
-                elif is_alexander and subj_name in ("Mathematik", "Englisch"):
-                    niveau = NIVEAU_WORTURTEIL_ALEXANDER
-                else:
-                    niveau = str(rng.randint(1, 3))
-
-                _upsert_student_subject(ses, student.id, subj.id, niveau)
-
-                for topic in _topics_for(ses, subj.id):
-                    _upsert_grade(ses, student.id, topic.id, str(rng.randint(1, 4)))
+        for sdef in STUDENTS_DEF:
+            stu = _upsert_student(ses, sdef["last"], sdef["first"], sdef["bday"], school_class.id)
+            _fill_student(ses, stu, sdef, all_subjects, rng)
 
         ses.commit()
 
-    msg = f"✅ Testdaten für Klasse {CLASS_NAME} generiert — {len(students)} Schüler."
+    n = len(STUDENTS_DEF)
+    msg = f"✅ Testdaten für Klasse {CLASS_NAME} generiert — {n} Schüler."
     if warnings:
         msg += "\n⚠️ " + "\n⚠️ ".join(warnings)
     return msg
 
 
-# ---------------------------------------------------------------------------
-# Remove
-# ---------------------------------------------------------------------------
-
 def clear_class_7ef() -> str:
-    """Delete all test students and the 7ef class entry."""
+    """Remove class 7ef and all its data (students, grades, competence selections)."""
     with Session(ENGINE) as ses:
         school_class = ses.query(SchoolClass).filter_by(name=CLASS_NAME).first()
-        if not school_class:
-            return f"ℹ️ Klasse {CLASS_NAME} nicht vorhanden."
+        if school_class is None:
+            return f"ℹ️ Klasse {CLASS_NAME} nicht in der Datenbank."
         students = ses.query(Student).filter_by(class_id=school_class.id).all()
         count = len(students)
         for stu in students:
             ses.delete(stu)
         ses.flush()
-        ses.execute(
-            sql_delete(ClassCompetence).where(ClassCompetence.class_id == school_class.id)
-        )
+        ses.execute(sql_delete(ClassCompetence).where(ClassCompetence.class_id == school_class.id))
         ses.delete(school_class)
         ses.commit()
-    return f"✅ Klasse {CLASS_NAME} mit {count} Schüler(n) entfernt."
+    return f"✅ Klasse {CLASS_NAME} mit {count} Schüler(n) und Kompetenzdaten entfernt."
 
 
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    from dotenv import load_dotenv
-    load_dotenv()
     print(generate_class_7ef())

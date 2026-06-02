@@ -155,6 +155,7 @@ class GradeMatrixRow(BaseModel):
     first_name: str
     niveau: str
     grades: dict[str, str]      # str(topic_id) → grade value
+    student_type: str = "normal"  # "normal" | "lb" | "gb"
 
 
 class GradeMatrixResponse(BaseModel):
@@ -225,6 +226,7 @@ class SubjectGradeStatus(BaseModel):
     has_niveau: bool
     grades_given: int
     total_grades: int
+    is_text_mode: bool = False   # True for LB subjects where grades are free text
 
 
 class StudentGradeStatus(BaseModel):
