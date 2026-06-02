@@ -18,16 +18,16 @@ const FAQ: FaqItem[] = [
     a: "LB (Lernschwäche): Schüler erhalten entweder reguläre Noten oder individuelle Freitexte – je nach Fach. GB (Geistige Behinderung): Ausschließlich Freitexte, keine Noten.",
   },
   {
-    q: "Was bedeutet „Niveau" bei den Schülerdaten?",
-    a: "Das Niveau gibt die Anforderungsebene an: 1, 2 oder 3. Sport: immer 9. Werkstätten & DuG: kein Niveau. „ne" = nicht erteilt (Fach wurde nicht benotet).",
+    q: 'Was bedeutet "Niveau" bei den Schülerdaten?',
+    a: 'Das Niveau gibt die Anforderungsebene an: 1, 2 oder 3. Sport: immer 9. Werkstätten & DuG: kein Niveau. "ne" = nicht erteilt (Fach wurde nicht benotet).',
   },
   {
-    q: "Was bedeutet „ne" bei der Note?",
-    a: "„ne" steht für nicht erteilt. Im PDF wird das gesamte Thema mit einem Blockeintrag „nicht erteilt" dargestellt statt einzelner Checkboxen.",
+    q: 'Was bedeutet "ne" bei der Note?',
+    a: '"ne" steht für nicht erteilt. Im PDF wird das gesamte Thema mit einem Blockeintrag "nicht erteilt" dargestellt statt einzelner Checkboxen.',
   },
   {
     q: "Wie wähle ich Kompetenzen aus?",
-    a: "Im Menü „Kompetenzen": Klasse und Fach wählen, dann Themen aufklappen und die passenden Kompetenzen anhaken. Werkstätten ist immer vollständig ausgewählt.",
+    a: 'Im Menü "Kompetenzen": Klasse und Fach wählen, dann Themen aufklappen und die passenden Kompetenzen anhaken. Werkstätten ist immer vollständig ausgewählt.',
   },
   {
     q: "Wie importiere ich Schüler?",
@@ -35,7 +35,7 @@ const FAQ: FaqItem[] = [
   },
   {
     q: "Wie schreibe ich den Zeugnistext?",
-    a: "Stammdaten → einen Schüler auswählen → „Zeugnistext" klicken. Der Editor unterstützt Fett, Kursiv, Unterstrichen, Listen und Tabellen.",
+    a: 'Stammdaten → einen Schüler auswählen → "Zeugnistext" klicken. Der Editor unterstützt Fett, Kursiv, Unterstrichen, Listen und Tabellen.',
   },
   {
     q: "Welche Formatierung ist im Zeugnistext möglich?",
@@ -47,7 +47,7 @@ const FAQ: FaqItem[] = [
   },
   {
     q: "Wie exportiere ich Zeugnisse als PDF?",
-    a: "Admin → Export: Klasse auswählen, Schüler markieren, „Exportieren" klicken. Die PDFs werden im Verzeichnis ~/Zeugnisse auf dem Server gespeichert.",
+    a: 'Admin → Export: Klasse auswählen, Schüler markieren, "Exportieren" klicken. Die PDFs werden im Verzeichnis ~/Zeugnisse auf dem Server gespeichert.',
   },
   {
     q: "Wie setze ich das Zeugnisdatum?",
@@ -55,7 +55,7 @@ const FAQ: FaqItem[] = [
   },
   {
     q: "Wie lege ich eine neue Datenbank für ein neues Schuljahr an?",
-    a: "Setup → Datenbanken → Neu erstellen. Pro Schuljahr/Halbjahr empfiehlt sich eine eigene Datenbank. Den Namen z. B. „reports_2026_hj1" wählen.",
+    a: 'Setup → Datenbanken → Neu erstellen. Pro Schuljahr/Halbjahr empfiehlt sich eine eigene Datenbank. Den Namen z. B. "reports_2026_hj1" wählen.',
   },
   {
     q: "Wie erstelle ich zusätzliche Kompetenzen?",

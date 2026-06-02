@@ -37,8 +37,8 @@ export default function SchuelerdatenPage() {
               title="Schülerdaten – Noten & Niveau"
               sections={[
                 { heading: "Fach & Klasse wählen", text: "Wählen Sie links Klasse und Fach aus. Die Tabelle zeigt alle Schüler mit ihren Bewertungsfeldern." },
-                { heading: "Niveau (1–3)", text: "Die Anforderungsebene des Schülers in diesem Fach. Sport erhält immer 9, Werkstätten und DuG kein Niveau. „ne" = nicht erteilt." },
-                { heading: "Themenurteile (1–4, ne)", text: "Note pro Thema: 1 (sehr gut) bis 4 (nicht ausreichend). „ne" = nicht erteilt, erzeugt im PDF einen Blockeintrag." },
+                { heading: "Niveau (1–3)", text: 'Die Anforderungsebene des Schülers in diesem Fach. Sport erhält immer 9, Werkstätten und DuG kein Niveau. "ne" = nicht erteilt.' },
+                { heading: "Themenurteile (1–4, ne)", text: 'Note pro Thema: 1 (sehr gut) bis 4 (nicht ausreichend). "ne" = nicht erteilt, erzeugt im PDF einen Blockeintrag.' },
                 { heading: "LB-Schüler (grün)", text: "LB-Schüler haben Freitext-Felder statt Noten-Dropdowns. Der Text erscheint im Niveau-Feld des Zeugnisses." },
                 { heading: "GB-Schüler (orange)", text: "GB-Schüler erhalten ausschließlich Freitext im Niveau-Feld (über den Stift-Button). Keine Themenurteile." },
                 { heading: "Lebenspraxis", text: "Erscheint nur bei LB- und GB-Schülern. Kein Themen-Raster, nur ein Freitext-Feld." },
