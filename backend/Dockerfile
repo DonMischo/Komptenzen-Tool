@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     texlive-lang-german \
     texlive-latex-extra \
     texlive-fonts-recommended \
+    texlive-latex-recommended \
     lmodern \
     locales \
     && sed -i '/de_DE.UTF-8/s/^# //' /etc/locale.gen \
