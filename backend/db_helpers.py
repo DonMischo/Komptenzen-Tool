@@ -10,8 +10,6 @@ from typing import List, Optional, Tuple
 from sqlalchemy import select, update, delete, distinct, func
 from sqlalchemy.orm import Session
 
-from helpers import unique_key as _uk
-
 import pandas as pd
 import numpy as np
 

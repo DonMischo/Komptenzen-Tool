@@ -56,8 +56,10 @@ def _copy_template(dst: Path) -> None:
         raise FileNotFoundError("TexTemplate directory missing.")
     for itm in src.iterdir():
         tgt = dst / itm.name
-        if not tgt.exists():
-            shutil.copytree(itm, tgt) if itm.is_dir() else shutil.copy2(itm, tgt)
+        if itm.is_dir():
+            shutil.copytree(itm, tgt, dirs_exist_ok=True)
+        else:
+            shutil.copy2(itm, tgt)
 
 # ---------------------------------------------------------------------------
 # Lua serializer ------------------------------------------------------------

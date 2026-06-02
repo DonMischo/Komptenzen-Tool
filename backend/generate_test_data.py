@@ -166,20 +166,6 @@ GB_NIVEAU_TEXT = (
     "{pron_cap} nimmt aktiv am Unterrichtsgeschehen teil."
 )
 
-LB_GRADE_TEXTS = [
-    "zeigt erkennbare Fortschritte",
-    "arbeitet mit Unterstützung zunehmend selbstständiger",
-    "engagiert sich aktiv im Unterricht",
-    "bewältigt Grundaufgaben mit wachsender Sicherheit",
-]
-
-GB_GRADE_TEXTS = [
-    "beteiligt sich aktiv am Unterricht",
-    "zeigt Interesse und ist bemüht",
-    "arbeitet mit Unterstützung konzentriert mit",
-    "beobachtet aufmerksam und reagiert situationsgemäß",
-    "nimmt teil und zeigt Freude am Lernen",
-]
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -311,16 +297,11 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
     if wp_name in all_subjects:
         student_subjects.append(wp_name)
 
-    lb_text_subjects = {"Deutsch", "Mathematik", "Englisch"}
-
     for subj_idx, subj_name in enumerate(student_subjects):
         subj    = all_subjects[subj_name]
         is_sport = subj_name == SPORT
         no_niv   = subj_name in NO_NIVEAU
         ne_whole = stype == "focus" and sdef.get("ne_subj") == subj_name
-
-        # For LB: decide once per subject whether all topics get text or regular grades
-        lb_use_text = stype == "lb" and rng.random() < 0.45
 
         # Niveau
         if ne_whole:
@@ -332,11 +313,7 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
         elif stype == "gb":
             niveau = GB_NIVEAU_TEXT.format(vorname=vorname, **p)
         elif stype == "lb":
-            # Text-mode subjects get the LB text; grade-mode subjects get a numeric level
-            if lb_use_text:
-                niveau = LB_NIVEAU_TEXT.format(vorname=vorname, **p)
-            else:
-                niveau = str(rng.randint(1, 3))
+            niveau = LB_NIVEAU_TEXT.format(vorname=vorname, **p)
         elif stype == "focus":
             n_rule = sdef["niveau"]
             niveau = str((subj_idx % 3) + 1) if n_rule == "mix" else n_rule
@@ -344,6 +321,10 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
             niveau = str(rng.randint(1, 3))
 
         _upsert_student_subject(ses, stu.id, subj.id, niveau)
+
+        # LB/GB: no topic grades — text in niveau field is sufficient
+        if stype in ("lb", "gb"):
+            continue
 
         # Grades per topic
         ne_topic = sdef.get("ne_topic") if stype == "focus" else None
@@ -353,14 +334,6 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
                 grade_val = "ne"
             elif ne_topic and subj_name == ne_topic[0] and topic_idx == ne_topic[1]:
                 grade_val = "ne"
-            elif stype == "gb":
-                grade_val = GB_GRADE_TEXTS[topic_idx % len(GB_GRADE_TEXTS)]
-            elif stype == "lb":
-                grade_val = (
-                    LB_GRADE_TEXTS[topic_idx % len(LB_GRADE_TEXTS)]
-                    if lb_use_text
-                    else str(rng.randint(1, 4))
-                )
             elif stype == "focus":
                 grade_val = _grade_for_focus(sdef["niveau"], rng)
             else:
