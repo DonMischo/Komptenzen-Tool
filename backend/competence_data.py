@@ -210,6 +210,7 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann einfache bzw. kurze Texte lesen und ihnen Detailinformationen zu Themen wie Wetter, Urlaub, Wochenende, Schule, Freizeit, Nachbarschaft oder Tieren entnehmen.",
                     "Ich kann erste englische Operatoren identifizieren und anwenden.",
                     "Ich kann kurze, einfache Briefe, E-Mails oder Blogs verstehen.",
+                    "Ich kann ein Buch lesen, den Inhalt verstehen und Fragen zum Text beantworten.",
                 ],
                 "Schreiben": [
                     "Ich kann kurze Informationen, Mitteilungen, Gedanken und Texte schreiben.",
@@ -220,10 +221,12 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                 "Sprechen": [
                     "Ich kann mich in vertrauten Routinesituationen verständigen.",
                     "Ich kann mich vorstellen und Informationen über mich vermitteln.",
+                    "Ich kann mich vorstellen, einfache Fragen stellen und beantworten.",
                     "Ich kann einfache Fragen stellen und beantworten.",
                     "Ich kann vorbereitete Präsentationen zu vertrauten Themen vortragen.",
                     "Ich kann Tiere beschreiben.",
                     "Ich kann englische Texte mit guter Aussprache vorlesen.",
+                    "Ich kann einen fünfminütigen Vortrag halten und verschiedene Bereiche meines Lebens beschreiben, wie zum Beispiel meine Schule, mein Zimmer, meine Freizeit, meinen Urlaub und meine Zukunft.",
                 ],
                 "Wortschatz und Sprachmittlung": [
                     "Ich kann mir Vokabeln merken und korrekt in Sätzen anwenden.",
@@ -236,7 +239,7 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann Aussagesätze im Simple Past bilden.",
                     "Ich kenne Fragewörter und kann Fragesätze im Simple Past bilden.",
                     "Ich kann regelmäßige und unregelmäßige Verben unterscheiden und in Sätzen anwenden.",
-                    "Ich kann Formen der Verben „be“, „have got“ und „can“ bilden.",
+                    'Ich kann Formen der Verben "be", "have got" und "can" bilden.',
                     "Ich kann Verben verkürzen (Contractions) anwenden.",
                     "Ich kann das Simple Present korrekt anwenden (inklusive -s nach he/she/it).",
                     "Ich kann Fragen und Verneinungen bilden.",
@@ -276,6 +279,7 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                 "Schreiben": [
                     "Ich kann eine kurze, einfache Postkarte oder E-Mail schreiben und dabei Auskunft über meine Person geben.",
                     "Ich kann mir neue Vokabeln merken und orthographisch korrekt wiedergeben.",
+                    "Ich kann mein Arbeitsheft selbstständig führen, wobei ich auf Vollständigkeit, Sauberkeit und auf zunehmend nachvollziehbare Korrekturtechnik achte.",
                 ],
                 "Grammatische Schwerpunkte": [
                     "Ich kann den bestimmten und unbestimmten Artikel korrekt verwenden.",
@@ -541,7 +545,7 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann Metalloxide als Ionenverbindungen deuten, Oxidation / Reduktion formulieren und das Hochofen-Verfahren skizzieren.",  # :contentReference[oaicite:13]{index=13}
                     "Ich kann Korrosion erklären und Schutzmaßnahmen begründen.",  # :contentReference[oaicite:14]{index=14}
                 ],
-                "Säuren, Basen, Neutralisation (*Salze*)": [
+                "Säuren, Basen, Neutralisation (Salze)": [
                     "Ich kann saure und basische Lösungen anhand von Nachweisen, pH-Wert und elektrischer Leitfähigkeit charakterisieren.",  # :contentReference[oaicite:15]{index=15}
                     "Ich kann Entstehung starker Säuren / Basen durch Oxide beschreiben und Dissoziationsgleichungen aufstellen.",  # :contentReference[oaicite:16]{index=16}
                     "Ich kann Neutralisations- und Fällungsreaktionen erklären, Wort-/Ionengleichungen formulieren und Anwendungsbeispiele nennen.",  # :contentReference[oaicite:17]{index=17}
@@ -731,56 +735,99 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann meinen Puls vor / nach Belastung messen und Veränderungen erklären.",
                     "Ich kann Aufwärm- und Dehnübungen selbst anleiten und Verletzungsrisiken benennen.",
                     "Ich kann 12 Minuten ohne Pause in einem für mich passenden Tempo laufen.",
-                ],  # :contentReference[oaicite:0]{index=0}
+                    "Ich kann Übungen aus dem Bereich Koordination und Kondition bewältigen.",
+                ],
                 "Sportspiele": [
                     "Ich kann in vereinfachten Zielschussspielen (z. B. 4-gegen-4 Fußball) Ball annehmen, führen und kontrolliert abspielen.",
                     "Ich kann grundlegende Regeln und Fair-Play-Regeln wiedergeben und einhalten.",
                     "Ich kann einfache Spielzüge beobachten und den Mitspielern konstruktiv Rückmeldung geben.",
-                ],  # :contentReference[oaicite:1]{index=1}
+                    "Ich kann grundlegende Spielfertigkeiten ausführen und grundlegende taktische Situationen lösen.",
+                    "Ich kann den Basketball annehmen, führen, kontrollieren und abgeben.",
+                    "Ich kann ein Zielwurfspiel unter vereinfachten Bedingungen spielen (4 mit/gegen 4).",
+                    "Ich kann Bewegungsabläufe beschreiben.",
+                    "Ich kann einfache Spielregeln wiedergeben.",
+                    "Ich kann einfache taktische Handlungen beschreiben.",
+                    "Ich kann den Volleyball annehmen, führen, kontrollieren und abgeben.",
+                    "Ich kann den Ball gezielt zu meinem Partner spielen.",
+                    "Ich kann ein Zielschuss unter vereinfachten Bedingungen spielen (4 mit/gegen 4).",
+                    "Ich kann ein Rückschlagspiel unter vereinfachten Bedingungen 1 gegen 1 spielen.",
+                    "Ich kann grundlegende koordinative Anforderungen erfüllen.",
+                    "Ich kann einfache Komplexübungen und Spielformen präzise und sicher bewältigen.",
+                    "Ich kann Bewegungsabläufe von erlernten Spielfertigkeiten beschreiben.",
+                ],
                 "Gerätturnen": [
-                    "Ich kann Fallrolle, Handstand anstellen und Felgumschwung in der Grobform turnen.",
+                    "Ich kann Übungen aus mindestens drei Elementen an zwei Geräten präsentieren.",
+                    "Ich kann Grundtätigkeiten (z. B. Stützen, Springen, Rollen, Schwingen, Hängen, Balancieren und Klettern) an verschiedenen Geräten ausführen.",
                     "Ich kann zwei Stützsprünge über den Kasten (Hocke, Grätsche) sicher ausführen.",
                     "Ich kann beim Helfen / Sichern die wichtigsten Griff- und Stütztechniken anwenden.",
-                ],  # :contentReference[oaicite:2]{index=2}
+                    "Ich kann verschiedene Turnübungen sicher und konzentriert ausführen.",
+                    "Ich kann meinen Körper gezielt anspannen und kontrollieren.",
+                    "Ich kann auf Geräten balancieren und mein Gleichgewicht halten.",
+                    "Ich kann Bewegungsabläufe koordinieren und zunehmend flüssig ausführen.",
+                    "Ich kann Sicherheitsregeln beim Turnen beachten.",
+                    "Ich kann mit anderen zusammenarbeiten und Hilfestellungen annehmen.",
+                    "Ich kann neue Bewegungsaufgaben mutig ausprobieren.",
+                    "Ich kann meine eigenen Leistungen einschätzen und verbessern.",
+                    "Ich kann verschiedene Turngeräte sachgerecht nutzen.",
+                    "Ich kann eine kurze Kür mit mehreren Übungen planen, absolvieren und präsentieren.",
+                ],
                 "Leichtathletik": [
                     "Ich kann 50 m aus dem Tiefstart sprinten und den Startablauf beschreiben.",
                     "Ich kann aus der Absprungzone weit springen und meine Weite messen.",
                     "Ich kann Schlagball aus dem Stand zielgenau werfen und meine Technik verbessern.",
-                ],  # :contentReference[oaicite:3]{index=3}
+                    "Ich kann eine vereinfachte Sprungtechnik nach einem rhythmischen Anlauf beim Hochsprung ausführen.",
+                    "Ich kann in Spiel- und Wettbewerbsformen schnell und ausdauernd laufen.",
+                    "Ich kann schnell auf ein Startsignal reagieren und eine vorgegebene Strecke in maximaler Schnelligkeit absolvieren.",
+                    "Ich kann nach vorherigem Anlauf aus einer Absprungzone weit und hoch springen.",
+                ],
                 "Schwimmen": [
                     "Ich kann 15 Minuten ausdauernd Brust schwimmen.",
                     "Ich kann bis zu 10 m weit tauchen und einen Gegenstand heraufholen.",
                     "Ich kann Baderegeln nennen und mein Verhalten im Wasser danach ausrichten.",
-                ],  # :contentReference[oaicite:4]{index=4}
+                ],
+                "Rangeln und Raufen": [
+                    "Ich kann die vereinbarten Regeln und Rituale beim Rangeln und Raufen einhalten.",
+                    "Ich kann respektvoll und fair mit meinem Partner bzw. meiner Partnerin umgehen.",
+                    "Ich kann meine Kraft kontrolliert und angemessen einsetzen.",
+                    "Ich kann versuchen, das Gleichgewicht meines Gegenübers durch geeignete Bewegungen zu brechen.",
+                    "Ich kann mein eigenes Gleichgewicht halten und auf Zug- und Druckbewegungen reagieren.",
+                    "Ich kann einfache Strategien anwenden, um meinen Partner bzw. meine Partnerin kontrolliert in die Rückenlage zu bringen.",
+                    "Ich kann mich sicher und koordiniert in Bodenkampfsituationen bewegen.",
+                    "Ich kann rollen, drehen, ausweichen und mich am Boden geschickt fortbewegen.",
+                    "Ich kann günstige Bewegungsmöglichkeiten erkennen und für mich nutzen.",
+                    "Ich kann fair gewinnen und verlieren.",
+                    "Ich kann Rücksicht auf andere nehmen und Verantwortung für mein Handeln übernehmen.",
+                    "Ich kann mein Verhalten reflektieren und die Einhaltung von Regeln einschätzen.",
+                ],
             },
             "7/8": {
                 "Gesundheit und Fitness": [
                     "Ich kann 20 Minuten im aeroben Bereich joggen und mein Tempo über Pulswerte steuern.",
                     "Ich kann einen kleinen Circuit zur Kraft- und Beweglichkeitsschulung planen und durchführen.",
                     "Ich kann Gesundheitsrisiken und -chancen verschiedener Sportarten erläutern.",
-                ],  # :contentReference[oaicite:5]{index=5}
+                ],
                 "Sportspiele": [
                     "Ich kann in einem Zielschussspiel (z. B. 7-gegen-7 Fußball) Überzahlsituationen herausspielen und nutzen.",
                     "Ich kann fliegende Wechsel bei Staffeln (Außen-/Innenwechsel) sicher ausführen.",
                     "Ich kann Spielleistungen beobachten, nach einfachen Kriterien bewerten und korrigieren.",
-                ],  # :contentReference[oaicite:6]{index=6}
+                ],
                 "Gerätturnen": [
                     "Ich kann eine Kür mit mind. 4 Elementen an zwei Geräten gestalten und präsentieren.",
                     "Ich kann Felgumschwung, Kehre verbinden und sicher landen.",
                     "Ich kann Partner sichern und Bewegungsfehler sachgerecht korrigieren.",
-                ],  # :contentReference[oaicite:7]{index=7}
+                ],
                 "Leichtathletik": [
                     "Ich kann 75 m sprinten, Startblock nutzen und eine saubere Anlauf-Wende laufen.",
                     "Ich kann Hochsprung im Schersprung aus dem Anlauf überqueren und meine Höhe messen.",
                     "Ich kann mit dem Schleuderball aus ganzer Drehung weit werfen und Windrichtung beachten.",
-                ],  # :contentReference[oaicite:8]{index=8}
+                ],
                 "Schwimmen": [
                     "Ich kann in zwei Schwimmarten (Brust + Rücken oder Kraul) insgesamt 30 Minuten sicher schwimmen.",
                     "Ich kann Startsprung vom Block und Rollwende anwenden.",
                     "Ich kann Gefahren an offenen Gewässern erklären und geeignete Rettungshilfen einsetzen.",
-                ],  # :contentReference[oaicite:9]{index=9}
+                ],
             },
-        },
+        }
         "Werkstätten": {
             "5/6": {
                 "Technisches Werken": [

@@ -116,11 +116,11 @@ export default function StammdatenPage() {
                 <tr className="bg-muted/50 text-xs">
                   <th className="text-left px-3 py-2 border-b font-medium">Nachname</th>
                   <th className="text-left px-3 py-2 border-b font-medium">Vorname</th>
-                  <th className="px-2 py-2 border-b font-medium">Geb.</th>
-                  <th className="px-2 py-2 border-b font-medium">T.e.</th>
-                  <th className="px-2 py-2 border-b font-medium">T.u.</th>
-                  <th className="px-2 py-2 border-b font-medium">S.e.</th>
-                  <th className="px-2 py-2 border-b font-medium">S.u.</th>
+                  <th className="px-2 py-2 border-b font-medium">Geburtstag</th>
+                  <th className="px-2 py-2 border-b font-medium cursor-help" title="Fehltage entschuldigt">T.e.</th>
+                  <th className="px-2 py-2 border-b font-medium cursor-help" title="Fehltage unentschuldigt">T.u.</th>
+                  <th className="px-2 py-2 border-b font-medium cursor-help" title="Fehlstunden entschuldigt">S.e.</th>
+                  <th className="px-2 py-2 border-b font-medium cursor-help" title="Fehlstunden unentschuldigt">S.u.</th>
                   <th className="px-2 py-2 border-b font-medium">LB</th>
                   <th className="px-2 py-2 border-b font-medium">GB</th>
                   <th className="text-left px-2 py-2 border-b font-medium">Bemerkungen</th>
