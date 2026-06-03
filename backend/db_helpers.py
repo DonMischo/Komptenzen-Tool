@@ -199,6 +199,43 @@ def set_niveau(student_id: int, subject_id: int, niveau: str, ses: Session):
         link.niveau = niveau.strip()
     ses.commit()
 
+def sync_competences_to_parallel(source_class: str) -> list[str]:
+    """Copy all ClassCompetence selections from source_class to every class
+    in the same school year (same leading digit, e.g. 7a → 7b, 7c)."""
+    year = next((ch for ch in source_class if ch.isdigit()), None)
+    if not year:
+        return []
+    with Session(ENGINE) as ses:
+        src = _get_or_create_class(ses, source_class)
+        parallel = [
+            c for c in ses.scalars(select(SchoolClass)).all()
+            if c.id != src.id and any(ch == year and ch.isdigit() for ch in c.name)
+        ]
+        if not parallel:
+            return []
+        source_links = ses.scalars(
+            select(ClassCompetence).where(ClassCompetence.class_id == src.id)
+        ).all()
+        for target in parallel:
+            existing = {
+                cc.competence_id: cc
+                for cc in ses.scalars(
+                    select(ClassCompetence).where(ClassCompetence.class_id == target.id)
+                ).all()
+            }
+            for sl in source_links:
+                if sl.competence_id in existing:
+                    existing[sl.competence_id].selected = sl.selected
+                else:
+                    ses.add(ClassCompetence(
+                        class_id=target.id,
+                        competence_id=sl.competence_id,
+                        selected=sl.selected,
+                    ))
+        ses.commit()
+        return [c.name for c in parallel]
+
+
 # -------------------------------------------------------------------
 def get_custom_competences(class_id: int, topic_id: int, ses: Session) -> List[CustomCompetence]:
     return list(ses.scalars(

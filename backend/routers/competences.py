@@ -9,7 +9,7 @@ from db_helpers import (
     get_classes, get_subjects, get_blocks, load_topic_rows,
     save_selections, toggle_topic,
     add_custom_competence, delete_custom_competence, get_custom_competences,
-    _get_or_create_class_id,
+    _get_or_create_class_id, sync_competences_to_parallel,
 )
 from db_schema import Topic, Subject
 from deps import get_db, get_current_user
@@ -105,3 +105,11 @@ def add_custom(req: CustomCompetenceCreate, db: Session = Depends(get_db)):
 def delete_custom(comp_id: int, db: Session = Depends(get_db)):
     delete_custom_competence(comp_id, db)
     return {"ok": True}
+
+
+@router.post("/competences/sync-to-parallel")
+def sync_parallel(class_name: str, _user=Depends(get_current_user)):
+    """Copy all competence selections from class_name to every parallel class
+    in the same school year (same year digit, e.g. 7a → 7b, 7c)."""
+    synced = sync_competences_to_parallel(class_name)
+    return {"synced_to": synced}

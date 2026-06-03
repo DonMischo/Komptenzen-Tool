@@ -74,7 +74,11 @@ export const competenceApi = {
     api.post("/competences/toggle-topic", { class_name, topic_id, value }),
   addCustom: (class_name: string, topic_id: number, text: string) =>
     api.post("/competences/custom", { class_name, topic_id, text }),
+  updateCustom: (id: number, text: string) =>
+    api.put(`/overview/custom-competences/${id}`, { text }),
   deleteCustom: (id: number) => api.delete(`/competences/custom/${id}`),
+  syncToParallel: (class_name: string) =>
+    api.post("/competences/sync-to-parallel", null, { params: { class_name } }),
 };
 
 // ---------------------------------------------------------------------------

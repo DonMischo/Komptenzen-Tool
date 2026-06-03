@@ -9,7 +9,7 @@ import { competenceApi } from "@/lib/api";
 import { QK } from "@/lib/queries";
 import { TopicAccordion } from "@/components/kompetenzen/TopicAccordion";
 import { CompetenceListResponse } from "@/types/api";
-import { Save } from "lucide-react";
+import { Save, Copy } from "lucide-react";
 import { HelpButton } from "@/components/help/HelpButton";
 
 type Change = [number, boolean];
@@ -22,6 +22,15 @@ export default function KompetenzenPage() {
   const [pendingChanges, setPendingChanges] = useState<Map<number, boolean>>(new Map());
 
   const canLoad = !!selectedClass && !!selectedSubject && !!selectedBlock;
+
+  // Detect parallel classes (same year digit, e.g. 7a → 7b, 7c)
+  const { data: allClassesData } = useQuery<{ classes: string[] }>({
+    queryKey: ["classes"],
+    queryFn: () => competenceApi.classes().then((r) => r.data),
+  });
+  const parallelClasses = (allClassesData?.classes ?? []).filter(
+    (c) => c !== selectedClass && selectedClass.split("").some((ch) => /\d/.test(ch) && c.includes(ch))
+  );
 
   const { data, isLoading } = useQuery<CompetenceListResponse>({
     queryKey: QK.competences(selectedClass, selectedSubject, selectedBlock),
@@ -45,6 +54,15 @@ export default function KompetenzenPage() {
       toast.success("Auswahl gespeichert");
     },
     onError: () => toast.error("Fehler beim Speichern"),
+  });
+
+  const syncMutation = useMutation({
+    mutationFn: () => competenceApi.syncToParallel(selectedClass),
+    onSuccess: (res) => {
+      const names: string[] = res.data?.synced_to ?? [];
+      toast.success(`Kompetenzen übertragen auf: ${names.join(", ")}`);
+    },
+    onError: () => toast.error("Fehler beim Übertragen"),
   });
 
   const handleToggle = (compId: number, value: boolean) => {
@@ -94,18 +112,35 @@ export default function KompetenzenPage() {
                 ]}
               />
             </div>
-            {pendingChanges.size > 0 && (
-              <button
-                onClick={() => saveMutation.mutate()}
-                disabled={saveMutation.isPending}
-                className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 disabled:opacity-50"
-              >
-                <Save className="h-4 w-4" />
-                {saveMutation.isPending
-                  ? "Speichern…"
-                  : `Auswahl speichern (${pendingChanges.size})`}
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {parallelClasses.length > 0 && pendingChanges.size === 0 && selectedClass && (
+                <button
+                  onClick={() => {
+                    if (confirm(
+                      `Alle Kompetenz-Auswahlen von ${selectedClass} auf ${parallelClasses.join(", ")} übertragen?\n\nBestehende Auswahlen der Parallelklassen werden überschrieben.`
+                    )) syncMutation.mutate();
+                  }}
+                  disabled={syncMutation.isPending}
+                  title={`Auf Parallelklassen übertragen: ${parallelClasses.join(", ")}`}
+                  className="flex items-center gap-2 bg-muted border text-muted-foreground px-3 py-2 rounded-md text-sm hover:bg-muted/80 disabled:opacity-50"
+                >
+                  <Copy className="h-4 w-4" />
+                  {syncMutation.isPending ? "Übertragen…" : `→ ${parallelClasses.join(", ")}`}
+                </button>
+              )}
+              {pendingChanges.size > 0 && (
+                <button
+                  onClick={() => saveMutation.mutate()}
+                  disabled={saveMutation.isPending}
+                  className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 disabled:opacity-50"
+                >
+                  <Save className="h-4 w-4" />
+                  {saveMutation.isPending
+                    ? "Speichern…"
+                    : `Auswahl speichern (${pendingChanges.size})`}
+                </button>
+              )}
+            </div>
           </div>
 
           {!canLoad && (

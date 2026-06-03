@@ -5,7 +5,7 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { competenceApi } from "@/lib/api";
 import { TopicGroup } from "@/types/api";
-import { ChevronDown, ChevronRight, PlusCircle, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { ChevronDown, ChevronRight, PlusCircle, Trash2, ToggleLeft, ToggleRight, Pencil, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -21,6 +21,8 @@ export function TopicAccordion({ topic, className, pendingChanges, onToggle, onR
   const [open, setOpen] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newText, setNewText] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
 
   const addMutation = useMutation({
     mutationFn: () => competenceApi.addCustom(className, topic.topic_id, newText),
@@ -40,6 +42,17 @@ export function TopicAccordion({ topic, className, pendingChanges, onToggle, onR
       toast.success("Ergänzung gelöscht");
     },
     onError: () => toast.error("Fehler beim Löschen"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, text }: { id: number; text: string }) =>
+      competenceApi.updateCustom(id, text),
+    onSuccess: () => {
+      setEditingId(null);
+      onRefresh();
+      toast.success("Ergänzung gespeichert");
+    },
+    onError: () => toast.error("Fehler beim Speichern"),
   });
 
   const toggleAllMutation = useMutation({
@@ -129,13 +142,54 @@ export function TopicAccordion({ topic, className, pendingChanges, onToggle, onR
               <p className="text-xs font-medium text-muted-foreground">Eigene Ergänzungen</p>
               {topic.custom_competences.map((cc) => (
                 <div key={cc.id} className="flex items-start gap-2">
-                  <span className="flex-1 text-sm text-muted-foreground">{cc.text}</span>
-                  <button
-                    onClick={() => deleteMutation.mutate(cc.id)}
-                    className="text-muted-foreground hover:text-red-600 shrink-0"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  {editingId === cc.id ? (
+                    <>
+                      <input
+                        autoFocus
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && editText.trim())
+                            updateMutation.mutate({ id: cc.id, text: editText });
+                          if (e.key === "Escape") setEditingId(null);
+                        }}
+                        className="flex-1 border rounded px-2 py-0.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                      <button
+                        onClick={() => updateMutation.mutate({ id: cc.id, text: editText })}
+                        disabled={!editText.trim() || updateMutation.isPending}
+                        className="text-green-600 hover:text-green-700 disabled:opacity-40 shrink-0"
+                        title="Speichern"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="text-muted-foreground hover:text-foreground shrink-0"
+                        title="Abbrechen"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1 text-sm text-muted-foreground">{cc.text}</span>
+                      <button
+                        onClick={() => { setEditingId(cc.id); setEditText(cc.text); }}
+                        className="text-muted-foreground hover:text-primary shrink-0"
+                        title="Bearbeiten"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => deleteMutation.mutate(cc.id)}
+                        className="text-muted-foreground hover:text-red-600 shrink-0"
+                        title="Löschen"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
