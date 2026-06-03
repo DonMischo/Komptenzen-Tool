@@ -221,23 +221,54 @@ def _upsert_grade(ses: Session, student_id: int, topic_id: int, value: str):
         g.value = value
 
 
+# Subjects with <5% competence selection — to exercise the "incomplete" state in admin UI.
+SPARSE_SUBJECTS = {"Geografie", "Biologie"}
+
+# Subjects where every competence should be selected (tiny catalogues, always used).
+FULL_SUBJECTS = {"Werkstätten", "Mitarbeit und Verhalten"}
+
+
 def _select_random_competences(ses: Session, class_id: int,
                                 subject_names: list[str], rng: random.Random):
-    """Select ~20% of competences. Some topics skipped entirely."""
-    TOPIC_SKIP_PROB  = 0.40
-    COMP_SELECT_PROB = 0.33
+    """Select competences for the class with three tiers:
+
+    - FULL_SUBJECTS   → 100 % selected (Werkstätten, Mitarbeit und Verhalten)
+    - SPARSE_SUBJECTS → 1–2 competences total (<5 %) to test incomplete-state UI
+    - Everything else → 20–25 % selected, floored at 15 % of the catalogue
+    """
+    TARGET_RATE = 0.22   # aim for ~22 %
+    MIN_RATE    = 0.15   # floor: never go below 15 %
 
     for name in subject_names:
         subj = ses.query(Subject).filter_by(name=name).first()
         if not subj:
             continue
+
         topics = ses.query(Topic).filter_by(subject_id=subj.id, block=BLOCK).all()
         if not topics:
             topics = ses.query(Topic).filter_by(subject_id=subj.id).all()
+
+        all_comps = [comp for t in topics for comp in t.competences]
+        if not all_comps:
+            continue
+
+        if name in FULL_SUBJECTS:
+            selected_ids = {c.id for c in all_comps}
+        elif name in SPARSE_SUBJECTS:
+            n = rng.randint(1, 2)
+            selected_ids = {c.id for c in rng.sample(all_comps, min(n, len(all_comps)))}
+        else:
+            selected_ids = {c.id for c in all_comps if rng.random() < TARGET_RATE}
+            # enforce minimum 15 %
+            target_min = max(3, int(len(all_comps) * MIN_RATE))
+            if len(selected_ids) < target_min:
+                pool = [c for c in all_comps if c.id not in selected_ids]
+                extras = rng.sample(pool, min(target_min - len(selected_ids), len(pool)))
+                selected_ids.update(c.id for c in extras)
+
         for topic in topics:
-            skip_topic = rng.random() < TOPIC_SKIP_PROB
             for comp in topic.competences:
-                selected = (not skip_topic) and (rng.random() < COMP_SELECT_PROB)
+                selected = comp.id in selected_ids
                 cc = ses.query(ClassCompetence).filter_by(
                     class_id=class_id, competence_id=comp.id
                 ).first()
