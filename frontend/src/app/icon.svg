@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <!-- Outer D20 shape -->
+  <polygon points="32,4 58,20 58,44 44,60 20,60 6,44 6,20" fill="#1e3a8a" stroke="#fbbf24" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Front face triangle -->
+  <polygon points="32,14 52,48 12,48" fill="#1d4ed8" stroke="#fbbf24" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- Facet lines: top-left corner to triangle apex -->
+  <line x1="6" y1="20" x2="32" y2="14" stroke="#93c5fd" stroke-width="1" opacity="0.7"/>
+  <!-- Facet lines: top-right corner to triangle apex -->
+  <line x1="58" y1="20" x2="32" y2="14" stroke="#93c5fd" stroke-width="1" opacity="0.7"/>
+  <!-- Facet lines: right edge to triangle bottom-right -->
+  <line x1="58" y1="44" x2="52" y2="48" stroke="#93c5fd" stroke-width="1" opacity="0.7"/>
+  <!-- Facet lines: bottom-right corner to triangle bottom-right -->
+  <line x1="44" y1="60" x2="52" y2="48" stroke="#93c5fd" stroke-width="1" opacity="0.7"/>
+  <!-- Facet lines: bottom-left corner to triangle bottom-left -->
+  <line x1="20" y1="60" x2="12" y2="48" stroke="#93c5fd" stroke-width="1" opacity="0.7"/>
+  <!-- Facet lines: left edge to triangle bottom-left -->
+  <line x1="6" y1="44" x2="12" y2="48" stroke="#93c5fd" stroke-width="1" opacity="0.7"/>
+  <!-- "20" on front face -->
+  <text x="32" y="40" text-anchor="middle" font-family="Georgia, serif" font-size="16" font-weight="bold" fill="#fbbf24">20</text>
+</svg>
