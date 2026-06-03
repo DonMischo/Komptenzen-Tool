@@ -800,7 +800,7 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann mein Verhalten reflektieren und die Einhaltung von Regeln einschätzen.",
                 ],
             },
-        }
+        },
         "Werkstätten": {
             "5/6": {
                 "Technisches Werken": [
