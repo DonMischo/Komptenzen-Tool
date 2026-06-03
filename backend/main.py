@@ -10,11 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import auth_pure
 from routers import auth, setup, competences, students, stammdaten, admin, overview
-from db_schema import Subject
-from competence_data import SUBJECTS as _ALL_SUBJECTS
-from sqlalchemy.orm import Session as _Session
 from migrations import run_migrations_all_report_dbs
-
 logger = logging.getLogger(__name__)
 
 
@@ -34,22 +30,6 @@ async def lifespan(app: FastAPI):
     except Exception:
         logger.warning("Could not run migrations (DB may not be reachable yet)")
 
-    # Ensure Subject rows exist in all report DBs for all SUBJECTS entries (e.g. Lebenspraxis)
-    try:
-        from db_schema import _pg_base_url, list_report_dbs, _make_engine
-        for db_name in list_report_dbs():
-            eng = _make_engine(db_name)
-            try:
-                with _Session(eng) as ses:
-                    for name in _ALL_SUBJECTS:
-                        if not ses.query(Subject).filter_by(name=name).first():
-                            ses.add(Subject(name=name))
-                    ses.commit()
-            finally:
-                eng.dispose()
-        logger.info("Subject rows ensured")
-    except Exception:
-        logger.warning("Could not ensure Subject rows (DB may not be reachable yet)")
     yield
 
 

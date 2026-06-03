@@ -108,6 +108,7 @@ export default function KompetenzenPage() {
                   { heading: "Kompetenzen anhaken", text: "Einzelne Kompetenzen auswählen oder ein ganzes Thema per Titelklick aus-/abwählen." },
                   { heading: "Werkstätten", text: "Werkstätten ist immer vollständig und unveränderlich ausgewählt." },
                   { heading: "Eigene Kompetenzen", text: "Am Ende jedes Themas können klassenspezifische Kompetenzen ergänzt werden." },
+                  { heading: "Auf Parallelklassen übertragen", text: 'Der Pfeil-Button (→ 7ef, 7gh …) überträgt die aktuellen Kompetenz-Auswahlen dieses Fachs auf alle erkannten Parallelklassen. Parallelklassen werden automatisch anhand des gleichen Buchstabenmusters erkannt (z. B. 7e und 7f → Parallelklassen). Achtung: Bestehende Auswahlen der Zielklassen werden dabei überschrieben.' },
                   { heading: "Speichern", text: "Der Speichern-Button erscheint, sobald Änderungen vorliegen. Nicht gespeicherte Änderungen gehen beim Verlassen verloren." },
                 ]}
               />

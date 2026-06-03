@@ -117,6 +117,8 @@ export const adminApi = {
     api.get("/admin/students", { params: { class_name } }),
   prepareExport: (student_ids: number[], classroom: string) =>
     api.post("/admin/export/prepare", { student_ids, classroom }),
+  competenceSyncDiff: () => api.get("/admin/competence-sync/diff"),
+  competenceSyncApply: () => api.post("/admin/competence-sync/apply"),
 };
 
 // ---------------------------------------------------------------------------

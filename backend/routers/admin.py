@@ -13,7 +13,9 @@ from sqlalchemy.orm import Session
 from db_helpers import get_students_by_class
 from export import compile_one, prepare_export
 from deps import get_current_admin, get_current_user, get_db
-from schemas import AdminStudentItem, CreateUserRequest, ExportPrepareRequest, ExportPrepareResponse, UserOut
+from schemas import (AdminStudentItem, CreateUserRequest, ExportPrepareRequest,
+                     ExportPrepareResponse, UserOut, CompetenceSyncDiff)
+from sync_competences import compute_diff, apply_full_sync, CompetenceSyncResult
 import auth_pure
 import db_schema
 
@@ -121,6 +123,46 @@ def export_cancel(job_id: str, _: str = Depends(get_current_user)):
     if job:
         job["cancelled"] = True
     return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# Competence data sync
+# ---------------------------------------------------------------------------
+
+def _to_schema(r: CompetenceSyncResult) -> CompetenceSyncDiff:
+    return CompetenceSyncDiff(
+        subjects_added=r.subjects_added,
+        subjects_removed=r.subjects_removed,
+        topics_added=r.topics_added,
+        topics_removed=r.topics_removed,
+        competences_added=r.competences_added,
+        competences_removed=r.competences_removed,
+        class_selections_lost=r.class_selections_lost,
+        grades_lost=r.grades_lost,
+        has_changes=r.has_changes,
+        has_removals=r.has_removals,
+    )
+
+
+@router.get("/competence-sync/diff", response_model=CompetenceSyncDiff)
+def competence_sync_diff(
+    db: Session = Depends(get_db),
+    _: str = Depends(get_current_admin),
+):
+    """Preview what a full competence-data sync would change."""
+    result = compute_diff(db)
+    return _to_schema(result)
+
+
+@router.post("/competence-sync/apply", response_model=CompetenceSyncDiff)
+def competence_sync_apply(
+    db: Session = Depends(get_db),
+    _: str = Depends(get_current_admin),
+):
+    """Apply full sync: add new, remove deleted subjects/topics/competences.
+    Irreversible — confirm in the UI before calling."""
+    result = apply_full_sync(db)
+    return _to_schema(result)
 
 
 # ---------------------------------------------------------------------------

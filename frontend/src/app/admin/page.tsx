@@ -11,10 +11,10 @@ import { ExportProgress } from "@/components/admin/ExportProgress";
 import { UserManagement } from "@/components/admin/UserManagement";
 import { useExportSSE } from "@/hooks/useExportSSE";
 import { cn } from "@/lib/utils";
-import { FileText } from "lucide-react";
+import { FileText, RefreshCw, AlertTriangle, CheckCircle } from "lucide-react";
 import { HelpButton } from "@/components/help/HelpButton";
 
-type Tab = "export" | "users";
+type Tab = "export" | "users" | "kompetenzdaten";
 
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("export");
@@ -24,6 +24,25 @@ export default function AdminPage() {
   const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
   const [jobId, setJobId] = useState<string | null>(null);
   const [jobTotal, setJobTotal] = useState(0);
+
+  const [syncConfirmed, setSyncConfirmed] = useState(false);
+
+  const { data: syncDiff, isFetching: syncLoading, refetch: fetchDiff } = useQuery({
+    queryKey: ["competence-sync-diff"],
+    queryFn: () => adminApi.competenceSyncDiff().then((r) => r.data),
+    enabled: tab === "kompetenzdaten",
+    staleTime: 0,
+  });
+
+  const applyMutation = useMutation({
+    mutationFn: () => adminApi.competenceSyncApply().then((r) => r.data),
+    onSuccess: () => {
+      toast.success("Kompetenzdaten erfolgreich synchronisiert");
+      setSyncConfirmed(false);
+      fetchDiff();
+    },
+    onError: () => toast.error("Synchronisation fehlgeschlagen"),
+  });
 
   const { data: classesData } = useQuery({
     queryKey: QK.classes,
@@ -99,7 +118,7 @@ export default function AdminPage() {
 
         {/* Tabs */}
         <div className="flex gap-0 border-b">
-          {(["export", "users"] as Tab[]).map((t) => (
+          {(["export", "users", "kompetenzdaten"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -110,7 +129,7 @@ export default function AdminPage() {
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
             >
-              {t === "export" ? "Export" : "Benutzer"}
+              {t === "export" ? "Export" : t === "users" ? "Benutzer" : "Kompetenzdaten"}
             </button>
           ))}
         </div>
@@ -218,6 +237,86 @@ export default function AdminPage() {
 
         {/* Users tab */}
         {tab === "users" && <UserManagement />}
+
+        {/* Kompetenzdaten tab */}
+        {tab === "kompetenzdaten" && (
+          <div className="space-y-4 max-w-xl">
+            <p className="text-sm text-muted-foreground">
+              Vergleicht die Kompetenzdaten in <code>competence_data.py</code> mit der Datenbank und zeigt an, was sich geändert hat.
+            </p>
+
+            <button
+              onClick={() => { setSyncConfirmed(false); fetchDiff(); }}
+              disabled={syncLoading}
+              className="flex items-center gap-2 border px-4 py-2 rounded-md text-sm hover:bg-muted disabled:opacity-40"
+            >
+              <RefreshCw className={cn("h-4 w-4", syncLoading && "animate-spin")} />
+              Unterschiede prüfen
+            </button>
+
+            {syncDiff && (
+              <div className="border rounded-xl p-4 space-y-3 text-sm">
+                {!syncDiff.has_changes ? (
+                  <div className="flex items-center gap-2 text-green-600">
+                    <CheckCircle className="h-4 w-4" />
+                    Datenbank ist aktuell – keine Änderungen notwendig.
+                  </div>
+                ) : (
+                  <>
+                    {syncDiff.subjects_added.length > 0 && (
+                      <div><span className="font-medium text-green-700">+ Fächer neu:</span> {syncDiff.subjects_added.join(", ")}</div>
+                    )}
+                    {syncDiff.topics_added.length > 0 && (
+                      <div><span className="font-medium text-green-700">+ Themen neu:</span> {syncDiff.topics_added.join(", ")}</div>
+                    )}
+                    {syncDiff.competences_added > 0 && (
+                      <div><span className="font-medium text-green-700">+ Kompetenzen neu:</span> {syncDiff.competences_added}</div>
+                    )}
+                    {syncDiff.subjects_removed.length > 0 && (
+                      <div><span className="font-medium text-red-700">− Fächer entfernt:</span> {syncDiff.subjects_removed.join(", ")}</div>
+                    )}
+                    {syncDiff.topics_removed.length > 0 && (
+                      <div><span className="font-medium text-red-700">− Themen entfernt:</span> {syncDiff.topics_removed.join(", ")}</div>
+                    )}
+                    {syncDiff.competences_removed > 0 && (
+                      <div><span className="font-medium text-red-700">− Kompetenzen entfernt:</span> {syncDiff.competences_removed}</div>
+                    )}
+
+                    {syncDiff.has_removals && (
+                      <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg p-3 text-red-800">
+                        <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="font-semibold">Achtung – Datenverlust!</p>
+                          <p>Durch das Entfernen gehen <strong>{syncDiff.class_selections_lost} Kompetenz-Auswahlen</strong> und <strong>{syncDiff.grades_lost} Benotungen</strong> unwiderruflich verloren.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="pt-2 space-y-2">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={syncConfirmed}
+                          onChange={(e) => setSyncConfirmed(e.target.checked)}
+                          className="h-4 w-4"
+                        />
+                        <span>Ich habe die Änderungen geprüft und bestätige die Synchronisation.</span>
+                      </label>
+                      <button
+                        onClick={() => applyMutation.mutate()}
+                        disabled={!syncConfirmed || applyMutation.isPending}
+                        className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 disabled:opacity-40"
+                      >
+                        <RefreshCw className={cn("h-4 w-4", applyMutation.isPending && "animate-spin")} />
+                        Jetzt synchronisieren
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </AppShell>
   );

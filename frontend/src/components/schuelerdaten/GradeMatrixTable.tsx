@@ -139,6 +139,21 @@ export function GradeMatrixTable({ classNameValue, subject }: Props) {
             {saveMutation.isPending ? "Speichern…" : "Speichern"}
           </button>
         </div>
+        {/* Legend */}
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          {rows.some((r) => r.student_type === "lb") && (
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block w-3 h-3 rounded-sm bg-green-800/40 border border-green-800/30" />
+              LB
+            </span>
+          )}
+          {rows.some((r) => r.student_type === "gb") && (
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block w-3 h-3 rounded-sm bg-orange-700/40 border border-orange-700/30" />
+              GB
+            </span>
+          )}
+        </div>
         <div className="border rounded-xl overflow-hidden">
           <table className="text-sm w-full border-collapse">
             <thead>
@@ -149,19 +164,24 @@ export function GradeMatrixTable({ classNameValue, subject }: Props) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, ri) => (
-                <tr key={row.student_id} className={ri % 2 === 0 ? "bg-white" : "bg-muted/20"}>
-                  <td className="px-3 py-1 border-b font-medium">{row.last_name}</td>
-                  <td className="px-3 py-1 border-b">{row.first_name}</td>
-                  <td className="px-2 py-1 border-b">
-                    <RichTextCell
-                      value={row.niveau}
-                      label={`Lebenspraxis – ${row.last_name}, ${row.first_name}`}
-                      onChange={(html) => updateNiveau(row.student_id, html)}
-                    />
-                  </td>
-                </tr>
-              ))}
+              {rows.map((row, ri) => {
+                const bg = row.student_type === "lb"
+                  ? ri % 2 === 0 ? "bg-green-800/10" : "bg-green-800/20"
+                  : ri % 2 === 0 ? "bg-orange-700/10" : "bg-orange-700/20";
+                return (
+                  <tr key={row.student_id} className={bg}>
+                    <td className="px-3 py-1 border-b font-medium">{row.last_name}</td>
+                    <td className="px-3 py-1 border-b">{row.first_name}</td>
+                    <td className="px-2 py-1 border-b">
+                      <RichTextCell
+                        value={row.niveau}
+                        label={`Lebenspraxis – ${row.last_name}, ${row.first_name}`}
+                        onChange={(html) => updateNiveau(row.student_id, html)}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

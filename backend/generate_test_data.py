@@ -44,6 +44,7 @@ MAIN_SUBJECTS = [
     "Englisch",
     "MNT - Projekt Lutherpark",
     "Technisches Werken",
+    "Medienbildung und Informatik",
     "Geografie",
     "Chemie",
     "Physik",

@@ -22,54 +22,131 @@ SUBJECTS = [
     "Sport",
     "Werkstätten",
     "Lebenspraxis",
+    "Medienbildung und Informatik",
     "Mitarbeit und Verhalten",
 ]
 
 COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
         "Deutsch": {
-            "5/6": {
-                "Lese- / Hörverstehen": [
-                    "Ich kann Hör- und Hör-Seh-Texte zu vertrauten Themen verstehen und das Thema sowie Kernaussagen wiedergeben.",  # :contentReference[oaicite:0]{index=0}
-                    "Ich kann Inhalte global, selektiv und detailliert erfassen und sprachliche + nicht-sprachliche Mittel in ihrer Wirkung benennen.",  # :contentReference[oaicite:1]{index=1}
-                    "Ich kann die Absicht des Sprechers erkennen.",  # :contentReference[oaicite:2]{index=2}
-                    "Ich kann altersgemäße Sach- und literarische Texte sinnerfassend lesen und zentrale Informationen ordnen.",  # :contentReference[oaicite:3]{index=3}
-                    "Ich kann Textsorten unterscheiden und ihre Funktion erklären.",  # :contentReference[oaicite:4]{index=4}
-                    "Ich kann Texte flüssig und ausdrucksvoll vorlesen.",  # :contentReference[oaicite:5]{index=5}
+            "5": {
+                "Texte rezipieren - Lese- und Hörverstehen": [
+                    "Ich kann aktiv und sinnentnehmend zuhören.",
+                    "Ich kann Informationen aus Texten entnehmen und wiedergeben.",
+                    "Ich kann Informationen aus Texten mit Hilfe verschiedener Techniken (z. B. Leseprofi) entnehmen.",
+                    "Ich kann die Absicht des Sprechers erkennen.",
+                    "Ich kann Textarten an Gattungsmerkmalen und Gestaltungsmittel erkennen.",
+                    "Ich kann Inhalt und Aussage von Texten wiedergeben.",
+                    "Ich kann die Handlungsmuster von Texten (z. B. Märchen) erkennen.",
                 ],
                 "Texte produzieren - Sprechen": [
-                    "Ich kann in Gesprächen Informationen austauschen und meine Meinung einfach begründet äußern.",  # :contentReference[oaicite:6]{index=6}
-                    "Ich kann Erlebnisse frei erzählen und kurze Vorträge halten.",  # :contentReference[oaicite:7]{index=7}
-                    "Ich kann Rollen spielen und Texte szenisch darstellen.",  # :contentReference[oaicite:8]{index=8}
+                    "Ich kann mich an Gesprächen und Diskussionen beteiligen.",
+                    "Ich kann in Gesprächen Informationen austauschen und meine Meinung einfach begründet äußern.",
+                    "Ich besitze Sicherheit im einfachen Berichten und im Beschreiben.",
+                    "Ich kann freie Redebeiträge (Vorträge), ggf. mit Stichwortzettel, halten.",
+                    "Ich kann Texte / Textpassagen fließend und gestaltend vorlesen (sinnbetont vortragen).",
+                    "Ich kann kurze Texte auswendig rezitieren.",
+                    "Ich kann Texte szenisch gestalten.",
                 ],
                 "Texte produzieren - Schreiben": [
-                    "Ich kann Berichte, Beschreibungen und Geschichten adressatengerecht verfassen.",  # :contentReference[oaicite:9]{index=9}
-                    "Ich kann Texte planen, gliedern und sprachlich überarbeiten – auch mit Rechtschreib­hilfen.",  # :contentReference[oaicite:10]{index=10}
+                    "Ich kann Texte unter Berücksichtigung bestimmter inhaltlicher und formaler Angaben gliedern, planen und schreiben (z. B. Märchen etc.).",
+                    "Ich kann handlungs- und produktorientiert mit Texten umgehen.",
+                    "Ich kann eine leserliche Handschrift festigen.",
                 ],
-                "Sprachreflexion": [
-                    "Ich kann Wortarten und Satzglieder bestimmen und Regeln korrekt anwenden.",  # :contentReference[oaicite:11]{index=11}
-                    "Ich kann Wortbedeutungen erschließen und Wortfamilien nutzen.",  # :contentReference[oaicite:12]{index=12}
-                    "Ich kann Satzarten unterscheiden und Satzzeichen richtig setzen.",  # :contentReference[oaicite:13]{index=13}
+                "Sprachreflexion - Wortebene": [
+                    "Ich kann einen Grundbestand an Rechtschreibregeln sicher anwenden.",
+                    "Ich kann die Wortarten benennen und ihre Merkmale unterscheiden.",
+                    "Ich kann die Wortarten in einem Satz erkennen.",
+                    "Ich kann Wortbedeutungen erschließen und Wortfamilien nutzen.",
+                    "Ich kann die verschiedenen Zeitformen benennen und erkennen.",
+                    "Ich kann den eigenen Wortschatz zunehmend erweitern.",
+                ],
+                "Sprachreflexion - Satzebene": [
+                    "Ich kann Grundregeln der Grammatik zunehmend sicher anwenden.",
+                    "Ich kenne die Tempora der Verben und kann sie sicher anwenden.",
+                    "Ich kenne die Regeln der Zeichensetzung (wörtlichen Rede etc.) und kann sie sicher anwenden.",
+                    "Ich kann deklinieren und konjugieren sowie darüber reflektieren.",
+                    "Ich kann die Regeln der Groß- und Kleinschreibung anwenden.",
+                    "Ich kann Satzarten unterscheiden und bestimmen.",
+                    "Ich kann einfache und zusammengesetzte Sätze mit überschaubaren Satzstrukturen unterscheiden und bilden (Haupt- und Nebensätze).",
+                ],
+                "Sprachreflexion - Textebene": [
+                    "Ich kann die sprachlichen und formalen Merkmale eines Textes (z. B. literarische Texte, Sachtexte, Märchen etc.) erkennen, Informationen entnehmen und in ihrer Wirkung beschreiben.",
                 ],
             },
-            "7/8": {
-                "Lese- / Hörverstehen": [
-                    "Ich kann Hör- und Hör-Seh-Texte zu weniger vertrauten Themen mit teilweise komplexer Sprache verstehen.",  # :contentReference[oaicite:14]{index=14}
-                    "Ich kann Thema, Kernaussagen und Details detailliert wiedergeben sowie die Kommunikations­absicht deuten.",  # :contentReference[oaicite:15]{index=15}
-                    "Ich kann Texte mit komplexerer Struktur verstehen, zentrale Inhalte erschließen und Textintention, Funktion und Wirkung erläutern.",  # :contentReference[oaicite:16]{index=16}
-                    "Ich kann literarische Texte analysieren und Sachtexte kritisch auswerten.",  # :contentReference[oaicite:17]{index=17}
+            "6": {
+                "Texte rezipieren - Lese- und Hörverstehen": [
+                    "Ich kann Informationen aus Texten entnehmen und wiedergeben (Lesekompetenz).",
+                    "Ich kann Textarten an Gattungsmerkmalen und Gestaltungsmittel erkennen.",
+                    "Ich kann Merkmale kurzer literarischer Texte (z.B. Fabeln) nennen.",
+                    "Ich kann Inhalt und Aussage von Texten wiedergeben (literarische Texte und Sachtexte).",
+                    "Ich kann die eigene Lesefertigkeit zunehmend ausbauen.",
                 ],
                 "Texte produzieren - Sprechen": [
-                    "Ich kann Gespräche führen, meinen Standpunkt begründet vertreten und Diskussionen leiten.",  # :contentReference[oaicite:18]{index=18}
-                    "Ich kann Kurzvorträge und Referate adressaten­gerecht halten und Rollen gestaltend vortragen.",  # :contentReference[oaicite:19]{index=19}
+                    "Ich kann mich an Gesprächen und Diskussionen beteiligen.",
+                    "Ich kann Gesprächs- und Diskussionsregeln einhalten.",
+                    "Ich kann freie Redebeiträge, ggf. mit Stichwortzettel, leisten.",
+                    "Ich kann Texte / Textpassagen fließend und gestaltend vorlesen.",
                 ],
                 "Texte produzieren - Schreiben": [
-                    "Ich kann argumentierende, appellierende und gestaltende Texte selbstständig verfassen.",  # :contentReference[oaicite:20]{index=20}
-                    "Ich kann formalisierte Texte wie Briefe oder Protokolle normgerecht schreiben und Texte strukturiert überarbeiten.",  # :contentReference[oaicite:21]{index=21}
+                    "Ich kann Texte unter Berücksichtigung bestimmter inhaltlicher und formaler Angaben planen und schreiben (z. B. Fabeln).",
+                    "Ich kann handlungs- und produktorientiert mit Texten umgehen (verfassen/ umgestalten/Inhaltsangaben verfassen).",
                 ],
-                "Sprachreflexion": [
-                    "Ich kann komplexe Satzstrukturen analysieren und Interpunktion korrekt anwenden.",  # :contentReference[oaicite:22]{index=22}
-                    "Ich kann Fremd- und Fachwörter korrekt verwenden und die Wirkung sprachlicher Mittel reflektieren.",  # :contentReference[oaicite:23]{index=23}
-                    "Ich kann Sprachvarianten erkennen und den Sprachwandel beschreiben.",  # :contentReference[oaicite:24]{index=24}
+                "Sprachreflexion - Wortebene": [
+                    "Ich kann einen Grundbestand an Rechtschreibregeln sicher anwenden.",
+                    "Ich kann die Wörter in einem Nachschlagewerk eigenständig nachschlagen.",
+                    "Ich kann eine Fehleranalyse in Rechtschreibung durchführen.",
+                    "Ich kann die Wortarten benennen und anwenden.",
+                    "Ich kann den eigenen Wortschatz zunehmend erweitern.",
+                ],
+                "Sprachreflexion - Satzebene": [
+                    "Ich kann einfache und zusammengesetzte Sätze mit überschaubaren Satzstrukturen unterscheiden und bilden.",
+                    "Ich kann grammatische Grundregeln zunehmend sicher anwenden.",
+                    "Ich kann die Satzglieder benennen und bestimmen.",
+                    "Ich kenne die Tempora (Zeitformen) der Verben und kann sie sicher anwenden.",
+                    "Ich kann die häufigsten Zeichensetzungsregeln befolgen.",
+                    "Ich kann die wörtliche Rede sicher anwenden.",
+                    "Ich kann Satzarten unterscheiden und bestimmen.",
+                ],
+                "Sprachreflexion - Textebene": [
+                    "Ich kann die sprachlichen und formalen Merkmale eines Textes erkennen und in ihrer Wirkung beschreiben. (z.B. Merkmale von Fabeln)",
+                ],
+            },
+            "7": {
+                "Texte rezipieren - Lese- und Hörverstehen": [
+                    "Ich kann Thema, Kernaussagen und Details detailliert wiedergeben sowie die Kommunikationsabsicht deuten.",
+                    "Ich kann Textsorten an Gattungsmerkmalen und Gestaltungsmitteln erkennen (z.B. Sachtexte, literarische Texte und Lyrik).",
+                    "Ich kann Informationen, Inhalte und Aussagen aus Texten entnehmen und wiedergeben.",
+                    "Ich kann Gehörtes und Gelesenes vergegenwärtigen und zu Neuem in Beziehung setzen.",
+                ],
+                "Texte produzieren - Sprechen": [
+                    "Ich kann mich an Gesprächen und Diskussionen sachbezogen beteiligen.",
+                    "Ich kann argumentieren und meine eigene Meinung vertreten.",
+                    "Ich kann Balladen u. a. Texte ausdrucksvoll vortragen.",
+                    "Ich kann Kurzvorträge und Referate adressatengerecht und mit Medieneinsatz halten und Rollen gestaltend vortragen.",
+                    "Ich kann Buchvorstellungen gestalten und medial mit PowerPoint umsetzen.",
+                    "Ich kann eine mündliche Bewertung von Texten vornehmen.",
+                ],
+                "Texte produzieren - Schreiben": [
+                    "Ich kann Texte unter Berücksichtigung bestimmter inhaltlicher und formaler Angaben planen und schreiben (u. a. Texte zusammenfassen, Inhaltsangaben schreiben).",
+                    "Ich kann handlungs- und produktorientiert mit Texten umgehen (z.B. Berichte).",
+                    "Ich kann zu einfachen und komplexeren Themen schriftlich begründet Stellung nehmen.",
+                    "Ich kann formalisierte Texte wie Briefe oder Protokolle normgerecht schreiben und Texte strukturiert überarbeiten.",
+                ],
+                "Sprachreflexion - Wortebene": [
+                    "Ich kann einen Grundbestand an Rechtschreibregeln sicher anwenden.",
+                    "Ich kann die Wortarten erkennen und ihre Eigenschaften benennen.",
+                    "Ich kann die Zeitformen unterscheiden und diese auch anwenden.",
+                    "Ich kann Fremd- und Fachwörter korrekt verwenden und die Wirkung sprachlicher Mittel reflektieren.",
+                ],
+                "Sprachreflexion - Satzebene": [
+                    "Ich kann grammatische Grundregeln zunehmend sicher anwenden.",
+                    "Ich kann Satzglieder erkennen und ihre Eigenschaften benennen.",
+                    "Ich kann Haupt- und Nebensätze sinnvoll und angemessen verknüpfen.",
+                    "Ich kann komplexe Satzstrukturen analysieren und Interpunktion korrekt anwenden.",
+                ],
+                "Sprachreflexion - Textebene": [
+                    "Ich kann die sprachlichen und formalen Merkmale eines Textes erkennen und in ihrer Wirkung beschreiben (z.B. Merkmale von Balladen).",
+                    "Ich kann Informationen recherchieren und die gefundenen Quellen kritisch auswerten.",
                 ],
             },
         },
@@ -442,6 +519,12 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann den energetischen Verlauf von Reaktionen als exotherm oder endotherm beschreiben und den Einfluss eines Katalysators erklären.",  # :contentReference[oaicite:3]{index=3}
                     "Ich kann einfache Versuchsprotokolle anfertigen und Experimente fachgerecht durchführen.",  # :contentReference[oaicite:4]{index=4}
                 ],
+                "Sauerstoff und Oxidation": [
+                    "Ich kann den Anteil von Sauerstoff im Stoffgemisch Luft angeben.",  # :contentReference[oaicite:0]{index=0}
+                    "Ich kann die Verbrennung als chemische Reaktion mit Sauerstoff (Oxidation) kennzeichnen und das Reaktionsprodukt als Oxid bezeichnen.",  # :contentReference[oaicite:1]{index=1}
+                    "Ich kann Reaktionsgleichungen (Wort- und Formelgleichungen) für Oxidationsreaktionen formulieren.",  # :contentReference[oaicite:2]{index=2}
+                    "Ich kann die Bedingungen für das Entstehen eines Feuers nennen sowie Maßnahmen des Brandschutzes und der Brandbekämpfung ableiten",  # :contentReference[oaicite:3]{index=3}
+                ],
                 "Atombau – Periodensystem": [
                     "Ich kann Atome mit Kugel-, Kern-Hülle- und Schalenmodell beschreiben und Bauteilchen nennen.",  # :contentReference[oaicite:5]{index=5}
                     "Ich kann Ordnungsprinzipien des PSE erklären und Valenzelektronen angeben.",  # :contentReference[oaicite:6]{index=6}
@@ -618,6 +701,7 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann biblische Geschichten als Beispiele göttlicher Zuwendung deuten und auf heutige Konflikte übertragen.",
                     "Ich kann Bedeutung und Grenzen von Familie, Freundschaft, Liebe und Medien kritisch reflektieren.",
                     "Ich kann Konfliktpotenziale erkennen und Lösungswege aus christlicher Perspektive entwickeln.",
+                    "Ich kenne die Bedeutung der christlichen Feiertage.",
                 ],  # :contentReference[oaicite:5]{index=5}
                 "Die Frage nach der Vielfalt der Religionen": [
                     "Ich kann Entstehung und Grundzüge des Islam erläutern und Gemeinsamkeiten mit Christentum und Judentum benennen.",

@@ -30,6 +30,10 @@ const FAQ: FaqItem[] = [
     a: 'Im Menü "Kompetenzen": Klasse und Fach wählen, dann Themen aufklappen und die passenden Kompetenzen anhaken. Werkstätten ist immer vollständig ausgewählt.',
   },
   {
+    q: "Kann ich Kompetenz-Auswahlen auf Parallelklassen übertragen?",
+    a: 'Ja. In "Kompetenzen" erscheint oben rechts ein Pfeil-Button (z. B. → 7ef), sobald Parallelklassen erkannt werden. Ein Klick überträgt alle Auswahlen des aktuellen Fachs auf die Parallelklassen. Achtung: Bestehende Auswahlen der Zielklassen werden dabei überschrieben.',
+  },
+  {
     q: "Wie importiere ich Schüler?",
     a: "Setup → Schülerimport: CSV-Datei hochladen. Format: Nachname;Vorname;Klasse;Geburtsdatum (TT.MM.JJJJ). Eine Zeile pro Schüler.",
   },
@@ -60,6 +64,10 @@ const FAQ: FaqItem[] = [
   {
     q: "Wie erstelle ich zusätzliche Kompetenzen?",
     a: "Kompetenzen auswählen → am Ende jedes Themas gibt es ein Eingabefeld für eigene Kompetenzen, die nur für diese Klasse gelten.",
+  },
+  {
+    q: 'Was bedeuten die Abkürzungen T.e., T.u., S.e., S.u. in den Stammdaten?',
+    a: 'T.e. = Fehltage entschuldigt, T.u. = Fehltage unentschuldigt, S.e. = Fehlstunden entschuldigt, S.u. = Fehlstunden unentschuldigt. Alle vier Werte erscheinen auf der Rückseite des Zeugnisses.',
   },
   {
     q: "Was zeigt die Übersicht?",

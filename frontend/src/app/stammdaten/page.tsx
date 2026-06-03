@@ -66,7 +66,7 @@ export default function StammdatenPage() {
             <HelpButton
               title="Stammdaten"
               sections={[
-                { heading: "Fehltage & Fehlstunden", text: "Entschuldigte und unentschuldigte Abwesenheiten getrennt erfassen. Erscheinen auf der Rückseite des Zeugnisses." },
+                { heading: "Fehltage & Fehlstunden", text: "T.e. = Tage entschuldigt, T.u. = Tage unentschuldigt, S.e. = Stunden entschuldigt, S.u. = Stunden unentschuldigt. Alle vier Werte erscheinen auf der Rückseite des Zeugnisses." },
                 { heading: "LB / GB", text: "LB = Förderschwerpunkt Lernen (grün markiert), GB = Geistige Behinderung (orange). Aktivieren ändert die Bewertungsart in Schülerdaten." },
                 { heading: "Zeugnistext", text: "Persönlicher Beurteilungstext pro Schüler. Öffnet sich über den Stift-Button. Unterstützt Fett, Kursiv, Unterstrichen und Listen." },
                 { heading: "Bemerkungen", text: "Interne Notizen, die ebenfalls im Zeugnis erscheinen können. Über den Chat-Button erreichbar." },

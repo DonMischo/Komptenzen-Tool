@@ -285,3 +285,16 @@ class ExportPrepareResponse(BaseModel):
     job_id: str
     cl_dir: str
     total: int
+
+
+class CompetenceSyncDiff(BaseModel):
+    subjects_added:        list[str]
+    subjects_removed:      list[str]
+    topics_added:          list[str]
+    topics_removed:        list[str]
+    competences_added:     int
+    competences_removed:   int
+    class_selections_lost: int
+    grades_lost:           int
+    has_changes:           bool
+    has_removals:          bool
