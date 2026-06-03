@@ -730,7 +730,7 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
             },
         },
         "Sport": {
-            "5/6": {
+            "5-7": {
                 "Gesundheit und Fitness": [
                     "Ich kann meinen Puls vor / nach Belastung messen und Veränderungen erklären.",
                     "Ich kann Aufwärm- und Dehnübungen selbst anleiten und Verletzungsrisiken benennen.",
@@ -798,33 +798,6 @@ COMPETENCES: Dict[str, Dict[str, Dict[str, List[str]]]] = {
                     "Ich kann fair gewinnen und verlieren.",
                     "Ich kann Rücksicht auf andere nehmen und Verantwortung für mein Handeln übernehmen.",
                     "Ich kann mein Verhalten reflektieren und die Einhaltung von Regeln einschätzen.",
-                ],
-            },
-            "7/8": {
-                "Gesundheit und Fitness": [
-                    "Ich kann 20 Minuten im aeroben Bereich joggen und mein Tempo über Pulswerte steuern.",
-                    "Ich kann einen kleinen Circuit zur Kraft- und Beweglichkeitsschulung planen und durchführen.",
-                    "Ich kann Gesundheitsrisiken und -chancen verschiedener Sportarten erläutern.",
-                ],
-                "Sportspiele": [
-                    "Ich kann in einem Zielschussspiel (z. B. 7-gegen-7 Fußball) Überzahlsituationen herausspielen und nutzen.",
-                    "Ich kann fliegende Wechsel bei Staffeln (Außen-/Innenwechsel) sicher ausführen.",
-                    "Ich kann Spielleistungen beobachten, nach einfachen Kriterien bewerten und korrigieren.",
-                ],
-                "Gerätturnen": [
-                    "Ich kann eine Kür mit mind. 4 Elementen an zwei Geräten gestalten und präsentieren.",
-                    "Ich kann Felgumschwung, Kehre verbinden und sicher landen.",
-                    "Ich kann Partner sichern und Bewegungsfehler sachgerecht korrigieren.",
-                ],
-                "Leichtathletik": [
-                    "Ich kann 75 m sprinten, Startblock nutzen und eine saubere Anlauf-Wende laufen.",
-                    "Ich kann Hochsprung im Schersprung aus dem Anlauf überqueren und meine Höhe messen.",
-                    "Ich kann mit dem Schleuderball aus ganzer Drehung weit werfen und Windrichtung beachten.",
-                ],
-                "Schwimmen": [
-                    "Ich kann in zwei Schwimmarten (Brust + Rücken oder Kraul) insgesamt 30 Minuten sicher schwimmen.",
-                    "Ich kann Startsprung vom Block und Rollwende anwenden.",
-                    "Ich kann Gefahren an offenen Gewässern erklären und geeignete Rettungshilfen einsetzen.",
                 ],
             },
         }
