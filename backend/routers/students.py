@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import pandas as pd
+from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -61,18 +62,53 @@ def get_matrix(
 
     df = fetch_grade_matrix(students, topics, subject, db)
 
+    # Merge topics that share the same name (e.g. "Arithmetik" in 5/6 and 7/8).
+    # The canonical topic (highest id = most recent block) wins; grades from
+    # other blocks in the group are coalesced into the canonical column.
+    name_to_ids: dict[str, list[int]] = defaultdict(list)
+    for t in topics:
+        name_to_ids[t.name].append(t.id)
+
+    topic_by_id = {t.id: t for t in topics}
+    canonical_id_for: dict[str, int] = {
+        name: max(ids) for name, ids in name_to_ids.items()
+    }
+
+    # Coalesce duplicate-name columns in the DataFrame
+    for name, ids in name_to_ids.items():
+        if len(ids) < 2:
+            continue
+        canon_col = str(canonical_id_for[name])
+        other_cols = [str(tid) for tid in ids if tid != canonical_id_for[name]]
+        for row_idx in df.index:
+            if not df.at[row_idx, canon_col]:
+                for col in other_cols:
+                    if col in df.columns and df.at[row_idx, col]:
+                        df.at[row_idx, canon_col] = df.at[row_idx, col]
+                        break
+
+    # Build deduplicated topic list preserving first-occurrence order
+    seen: set[str] = set()
+    deduped: list = []
+    for t in topics:
+        if t.name not in seen:
+            seen.add(t.name)
+            deduped.append(topic_by_id[canonical_id_for[t.name]])
+
+    merged_names = {name for name, ids in name_to_ids.items() if len(ids) > 1}
+
     columns = [
         GradeMatrixColumn(
             topic_id=t.id,
-            label=f"{t.name} ({t.block})",
+            label=t.name if t.name in merged_names else f"{t.name} ({t.block})",
         )
-        for t in topics
+        for t in deduped
     ]
 
     rows: list[GradeMatrixRow] = []
     for i, stu in enumerate(students):
         row_data = df.iloc[i]
-        grades = {str(t.id): str(row_data.get(str(t.id), "") or "") for t in topics}
+        grades = {str(t.id): str(row_data.get(str(t.id), "") or "") for t in deduped}
         stype = "gb" if stu.gb else ("lb" if stu.lb else "normal")
         rows.append(GradeMatrixRow(
             student_id=stu.id,
@@ -182,7 +218,7 @@ def get_lb_profile(student_id: int, db: Session = Depends(get_db)):
         # Topics with selected competences for this class (skip for Lebenspraxis)
         topics_out = []
         if subj_name != LEBENSPRAXIS and class_row:
-            topics = db.scalars(
+            raw_topics = db.scalars(
                 select(Topic)
                 .join(Competence, Topic.id == Competence.topic_id)
                 .join(ClassCompetence, Competence.id == ClassCompetence.competence_id)
@@ -195,17 +231,38 @@ def get_lb_profile(student_id: int, db: Session = Depends(get_db)):
                 .order_by(Topic.id)
             ).all()
 
-            for t in topics:
-                grade_row = db.scalar(
-                    select(Grade).where(
+            # Merge same-name topics: canonical = highest topic_id
+            lp_name_to_ids: dict[str, list[int]] = defaultdict(list)
+            for t in raw_topics:
+                lp_name_to_ids[t.name].append(t.id)
+            lp_by_id = {t.id: t for t in raw_topics}
+            lp_canonical = {name: max(ids) for name, ids in lp_name_to_ids.items()}
+            lp_merged = {name for name, ids in lp_name_to_ids.items() if len(ids) > 1}
+
+            seen_t: set[str] = set()
+            for t in raw_topics:
+                if t.name in seen_t:
+                    continue
+                seen_t.add(t.name)
+                canon_t = lp_by_id[lp_canonical[t.name]]
+                all_ids = lp_name_to_ids[t.name]
+
+                # Find grade: prefer canonical, fall back to other alias ids
+                grade_val = ""
+                for tid in sorted(all_ids, reverse=True):
+                    gr = db.scalar(select(Grade).where(
                         Grade.student_id == student_id,
-                        Grade.topic_id == t.id,
-                    )
-                )
+                        Grade.topic_id == tid,
+                    ))
+                    if gr and gr.value:
+                        grade_val = gr.value
+                        break
+
+                label = t.name if t.name in lp_merged else f"{t.name} ({t.block})"
                 topics_out.append({
-                    "topic_id": t.id,
-                    "label": f"{t.name} ({t.block})",
-                    "grade": (grade_row.value if grade_row else "") or "",
+                    "topic_id": canon_t.id,
+                    "label": label,
+                    "grade": grade_val,
                 })
 
         subjects_out.append({
