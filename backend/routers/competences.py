@@ -108,8 +108,9 @@ def delete_custom(comp_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/competences/sync-to-parallel")
-def sync_parallel(class_name: str, _user=Depends(get_current_user)):
-    """Copy all competence selections from class_name to every parallel class
-    in the same school year (same year digit, e.g. 7a → 7b, 7c)."""
-    synced = sync_competences_to_parallel(class_name)
+def sync_parallel(class_name: str, body: dict | None = None, _user=Depends(get_current_user)):
+    """Copy competence selections from class_name to parallel classes.
+    Optional JSON body: {"target_classes": ["7b", "7c"]} — if omitted, syncs to all parallel."""
+    targets = (body or {}).get("target_classes") or None
+    synced = sync_competences_to_parallel(class_name, targets)
     return {"synced_to": synced}

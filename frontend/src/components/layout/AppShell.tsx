@@ -17,6 +17,7 @@ import {
   LogOut,
   LayoutDashboard,
   HelpCircle,
+  BookHeart,
 } from "lucide-react";
 
 const ADMIN_ONLY_PATHS = ["/setup", "/admin", "/overview"];
@@ -26,6 +27,7 @@ const ADMIN_NAV = [
   { href: "/kompetenzen",   label: "Kompetenzen",   icon: CheckSquare },
   { href: "/schuelerdaten", label: "Schülerdaten",  icon: Users },
   { href: "/stammdaten",    label: "Stammdaten",    icon: ClipboardList },
+  { href: "/foerder",       label: "LB/GB",         icon: BookHeart },
   { href: "/overview",      label: "Übersicht",     icon: LayoutDashboard },
   { href: "/admin",         label: "Admin",         icon: ShieldCheck },
 ];
@@ -34,6 +36,7 @@ const LEHRER_NAV = [
   { href: "/kompetenzen",   label: "Kompetenzen",   icon: CheckSquare },
   { href: "/schuelerdaten", label: "Schülerdaten",  icon: Users },
   { href: "/stammdaten",    label: "Stammdaten",    icon: ClipboardList },
+  { href: "/foerder",       label: "LB/GB",         icon: BookHeart },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

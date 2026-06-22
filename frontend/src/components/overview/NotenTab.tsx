@@ -263,9 +263,15 @@ export function NotenTab({ classNameValue }: Props) {
                   <WPCell stu={stu} wpSubjects={wahlpflicht_subjects} wpNoNiveauSet={wpNoNiveauSet} />
                 )}
                 <td className="px-2 py-1 border-b text-center">
-                  {stu.has_report_text
-                    ? <span className="text-green-600 text-sm">✓</span>
-                    : <span className="text-red-400 text-sm">✗</span>}
+                  {(stu.lb || stu.gb) ? (
+                    stu.has_report_text
+                      ? <span className="text-green-600 text-xs font-medium">Text</span>
+                      : <span className="text-red-400 text-sm">✗</span>
+                  ) : (
+                    stu.has_report_text
+                      ? <span className="text-green-600 text-sm">✓</span>
+                      : <span className="text-red-400 text-sm">✗</span>
+                  )}
                 </td>
                 <td className="px-3 py-1 border-b text-center text-xs whitespace-nowrap">
                   {summary === null ? (

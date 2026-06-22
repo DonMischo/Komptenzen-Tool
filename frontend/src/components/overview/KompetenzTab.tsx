@@ -10,8 +10,9 @@ interface Props {
 }
 
 function itemColor(item: CompetenceStatusItem): string {
-  if (item.total_count === 0 || item.selected_count === 0) return "text-red-500";
-  if (item.selected_count / item.total_count >= 0.2) return "text-green-600";
+  const effective = item.selected_count + item.custom_count;
+  if (effective === 0) return "text-red-500";
+  if (item.custom_count > 0 || item.selected_count / item.total_count >= 0.2) return "text-green-600";
   return "text-orange-500";
 }
 
@@ -35,9 +36,9 @@ export function KompetenzTab({ classNameValue }: Props) {
   if (isLoading) return <p className="text-sm text-muted-foreground animate-pulse">Laden…</p>;
   if (!data) return null;
 
-  const green  = data.subjects.filter((s) => s.total_count > 0 && s.selected_count / s.total_count >= 0.2).length;
-  const orange = data.subjects.filter((s) => s.total_count > 0 && s.selected_count > 0 && s.selected_count / s.total_count < 0.2).length;
-  const red    = data.subjects.filter((s) => s.selected_count === 0).length;
+  const green  = data.subjects.filter((s) => itemColor(s) === "text-green-600").length;
+  const orange = data.subjects.filter((s) => itemColor(s) === "text-orange-500").length;
+  const red    = data.subjects.filter((s) => itemColor(s) === "text-red-500").length;
 
   return (
     <div className="space-y-3">

@@ -26,12 +26,12 @@ _RELEVANT: dict[str, list[str]] = {
     "5": [
         "Deutsch", "Mathematik", "Englisch", "Evangelische Religionslehre",
         "MNT - Projekt Lutherpark", "Geschichte", "Geografie",
-        "Werkstätten", "Technisches Werken", "Sport",
+        "Werkstätten", "Technisches Werken", "Sport", "Medienbildung und Informatik",
     ],
     "6": [
         "Deutsch", "Mathematik", "Englisch", "Evangelische Religionslehre",
         "MNT - Projekt Lutherpark", "Geschichte", "Geografie",
-        "Werkstätten", "Technisches Werken", "Sport",
+        "Werkstätten", "Technisches Werken", "Sport", "Medienbildung und Informatik",
     ],
     "7": [
         "Deutsch", "Mathematik", "Englisch", "Evangelische Religionslehre",

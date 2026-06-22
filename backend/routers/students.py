@@ -3,13 +3,17 @@ from __future__ import annotations
 
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from db_helpers import (
     get_students_by_class, get_topics_by_subject,
     fetch_grade_matrix, persist_grade_matrix, get_niveau,
 )
-from db_schema import Subject
+from db_schema import (
+    Subject, Student, SchoolClass, Topic, Competence, ClassCompetence,
+    StudentSubject, Grade,
+)
 from deps import get_db, get_current_user
 from schemas import (
     GradeMatrixColumn, GradeMatrixResponse, GradeMatrixRow, GradeMatrixSaveRequest,
@@ -60,7 +64,7 @@ def get_matrix(
     columns = [
         GradeMatrixColumn(
             topic_id=t.id,
-            label=f"{subject} – {t.name} ({t.block})",
+            label=f"{t.name} ({t.block})",
         )
         for t in topics
     ]
@@ -123,3 +127,98 @@ def save_matrix(req: GradeMatrixSaveRequest, db: Session = Depends(get_db)):
     df = pd.DataFrame(records)
     persist_grade_matrix(req.class_name, req.subject, df, db)
     return {"ok": True}
+
+
+# Subjects shown for LB/GB students per grade level
+_LB_RELEVANT: dict[str, list[str]] = {
+    "5": [
+        "Deutsch", "Mathematik", "Englisch", "Evangelische Religionslehre",
+        "MNT - Projekt Lutherpark", "Geschichte", "Geografie",
+        "Werkstätten", "Technisches Werken", "Sport", "Medienbildung und Informatik",
+        "Lebenspraxis",
+    ],
+    "6": [
+        "Deutsch", "Mathematik", "Englisch", "Evangelische Religionslehre",
+        "MNT - Projekt Lutherpark", "Geschichte", "Geografie",
+        "Werkstätten", "Technisches Werken", "Sport", "Medienbildung und Informatik",
+        "Lebenspraxis",
+    ],
+    "7": [
+        "Deutsch", "Mathematik", "Englisch", "Evangelische Religionslehre",
+        "MNT - Projekt Lutherpark", "Physik", "Chemie",
+        "Geschichte", "Geografie", "Werkstätten", "Technisches Werken", "Sport",
+        "Lebenspraxis",
+    ],
+}
+
+
+@router.get("/{student_id}/lb-profile")
+def get_lb_profile(student_id: int, db: Session = Depends(get_db)):
+    """Full competence/grade profile for one LB or GB student across all subjects."""
+    stu = db.get(Student, student_id)
+    if not stu or (not stu.lb and not stu.gb):
+        raise HTTPException(404, "Student not found or not LB/GB")
+
+    class_row = db.scalar(select(SchoolClass).where(SchoolClass.id == stu.class_id))
+    class_name = class_row.name if class_row else ""
+    year = next((ch for ch in class_name if ch.isdigit()), "5")
+    subject_names = _LB_RELEVANT.get(year, _LB_RELEVANT["5"])
+
+    subjects_out = []
+    for subj_name in subject_names:
+        subj = db.scalar(select(Subject).where(Subject.name == subj_name))
+        if not subj:
+            continue
+
+        # Niveau for this student + subject
+        ss = db.scalar(
+            select(StudentSubject).where(
+                StudentSubject.student_id == student_id,
+                StudentSubject.subject_id == subj.id,
+            )
+        )
+        niveau = (ss.niveau if ss else None) or ""
+
+        # Topics with selected competences for this class (skip for Lebenspraxis)
+        topics_out = []
+        if subj_name != LEBENSPRAXIS and class_row:
+            topics = db.scalars(
+                select(Topic)
+                .join(Competence, Topic.id == Competence.topic_id)
+                .join(ClassCompetence, Competence.id == ClassCompetence.competence_id)
+                .where(
+                    Topic.subject_id == subj.id,
+                    ClassCompetence.class_id == class_row.id,
+                    ClassCompetence.selected.is_(True),
+                )
+                .distinct()
+                .order_by(Topic.id)
+            ).all()
+
+            for t in topics:
+                grade_row = db.scalar(
+                    select(Grade).where(
+                        Grade.student_id == student_id,
+                        Grade.topic_id == t.id,
+                    )
+                )
+                topics_out.append({
+                    "topic_id": t.id,
+                    "label": f"{t.name} ({t.block})",
+                    "grade": (grade_row.value if grade_row else "") or "",
+                })
+
+        subjects_out.append({
+            "name": subj_name,
+            "niveau": niveau,
+            "topics": topics_out,
+        })
+
+    return {
+        "student_id": stu.id,
+        "first_name": stu.first_name,
+        "last_name": stu.last_name,
+        "class_name": class_name,
+        "student_type": "gb" if stu.gb else "lb",
+        "subjects": subjects_out,
+    }

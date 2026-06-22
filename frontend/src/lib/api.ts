@@ -85,8 +85,11 @@ export const competenceApi = {
   updateCustom: (id: number, text: string) =>
     api.put(`/overview/custom-competences/${id}`, { text }),
   deleteCustom: (id: number) => api.delete(`/competences/custom/${id}`),
-  syncToParallel: (class_name: string) =>
-    api.post("/competences/sync-to-parallel", null, { params: { class_name } }),
+  syncToParallel: (class_name: string, target_classes?: string[]) =>
+    api.post("/competences/sync-to-parallel",
+      target_classes && target_classes.length > 0 ? { target_classes } : null,
+      { params: { class_name } }
+    ),
 };
 
 // ---------------------------------------------------------------------------
@@ -97,6 +100,8 @@ export const studentsApi = {
     api.get("/students/matrix", { params: { class_name, subject } }),
   saveMatrix: (class_name: string, subject: string, rows: import("@/types/api").GradeMatrixRow[]) =>
     api.post("/students/matrix", { class_name, subject, rows }),
+  lbProfile: (student_id: number) =>
+    api.get(`/students/${student_id}/lb-profile`),
 };
 
 // ---------------------------------------------------------------------------

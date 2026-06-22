@@ -20,6 +20,8 @@ export default function KompetenzenPage() {
   const [selectedSubject, setSelectedSubject] = useState("");
   const [selectedBlock, setSelectedBlock] = useState("");
   const [pendingChanges, setPendingChanges] = useState<Map<number, boolean>>(new Map());
+  const [copyTargets, setCopyTargets] = useState<Set<string>>(new Set());
+  const [showCopyPanel, setShowCopyPanel] = useState(false);
 
   const canLoad = !!selectedClass && !!selectedSubject && !!selectedBlock;
 
@@ -57,10 +59,12 @@ export default function KompetenzenPage() {
   });
 
   const syncMutation = useMutation({
-    mutationFn: () => competenceApi.syncToParallel(selectedClass),
+    mutationFn: () => competenceApi.syncToParallel(selectedClass, Array.from(copyTargets)),
     onSuccess: (res) => {
       const names: string[] = res.data?.synced_to ?? [];
       toast.success(`Kompetenzen übertragen auf: ${names.join(", ")}`);
+      setShowCopyPanel(false);
+      setCopyTargets(new Set());
     },
     onError: () => toast.error("Fehler beim Übertragen"),
   });
@@ -115,19 +119,44 @@ export default function KompetenzenPage() {
             </div>
             <div className="flex items-center gap-2">
               {parallelClasses.length > 0 && pendingChanges.size === 0 && selectedClass && (
-                <button
-                  onClick={() => {
-                    if (confirm(
-                      `Alle Kompetenz-Auswahlen von ${selectedClass} auf ${parallelClasses.join(", ")} übertragen?\n\nBestehende Auswahlen der Parallelklassen werden überschrieben.`
-                    )) syncMutation.mutate();
-                  }}
-                  disabled={syncMutation.isPending}
-                  title={`Auf Parallelklassen übertragen: ${parallelClasses.join(", ")}`}
-                  className="flex items-center gap-2 bg-muted border text-muted-foreground px-3 py-2 rounded-md text-sm hover:bg-muted/80 disabled:opacity-50"
-                >
-                  <Copy className="h-4 w-4" />
-                  {syncMutation.isPending ? "Übertragen…" : `→ ${parallelClasses.join(", ")}`}
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowCopyPanel((v) => !v)}
+                    className="flex items-center gap-2 bg-muted border text-muted-foreground px-3 py-2 rounded-md text-sm hover:bg-muted/80"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Auf Klassen kopieren
+                  </button>
+                  {showCopyPanel && (
+                    <div className="absolute right-0 top-10 z-20 bg-white border rounded-lg shadow-lg p-3 w-56 space-y-2">
+                      <p className="text-xs text-muted-foreground font-medium">Zielklassen auswählen:</p>
+                      {parallelClasses.map((cls) => (
+                        <label key={cls} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={copyTargets.has(cls)}
+                            onChange={(e) => {
+                              setCopyTargets((prev) => {
+                                const next = new Set(prev);
+                                if (e.target.checked) next.add(cls); else next.delete(cls);
+                                return next;
+                              });
+                            }}
+                            className="rounded"
+                          />
+                          {cls}
+                        </label>
+                      ))}
+                      <button
+                        onClick={() => syncMutation.mutate()}
+                        disabled={copyTargets.size === 0 || syncMutation.isPending}
+                        className="w-full mt-1 bg-primary text-white px-3 py-1.5 rounded text-sm disabled:opacity-40 hover:bg-primary/90"
+                      >
+                        {syncMutation.isPending ? "Übertragen…" : `Übertragen (${copyTargets.size})`}
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
               {pendingChanges.size > 0 && (
                 <button

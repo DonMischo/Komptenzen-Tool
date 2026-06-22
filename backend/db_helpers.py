@@ -199,7 +199,7 @@ def set_niveau(student_id: int, subject_id: int, niveau: str, ses: Session):
         link.niveau = niveau.strip()
     ses.commit()
 
-def sync_competences_to_parallel(source_class: str) -> list[str]:
+def sync_competences_to_parallel(source_class: str, target_classes: list[str] | None = None) -> list[str]:
     """Copy all ClassCompetence selections from source_class to every class
     in the same school year (same leading digit, e.g. 7a → 7b, 7c)."""
     year = next((ch for ch in source_class if ch.isdigit()), None)
@@ -207,10 +207,14 @@ def sync_competences_to_parallel(source_class: str) -> list[str]:
         return []
     with Session(ENGINE) as ses:
         src = _get_or_create_class(ses, source_class)
-        parallel = [
+        all_in_year = [
             c for c in ses.scalars(select(SchoolClass)).all()
             if c.id != src.id and any(ch == year and ch.isdigit() for ch in c.name)
         ]
+        if target_classes is not None:
+            parallel = [c for c in all_in_year if c.name in target_classes]
+        else:
+            parallel = all_in_year
         if not parallel:
             return []
         source_links = ses.scalars(
