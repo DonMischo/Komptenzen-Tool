@@ -12,7 +12,7 @@ from unittest.mock import patch
 import pytest
 from sqlalchemy.orm import Session
 
-from db_schema import Base, SchoolClass, Subject, Topic, Competence, Student
+from db_schema import Base, SchoolClass, Subject, Topic, Competence, Student, ClassCompetence, CustomCompetence
 
 
 # ---------------------------------------------------------------------------
@@ -311,3 +311,120 @@ class TestSyncToParallel:
                             params={"class_name": "9a"},
                             json={"target_classes": ["9b", "9c"]})
         assert set(r.json()["synced_to"]) == {"9b", "9c"}
+
+
+# ---------------------------------------------------------------------------
+# GET /api/competences/preview
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def preview_seed(client, sqlite_engine):
+    """Two blocks for Physik_pv: 5/6 has 'Wellen_pv', 7/8 has 'Optik_pv'."""
+    Base.metadata.create_all(sqlite_engine)
+    with Session(sqlite_engine) as ses:
+        cls = SchoolClass(name="prev_cls")
+        subj = Subject(name="Physik_pv")
+        ses.add_all([cls, subj])
+        ses.flush()
+        t1 = Topic(name="Wellen_pv", block="5/6", subject=subj)
+        t2 = Topic(name="Optik_pv", block="7/8", subject=subj)
+        ses.add_all([t1, t2])
+        ses.flush()
+        c1 = Competence(text="Wellen verstehen", topic=t1)
+        c2 = Competence(text="Wellen messen", topic=t1)
+        c3 = Competence(text="Licht brechen", topic=t2)
+        ses.add_all([c1, c2, c3])
+        ses.commit()
+        ids = {
+            "cls_id": cls.id, "subj_id": subj.id,
+            "t1_id": t1.id, "t2_id": t2.id,
+            "c1_id": c1.id, "c2_id": c2.id, "c3_id": c3.id,
+        }
+    yield ids
+    with Session(sqlite_engine) as ses:
+        for cid in [ids["c1_id"], ids["c2_id"], ids["c3_id"]]:
+            ses.query(Competence).filter_by(id=cid).delete()
+        ses.query(Topic).filter(Topic.id.in_([ids["t1_id"], ids["t2_id"]])).delete()
+        ses.query(Subject).filter_by(id=ids["subj_id"]).delete()
+        ses.query(SchoolClass).filter_by(id=ids["cls_id"]).delete()
+        ses.commit()
+
+
+# load_topic_rows returns (comp_id, topic_name, text, selected)
+_PREVIEW_ROWS_56 = [(1, "Wellen_pv", "Wellen verstehen", True),
+                    (2, "Wellen_pv", "Wellen messen", False)]   # c2 unselected
+_PREVIEW_ROWS_78 = [(3, "Optik_pv", "Licht brechen", True)]
+
+class TestPreviewTable:
+    def _call(self, client, preview_seed, class_name="prev_cls", subject="Physik_pv",
+              rows_56=None, rows_78=None, custom=None):
+        rows_56 = rows_56 if rows_56 is not None else _PREVIEW_ROWS_56
+        rows_78 = rows_78 if rows_78 is not None else _PREVIEW_ROWS_78
+
+        def _rows(cn, subj, block):
+            return rows_56 if block == "5/6" else rows_78
+
+        custom_kwargs = ({"side_effect": custom} if callable(custom)
+                        else {"return_value": custom if custom is not None else []})
+        with (
+            patch("routers.competences.get_blocks", return_value=["5/6", "7/8"]),
+            patch("routers.competences.load_topic_rows", side_effect=_rows),
+            patch("routers.competences._get_or_create_class_id",
+                  return_value=preview_seed["cls_id"]),
+            patch("routers.competences.get_custom_competences", **custom_kwargs),
+        ):
+            return client.get("/api/competences/preview",
+                              params={"class_name": class_name, "subject": subject})
+
+    def test_returns_200(self, client, preview_seed):
+        assert self._call(client, preview_seed).status_code == 200
+
+    def test_response_has_subject_and_topics(self, client, preview_seed):
+        data = self._call(client, preview_seed).json()
+        assert data["subject"] == "Physik_pv"
+        assert isinstance(data["topics"], list)
+
+    def test_only_selected_competences_included(self, client, preview_seed):
+        all_comps = [c for t in self._call(client, preview_seed).json()["topics"]
+                     for c in t["competences"]]
+        assert "Wellen verstehen" in all_comps
+        assert "Wellen messen" not in all_comps   # selected=False
+
+    def test_topics_from_both_blocks_present(self, client, preview_seed):
+        titles = [t["title"] for t in self._call(client, preview_seed).json()["topics"]]
+        assert "Wellen_pv" in titles
+        assert "Optik_pv" in titles
+
+    def test_topic_has_topic_id(self, client, preview_seed):
+        for topic in self._call(client, preview_seed).json()["topics"]:
+            assert "topic_id" in topic
+            assert topic["topic_id"] is not None
+
+    def test_topic_without_selection_not_in_output(self, client, preview_seed):
+        # If a whole block returns only unselected rows it should not appear
+        r = self._call(client, preview_seed, rows_78=[(3, "Optik_pv", "Licht brechen", False)])
+        titles = [t["title"] for t in r.json()["topics"]]
+        assert "Optik_pv" not in titles
+
+    def test_custom_competences_included(self, client, preview_seed):
+        from types import SimpleNamespace
+        fake_cc = SimpleNamespace(text="Eigene Kompetenz")
+        # Only the Wellen_pv topic (t1) gets the custom competence
+        def _custom(class_id, topic_id, db):
+            return [fake_cc] if topic_id == preview_seed["t1_id"] else []
+
+        r = self._call(client, preview_seed, custom=_custom)
+        wellen = next(t for t in r.json()["topics"] if t["title"] == "Wellen_pv")
+        assert "Eigene Kompetenz" in wellen["custom_competences"]
+
+    def test_no_customs_returns_empty_list(self, client, preview_seed):
+        optik = next(t for t in self._call(client, preview_seed).json()["topics"]
+                     if t["title"] == "Optik_pv")
+        assert optik["custom_competences"] == []
+
+    def test_unknown_subject_returns_empty_topics(self, client, preview_seed):
+        with patch("routers.competences.get_blocks", return_value=[]):
+            r = client.get("/api/competences/preview",
+                           params={"class_name": "prev_cls", "subject": "NoSuch"})
+        assert r.status_code == 200
+        assert r.json()["topics"] == []
