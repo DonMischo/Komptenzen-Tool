@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from db_schema import (
     ENGINE, Student, Subject, Topic,
-    SchoolClass, ClassCompetence, StudentSubject, Grade,
+    SchoolClass, ClassCompetence, StudentSubject, Grade, CustomCompetence,
 )
 
 # ---------------------------------------------------------------------------
@@ -104,6 +104,23 @@ STUDENTS_DEF: list[dict] = [
     {"last": "Braun",   "first": "Tim",    "bday": date(2013,  4, 25), "wp": 2, "type": "normal"},
     {"last": "Wagner",  "first": "Clara",  "bday": date(2012,  8, 13), "wp": 3, "type": "normal"},
     {"last": "Fischer", "first": "Max",    "bday": date(2012, 10,  3), "wp": 0, "type": "normal"},
+    # HJ2: elective not yet taught this half-year → all topics in WP get "HJ2"
+    {
+        "last": "Lange",      "first": "Nora",  "bday": date(2012,  4, 10),
+        "wp": 1, "type": "focus", "niveau": "2",
+        "ne_subj": None, "ne_topic": None,
+        "hj2_subj": "Wahlpflichtbereich - Spanisch",
+    },
+    # cycle_grades: grades 1→2→3→4→ne cycle explicitly across topics, niveau always 1
+    {
+        "last": "Zimmermann", "first": "Leo",   "bday": date(2013,  2,  5),
+        "wp": 2, "type": "cycle_grades",
+    },
+    # 2nd LB student: shorter HTML text so preview hits the simple-table path
+    {
+        "last": "Schulz",     "first": "Anna",  "bday": date(2012,  7, 19),
+        "wp": 3, "type": "lb",
+    },
 ]
 
 # ---------------------------------------------------------------------------
@@ -325,6 +342,42 @@ def _gb_niveau_html(vorname: str, subj_name: str, topics: list, p: dict) -> str:
     )
 
 
+def _add_custom_only_topic(ses: Session, class_id: int, subject_name: str):
+    """Find the first topic of subject_name, deselect ALL its regular competences,
+    and add custom competences — so the preview must render from custom-only data."""
+    subj = ses.query(Subject).filter_by(name=subject_name).first()
+    if not subj:
+        return
+    topic = ses.query(Topic).filter_by(subject_id=subj.id, block=BLOCK).first()
+    if not topic:
+        topic = ses.query(Topic).filter_by(subject_id=subj.id).first()
+    if not topic:
+        return
+
+    # Deselect all regular competences for this topic in this class
+    for comp in topic.competences:
+        cc = ses.query(ClassCompetence).filter_by(
+            class_id=class_id, competence_id=comp.id
+        ).first()
+        if cc is None:
+            ses.add(ClassCompetence(class_id=class_id, competence_id=comp.id, selected=False))
+        else:
+            cc.selected = False
+
+    # Add custom competences (idempotent: skip if text already exists)
+    existing_texts = {
+        c.text for c in ses.query(CustomCompetence).filter_by(
+            class_id=class_id, topic_id=topic.id
+        ).all()
+    }
+    for text in [
+        f"Eigene Kompetenz 1 für {topic.name}",
+        f"Eigene Kompetenz 2 für {topic.name}",
+    ]:
+        if text not in existing_texts:
+            ses.add(CustomCompetence(class_id=class_id, topic_id=topic.id, text=text))
+
+
 def _grade_for_focus(niveau_rule: str, rng: random.Random) -> str:
     if niveau_rule == "1":
         return rng.choice(["1", "1", "2", "ne"])
@@ -391,6 +444,8 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
         elif stype == "lb":
             topics = _topics_for(ses, subj.id)
             niveau = _lb_niveau_html(vorname, subj_name, topics, p)
+        elif stype == "cycle_grades":
+            niveau = "1"
         elif stype == "focus":
             n_rule = sdef["niveau"]
             niveau = str((subj_idx % 3) + 1) if n_rule == "mix" else n_rule
@@ -404,13 +459,19 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
             continue
 
         # Grades per topic
-        ne_topic = sdef.get("ne_topic") if stype == "focus" else None
+        ne_topic  = sdef.get("ne_topic")  if stype == "focus" else None
+        hj2_subj  = sdef.get("hj2_subj") if stype == "focus" else None
+        _cycle    = ["1", "2", "3", "4", "ne"]
 
         for topic_idx, topic in enumerate(_topics_for(ses, subj.id)):
             if ne_whole:
                 grade_val = "ne"
+            elif hj2_subj and subj_name == hj2_subj:
+                grade_val = "HJ2"
             elif ne_topic and subj_name == ne_topic[0] and topic_idx == ne_topic[1]:
                 grade_val = "ne"
+            elif stype == "cycle_grades":
+                grade_val = _cycle[topic_idx % len(_cycle)]
             elif stype == "focus":
                 grade_val = _grade_for_focus(sdef["niveau"], rng)
             else:
@@ -446,6 +507,10 @@ def generate_class_7ef(seed: int = 42) -> str:
             [n for n in MAIN_SUBJECTS + WAHLPFLICHT if n in all_subjects],
             rng,
         )
+
+        # Custom-only topic: deselect all regulars on the first Biologie topic,
+        # then add custom competences — exercises the preview custom-only path.
+        _add_custom_only_topic(ses, school_class.id, "Biologie")
 
         for sdef in STUDENTS_DEF:
             stu = _upsert_student(ses, sdef["last"], sdef["first"], sdef["bday"], school_class.id)
