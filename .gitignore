@@ -60,3 +60,4 @@ Thumbs.db
 *.out
 data/guide/Benutzerhandbuch.aux
 data/guide/Benutzerhandbuch.log
+frontend/tsconfig.tsbuildinfo
