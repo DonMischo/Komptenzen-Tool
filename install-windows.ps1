@@ -251,10 +251,8 @@ Write-Host "    " -NoNewline
 $backendReady = $false
 for ($i = 0; $i -lt 60; $i++) {
     Start-Sleep 3
-    $prev = $ErrorActionPreference; $ErrorActionPreference = "Continue"
-    $check = Invoke-RestMethod "http://localhost:$APP_PORT/api/health" -ErrorAction SilentlyContinue 2>&1
-    $ErrorActionPreference = $prev
-    if ($check -and $check.status -eq "ok") {
+    $resp = curl.exe -s --max-time 2 "http://localhost:$APP_PORT/api/health" 2>$null
+    if ($resp -and ($resp | ConvertFrom-Json -ErrorAction SilentlyContinue).status -eq "ok") {
         $backendReady = $true
         break
     }
@@ -267,10 +265,6 @@ if (-not $backendReady) {
     Write-Warn "Bitte Konten manuell unter http://localhost:$APP_PORT/login anlegen."
 } else {
     Write-OK "Backend bereit"
-
-    $prev = $ErrorActionPreference; $ErrorActionPreference = "Continue"
-    $authStatus = Invoke-RestMethod "http://localhost:$APP_PORT/api/auth/status" -ErrorAction SilentlyContinue 2>&1
-    $ErrorActionPreference = $prev
 
     $r = Create-AppUser $adminUser $adminPassPlain "admin"
     if ($r -eq "created") { Write-OK "Admin-Konto '$adminUser' angelegt" }
