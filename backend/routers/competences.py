@@ -107,6 +107,56 @@ def delete_custom(comp_id: int, db: Session = Depends(get_db)):
     return {"ok": True}
 
 
+@router.get("/competences/preview")
+def preview_table(
+    class_name: str,
+    subject: str,
+    db: Session = Depends(get_db),
+):
+    """Return all selected competences for class+subject across all blocks, merged by topic name."""
+    blocks = get_blocks(subject)
+    class_id = _get_or_create_class_id(class_name, db)
+
+    # Collect (topic_name, block, comp_id, text) for selected competences only
+    topic_rows: dict[str, dict] = {}  # topic_name → {block, topic_id, competences}
+
+    for block in blocks:
+        rows = load_topic_rows(class_name, subject, block)
+        for comp_id, topic_name, text, selected in rows:
+            if not selected:
+                continue
+            if topic_name not in topic_rows:
+                topic_id = db.scalar(
+                    select(Topic.id)
+                    .join(Subject, Topic.subject_id == Subject.id)
+                    .where(Subject.name == subject, Topic.name == topic_name, Topic.block == block)
+                )
+                topic_rows[topic_name] = {
+                    "topic_id": topic_id,
+                    "block": block,
+                    "competences": [],
+                }
+            if text not in topic_rows[topic_name]["competences"]:
+                topic_rows[topic_name]["competences"].append(text)
+
+    # Attach custom competences
+    result = []
+    for topic_name, data in topic_rows.items():
+        topic_id = data["topic_id"]
+        customs: list[str] = []
+        if topic_id:
+            customs = [cc.text for cc in get_custom_competences(class_id, topic_id, db)]
+        result.append({
+            "title": topic_name,
+            "block": data["block"],
+            "topic_id": topic_id,
+            "competences": data["competences"],
+            "custom_competences": customs,
+        })
+
+    return {"subject": subject, "topics": result}
+
+
 @router.post("/competences/sync-to-parallel")
 def sync_parallel(class_name: str, body: dict | None = None, _user=Depends(get_current_user)):
     """Copy competence selections from class_name to parallel classes.

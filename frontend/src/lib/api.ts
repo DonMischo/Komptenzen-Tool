@@ -85,6 +85,8 @@ export const competenceApi = {
   updateCustom: (id: number, text: string) =>
     api.put(`/overview/custom-competences/${id}`, { text }),
   deleteCustom: (id: number) => api.delete(`/competences/custom/${id}`),
+  preview: (class_name: string, subject: string) =>
+    api.get("/competences/preview", { params: { class_name, subject } }),
   syncToParallel: (class_name: string, target_classes?: string[]) =>
     api.post("/competences/sync-to-parallel",
       target_classes && target_classes.length > 0 ? { target_classes } : null,

@@ -4,7 +4,9 @@ import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ClassSubjectFilter } from "@/components/layout/ClassSubjectFilter";
 import { GradeMatrixTable } from "@/components/schuelerdaten/GradeMatrixTable";
+import { CompetencePreviewTable } from "@/components/schuelerdaten/CompetencePreviewTable";
 import { HelpButton } from "@/components/help/HelpButton";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function SchuelerdatenPage() {
   const [selectedClass, setSelectedClass] = useState(
@@ -13,6 +15,7 @@ export default function SchuelerdatenPage() {
   const [selectedSubject, setSelectedSubject] = useState(
     () => (typeof window !== "undefined" ? localStorage.getItem("nav_subject") ?? "" : "")
   );
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleSubjectChange = (s: string) => {
     setSelectedSubject(s);
@@ -24,10 +27,11 @@ export default function SchuelerdatenPage() {
     if (typeof window !== "undefined") localStorage.setItem("nav_class", c);
   };
 
+  const canPreview = !!selectedClass && !!selectedSubject;
+
   return (
     <AppShell>
       <div className="flex gap-6">
-        {/* Sidebar filter — no block needed for grade matrix */}
         <aside className="w-48 shrink-0">
           <ClassSubjectFilter
             classValue={selectedClass}
@@ -54,12 +58,36 @@ export default function SchuelerdatenPage() {
                 { heading: "Lebenspraxis", text: "Erscheint nur bei LB- und GB-Schülern. Kein Themen-Raster, nur ein Freitext-Feld." },
               ]}
             />
+            {canPreview && (
+              <button
+                onClick={() => setShowPreview((v) => !v)}
+                title={showPreview ? "Vorschau ausblenden" : "Zeugnistabelle vorschauen"}
+                className="ml-auto flex items-center gap-1.5 border px-3 py-1.5 rounded text-sm hover:bg-muted text-muted-foreground"
+              >
+                {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                Vorschau
+              </button>
+            )}
           </div>
+
           {selectedClass && selectedSubject ? (
-            <GradeMatrixTable
-              classNameValue={selectedClass}
-              subject={selectedSubject}
-            />
+            <div className="space-y-6">
+              <GradeMatrixTable
+                classNameValue={selectedClass}
+                subject={selectedSubject}
+              />
+              {showPreview && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
+                    Zeugnistabellen-Vorschau
+                  </p>
+                  <CompetencePreviewTable
+                    classNameValue={selectedClass}
+                    subject={selectedSubject}
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             <p className="text-muted-foreground text-sm">
               Bitte Klasse und Fach auswählen.
