@@ -234,8 +234,11 @@ class _Conv(HTMLParser):
 
     def latex(self) -> str:
         raw = "".join(self._out)
-        # Collapse 3+ consecutive newlines to 2 (one blank line)
-        return re.sub(r"\n{3,}", "\n\n", raw).strip()
+        # Collapse 3+ consecutive newlines to 2, then replace blank lines with \par
+        # so paragraph breaks survive Lua string escaping (\n → literal \n).
+        collapsed = re.sub(r"\n{3,}", "\n\n", raw).strip()
+        # Replace paragraph breaks with \\ so they survive Lua string escaping.
+        return re.sub(r"\n{2,}", "\\\\ ", collapsed).replace("\n", " ")
 
 
 # ---------------------------------------------------------------------------

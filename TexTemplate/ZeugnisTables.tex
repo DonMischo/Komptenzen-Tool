@@ -57,7 +57,7 @@
 		for _, topic in ipairs(subj.topics) do
 		tex.print("\\textbf{"..tex_escape(topic.title).."}\\par%")
 		for _, comp in ipairs(topic.competences) do
-		tex.print(tex_escape(comp.description).."\\par%")
+		tex.print("\\footnotesize{"..tex_escape(comp.description).."}\\par%")
 		end
 		-- insert the tick-box line that matches the grade
 		tex.print( gradeCmd[topic.grade] or gradeCmd.default )
