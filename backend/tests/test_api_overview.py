@@ -156,6 +156,66 @@ class TestOverviewGrades:
 
 
 # ---------------------------------------------------------------------------
+# Relevant-subjects list per grade level
+# ---------------------------------------------------------------------------
+
+class TestRelevantSubjects:
+    """Verify subject lists returned for each grade level."""
+
+    def test_medienbildung_in_class_5_competences(self, client):
+        r = client.get("/api/overview/competences", params={"class_name": "5a_ov_rs"})
+        names = [s["name"] for s in r.json()["subjects"]]
+        assert "Medienbildung und Informatik" in names
+
+    def test_medienbildung_in_class_6_competences(self, client):
+        r = client.get("/api/overview/competences", params={"class_name": "6a_ov_rs"})
+        names = [s["name"] for s in r.json()["subjects"]]
+        assert "Medienbildung und Informatik" in names
+
+    def test_medienbildung_in_class_5_grades(self, client, sqlite_engine):
+        # grades endpoint needs a real class row to return relevant_subjects
+        from db_schema import SchoolClass as SC
+        with Session(sqlite_engine) as ses:
+            ses.add(SC(name="5a_ov_rs2"))
+            ses.commit()
+        r = client.get("/api/overview/grades", params={"class_name": "5a_ov_rs2"})
+        assert "Medienbildung und Informatik" in r.json()["relevant_subjects"]
+        with Session(sqlite_engine) as ses:
+            ses.query(SC).filter_by(name="5a_ov_rs2").delete()
+            ses.commit()
+
+    def test_medienbildung_in_class_6_grades(self, client, sqlite_engine):
+        from db_schema import SchoolClass as SC
+        with Session(sqlite_engine) as ses:
+            ses.add(SC(name="6a_ov_rs2"))
+            ses.commit()
+        r = client.get("/api/overview/grades", params={"class_name": "6a_ov_rs2"})
+        assert "Medienbildung und Informatik" in r.json()["relevant_subjects"]
+        with Session(sqlite_engine) as ses:
+            ses.query(SC).filter_by(name="6a_ov_rs2").delete()
+            ses.commit()
+
+    def test_medienbildung_not_in_class_7(self, client):
+        r = client.get("/api/overview/competences", params={"class_name": "7a_ov_rs"})
+        names = [s["name"] for s in r.json()["subjects"]]
+        assert "Medienbildung und Informatik" not in names
+
+    def test_class_5_has_expected_subjects(self, client):
+        r = client.get("/api/overview/competences", params={"class_name": "5a_ov_rs"})
+        names = [s["name"] for s in r.json()["subjects"]]
+        for expected in ("Deutsch", "Mathematik", "Sport", "Medienbildung und Informatik"):
+            assert expected in names
+
+    def test_class_7_has_physik_not_in_5(self, client):
+        r5 = client.get("/api/overview/competences", params={"class_name": "5a_ov_rs"})
+        r7 = client.get("/api/overview/competences", params={"class_name": "7a_ov_rs"})
+        names5 = [s["name"] for s in r5.json()["subjects"]]
+        names7 = [s["name"] for s in r7.json()["subjects"]]
+        assert "Physik" in names7
+        assert "Physik" not in names5
+
+
+# ---------------------------------------------------------------------------
 # GET /api/overview/custom-competences
 # ---------------------------------------------------------------------------
 

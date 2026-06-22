@@ -282,3 +282,32 @@ class TestSyncToParallel:
         with patch("routers.competences.sync_competences_to_parallel", return_value=[]):
             r = client.post("/api/competences/sync-to-parallel", params={"class_name": "9a"})
         assert r.json()["synced_to"] == []
+
+    def test_target_classes_passed_to_helper(self, client):
+        """Body {"target_classes": ["9b"]} is forwarded to the helper."""
+        with patch("routers.competences.sync_competences_to_parallel", return_value=["9b"]) as mock:
+            client.post("/api/competences/sync-to-parallel",
+                        params={"class_name": "9a"},
+                        json={"target_classes": ["9b"]})
+        mock.assert_called_once_with("9a", ["9b"])
+
+    def test_no_body_passes_none_targets(self, client):
+        """No JSON body → helper receives None (sync all)."""
+        with patch("routers.competences.sync_competences_to_parallel", return_value=["9b"]) as mock:
+            client.post("/api/competences/sync-to-parallel", params={"class_name": "9a"})
+        mock.assert_called_once_with("9a", None)
+
+    def test_empty_target_list_passes_none(self, client):
+        """Empty target_classes list → treated as None (sync all)."""
+        with patch("routers.competences.sync_competences_to_parallel", return_value=[]) as mock:
+            client.post("/api/competences/sync-to-parallel",
+                        params={"class_name": "9a"},
+                        json={"target_classes": []})
+        mock.assert_called_once_with("9a", None)
+
+    def test_multiple_targets_returned(self, client):
+        with patch("routers.competences.sync_competences_to_parallel", return_value=["9b", "9c"]):
+            r = client.post("/api/competences/sync-to-parallel",
+                            params={"class_name": "9a"},
+                            json={"target_classes": ["9b", "9c"]})
+        assert set(r.json()["synced_to"]) == {"9b", "9c"}

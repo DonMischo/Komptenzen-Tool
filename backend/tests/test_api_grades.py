@@ -154,6 +154,23 @@ class TestGetMatrix:
         anna_row = next(row for row in r.json()["rows"] if row["first_name"] == "Anna")
         assert anna_row["student_type"] == "lb"
 
+    def test_column_label_excludes_subject_name(self, client, grade_seed):
+        """Column headers must be 'Topic (Block)', not 'Subject – Topic (Block)'."""
+        r = client.get("/api/students/matrix", params={
+            "class_name": "6a_g", "subject": "Physik_g",
+        })
+        label = r.json()["columns"][0]["label"]
+        assert "Physik_g" not in label
+        assert "Mechanik_g" in label
+        assert "(" in label  # block suffix present
+
+    def test_column_label_contains_block(self, client, grade_seed):
+        r = client.get("/api/students/matrix", params={
+            "class_name": "6a_g", "subject": "Physik_g",
+        })
+        label = r.json()["columns"][0]["label"]
+        assert "5/6" in label
+
 
 # ---------------------------------------------------------------------------
 # GET /api/students/matrix — Lebenspraxis path

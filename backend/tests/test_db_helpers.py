@@ -435,6 +435,62 @@ class TestSyncCompetencesToParallel:
             result = sync_competences_to_parallel("abc")
         assert result == []
 
+    def test_target_classes_limits_sync(self, populated):
+        """target_classes=["7b"] only syncs to 7b, not 7c."""
+        with Session(populated) as ses:
+            c1 = ses.query(Competence).filter_by(text="Kann zählen").first()
+            c1_id = c1.id
+        self._select_for_class(populated, "7a", c1_id)
+
+        with patch("db_helpers.ENGINE", populated):
+            affected = sync_competences_to_parallel("7a", target_classes=["7b"])
+
+        assert affected == ["7b"]
+
+        # 7b got it, 7c did not
+        with Session(populated) as ses:
+            cls7b = ses.query(SchoolClass).filter_by(name="7b").first()
+            cls7c = ses.query(SchoolClass).filter_by(name="7c").first()
+            link7b = ses.query(ClassCompetence).filter_by(
+                class_id=cls7b.id, competence_id=c1_id
+            ).first()
+            link7c = ses.query(ClassCompetence).filter_by(
+                class_id=cls7c.id, competence_id=c1_id
+            ).first()
+            assert link7b is not None and link7b.selected is True
+            assert link7c is None
+
+    def test_target_classes_empty_list_syncs_none(self, populated):
+        """Empty target_classes → no classes synced (treated as empty filter)."""
+        with Session(populated) as ses:
+            c1 = ses.query(Competence).filter_by(text="Kann zählen").first()
+            c1_id = c1.id
+        self._select_for_class(populated, "7a", c1_id)
+
+        with patch("db_helpers.ENGINE", populated):
+            affected = sync_competences_to_parallel("7a", target_classes=[])
+
+        assert affected == []
+
+    def test_none_target_classes_syncs_all(self, populated):
+        """target_classes=None → all parallel classes (default behaviour)."""
+        with Session(populated) as ses:
+            c1 = ses.query(Competence).filter_by(text="Kann zählen").first()
+            c1_id = c1.id
+        self._select_for_class(populated, "7a", c1_id)
+
+        with patch("db_helpers.ENGINE", populated):
+            affected = sync_competences_to_parallel("7a", target_classes=None)
+
+        assert set(affected) == {"7b", "7c"}
+
+    def test_target_class_not_in_year_returns_empty(self, populated):
+        """Requesting a target from another year group returns empty."""
+        with patch("db_helpers.ENGINE", populated):
+            affected = sync_competences_to_parallel("7a", target_classes=["5a"])
+
+        assert affected == []
+
 
 # ---------------------------------------------------------------------------
 # Custom competences
