@@ -77,11 +77,13 @@ export default function KompetenzenPage() {
     setSelectedSubject(s);
     setSelectedBlock("");
     setPendingChanges(new Map());
+    if (typeof window !== "undefined") localStorage.setItem("nav_subject", s);
   };
 
   const handleClassChange = (c: string) => {
     setSelectedClass(c);
     setPendingChanges(new Map());
+    if (typeof window !== "undefined") localStorage.setItem("nav_class", c);
   };
 
   return (

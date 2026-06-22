@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { competenceApi } from "@/lib/api";
 import { QK } from "@/lib/queries";
@@ -44,6 +45,13 @@ export function ClassSubjectFilter({
   const classes: string[] = classesData?.classes ?? [];
   const subjects: string[] = subjectsData?.subjects ?? [];
   const blocks: string[] = blocksData?.blocks ?? [];
+
+  // Auto-select first block when blocks load and none is selected
+  useEffect(() => {
+    if (showBlock && blocks.length > 0 && !blockValue) {
+      onBlockChange(blocks[0]);
+    }
+  }, [blocks]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="space-y-3">

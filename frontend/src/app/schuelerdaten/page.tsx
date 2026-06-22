@@ -7,8 +7,12 @@ import { GradeMatrixTable } from "@/components/schuelerdaten/GradeMatrixTable";
 import { HelpButton } from "@/components/help/HelpButton";
 
 export default function SchuelerdatenPage() {
-  const [selectedClass, setSelectedClass] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedClass, setSelectedClass] = useState(
+    () => (typeof window !== "undefined" ? localStorage.getItem("nav_class") ?? "" : "")
+  );
+  const [selectedSubject, setSelectedSubject] = useState(
+    () => (typeof window !== "undefined" ? localStorage.getItem("nav_subject") ?? "" : "")
+  );
 
   const handleSubjectChange = (s: string) => {
     setSelectedSubject(s);
