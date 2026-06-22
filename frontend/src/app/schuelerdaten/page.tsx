@@ -16,6 +16,12 @@ export default function SchuelerdatenPage() {
 
   const handleSubjectChange = (s: string) => {
     setSelectedSubject(s);
+    if (typeof window !== "undefined") localStorage.setItem("nav_subject", s);
+  };
+
+  const handleClassChange = (c: string) => {
+    setSelectedClass(c);
+    if (typeof window !== "undefined") localStorage.setItem("nav_class", c);
   };
 
   return (
@@ -27,7 +33,7 @@ export default function SchuelerdatenPage() {
             classValue={selectedClass}
             subjectValue={selectedSubject}
             blockValue=""
-            onClassChange={setSelectedClass}
+            onClassChange={handleClassChange}
             onSubjectChange={handleSubjectChange}
             onBlockChange={() => {}}
             showBlock={false}

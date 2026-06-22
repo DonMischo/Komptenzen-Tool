@@ -46,10 +46,15 @@ export function ClassSubjectFilter({
   const subjects: string[] = subjectsData?.subjects ?? [];
   const blocks: string[] = blocksData?.blocks ?? [];
 
-  // Auto-select first block when blocks load and none is selected
+  // Auto-select preferred block when blocks load and none is selected.
+  // Class 7 prefers "7/8"; everything else takes the first available block.
   useEffect(() => {
     if (showBlock && blocks.length > 0 && !blockValue) {
-      onBlockChange(blocks[0]);
+      const isYear7 = /^7/.test(classValue);
+      const preferred = isYear7
+        ? (blocks.find((b) => b === "7/8") ?? blocks[0])
+        : blocks[0];
+      onBlockChange(preferred);
     }
   }, [blocks]); // eslint-disable-line react-hooks/exhaustive-deps
 

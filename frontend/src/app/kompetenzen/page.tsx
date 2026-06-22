@@ -16,8 +16,12 @@ type Change = [number, boolean];
 
 export default function KompetenzenPage() {
   const qc = useQueryClient();
-  const [selectedClass, setSelectedClass] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("");
+  const [selectedClass, setSelectedClass] = useState(
+    () => (typeof window !== "undefined" ? localStorage.getItem("nav_class") ?? "" : "")
+  );
+  const [selectedSubject, setSelectedSubject] = useState(
+    () => (typeof window !== "undefined" ? localStorage.getItem("nav_subject") ?? "" : "")
+  );
   const [selectedBlock, setSelectedBlock] = useState("");
   const [pendingChanges, setPendingChanges] = useState<Map<number, boolean>>(new Map());
   const [copyTargets, setCopyTargets] = useState<Set<string>>(new Set());
