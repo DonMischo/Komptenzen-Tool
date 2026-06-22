@@ -31,6 +31,27 @@ export interface StudentImportResponse {
   errors: string[];
 }
 
+export interface StudentFieldChange {
+  field: string;
+  old: string;
+  new: string;
+}
+
+export interface StudentDiffRow {
+  name: string;
+  school_class: string;
+  action: "add" | "update" | "remove";
+  changes: StudentFieldChange[];
+}
+
+export interface StudentPreviewResponse {
+  to_add: StudentDiffRow[];
+  to_update: StudentDiffRow[];
+  to_remove: StudentDiffRow[];
+  unchanged: number;
+  errors: string[];
+}
+
 export interface CustomCompetenceItem {
   id: number;
   text: string;

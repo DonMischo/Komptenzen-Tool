@@ -10,7 +10,10 @@ from sqlalchemy import inspect as sa_inspect, text
 from sqlalchemy.orm import Session
 
 import db_schema
-from student_loader import count_students, sync_students_from_upload
+from student_loader import (
+    count_students, sync_students_from_upload, preview_students_from_upload,
+    ALL_UPDATE_FIELDS,
+)
 from db_schema import (
     SchoolYear, create_report_db, init_db, list_report_dbs,
     suggest_db_name, switch_engine, _pg_base_url,
@@ -19,7 +22,7 @@ from deps import get_current_user, get_db
 from schemas import (
     DatabaseCreateRequest, DatabaseListResponse, DatabaseSelectRequest,
     DatabaseSuggestResponse, ReportDayResponse, ReportDayUpdateRequest,
-    SchemaStatusResponse, StudentImportResponse,
+    SchemaStatusResponse, StudentImportResponse, StudentPreviewResponse,
 )
 from time_functions import fetch_halfyear_report_day, fetch_last_school_day
 
@@ -195,15 +198,35 @@ def remove_testdata(_: str = Depends(get_current_user), db: Session = Depends(ge
 # Student import
 # ---------------------------------------------------------------------------
 
+@router.post("/setup/students/preview", response_model=StudentPreviewResponse)
+async def preview_students(
+    file: UploadFile = File(...),
+    remove_missing: bool = Form(False),
+    update_fields: str = Form("klasse,fehltage,zeugnistext,bemerkungen"),
+    _: str = Depends(get_current_user),
+):
+    csv_bytes = await file.read()
+    fields = {f.strip() for f in update_fields.split(",") if f.strip()}
+    try:
+        diff = preview_students_from_upload(csv_bytes, remove_missing, fields)
+    except Exception as e:
+        raise HTTPException(400, str(e))
+    return StudentPreviewResponse(**diff)
+
+
 @router.post("/setup/students/upload", response_model=StudentImportResponse)
 async def upload_students(
     file: UploadFile = File(...),
     remove_missing: bool = Form(False),
+    update_fields: str = Form("klasse,fehltage"),
     _: str = Depends(get_current_user),
 ):
     csv_bytes = await file.read()
+    fields = {f.strip() for f in update_fields.split(",") if f.strip()}
     try:
-        added, updated, removed, errors = sync_students_from_upload(csv_bytes, remove_missing)
+        added, updated, removed, errors = sync_students_from_upload(
+            csv_bytes, remove_missing, update_fields=fields
+        )
     except Exception as e:
         raise HTTPException(400, str(e))
     return StudentImportResponse(added=added, updated=updated, removed=removed, errors=errors)

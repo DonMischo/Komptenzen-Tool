@@ -48,10 +48,18 @@ export const setupApi = {
     api.put("/setup/report-day", { report_day }),
   fetchReportDay: (type: "hj" | "ej") =>
     api.get("/setup/report-day/fetch", { params: { type } }),
-  uploadStudents: (file: File, remove_missing: boolean) => {
+  previewStudents: (file: File, remove_missing: boolean, update_fields: string[]) => {
     const fd = new FormData();
     fd.append("file", file);
     fd.append("remove_missing", String(remove_missing));
+    fd.append("update_fields", update_fields.join(","));
+    return api.post("/setup/students/preview", fd);
+  },
+  uploadStudents: (file: File, remove_missing: boolean, update_fields: string[]) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("remove_missing", String(remove_missing));
+    fd.append("update_fields", update_fields.join(","));
     return api.post("/setup/students/upload", fd);
   },
   generateTestdata: () => api.post("/setup/testdata"),

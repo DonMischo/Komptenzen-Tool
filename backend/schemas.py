@@ -77,6 +77,27 @@ class StudentImportResponse(BaseModel):
     errors: list[str]
 
 
+class StudentFieldChange(BaseModel):
+    field: str   # human-readable field name
+    old: str
+    new: str
+
+
+class StudentDiffRow(BaseModel):
+    name: str
+    school_class: str
+    action: str                          # "add" | "update" | "remove"
+    changes: list[StudentFieldChange]    # populated for "update" only
+
+
+class StudentPreviewResponse(BaseModel):
+    to_add: list[StudentDiffRow]
+    to_update: list[StudentDiffRow]      # only rows that actually change
+    to_remove: list[StudentDiffRow]
+    unchanged: int
+    errors: list[str]
+
+
 # ---------------------------------------------------------------------------
 # Classes / Subjects
 # ---------------------------------------------------------------------------
