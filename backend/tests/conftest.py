@@ -23,13 +23,16 @@ import os
 from unittest.mock import MagicMock, patch
 
 # ---------------------------------------------------------------------------
-# Stub psycopg2 before any backend imports so SQLAlchemy can load the dialect
-# without a native driver.  Tests that actually hit the DB use SQLite instead.
+# Stub psycopg2 only when the real driver is not installed (e.g. on Windows).
+# Inside Docker psycopg2 is available — stubbing it would break integration tests.
 # ---------------------------------------------------------------------------
-for _mod in ("psycopg2", "psycopg2.extensions", "psycopg2.extras",
-             "psycopg2._psycopg"):
-    if _mod not in sys.modules:
-        sys.modules[_mod] = MagicMock()
+try:
+    import psycopg2  # noqa: F401 — just checking availability
+except ImportError:
+    for _mod in ("psycopg2", "psycopg2.extensions", "psycopg2.extras",
+                 "psycopg2._psycopg"):
+        if _mod not in sys.modules:
+            sys.modules[_mod] = MagicMock()
 
 import pytest
 from sqlalchemy import create_engine
