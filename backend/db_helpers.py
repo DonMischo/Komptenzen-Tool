@@ -7,7 +7,7 @@ Datenbank-Helper für das Kompetenzen-Tool (SQLAlchemy ≥ 2.0).
 from __future__ import annotations
 from typing import List, Optional, Tuple
 
-from sqlalchemy import select, update, delete, distinct, func
+from sqlalchemy import select, update, delete, distinct, func, union
 from sqlalchemy.orm import Session
 
 import pandas as pd
@@ -83,18 +83,21 @@ def get_students_by_class(class_name: str, ses: Session) -> list[Student]:
 
 def get_topics_by_subject(subject: str, ses: Session, class_name: str | None = None) -> list[Topic]:
     if class_name:
-        # Subquery: IDs of topics with at least one selected competence for this class.
-        # Avoids DISTINCT ON which PostgreSQL requires to match ORDER BY.
+        # Topics with at least one selected competence OR a custom competence for this class.
         cl = _get_or_create_class(ses, class_name)
-        active_topic_ids = (
+        selected_ids = (
             select(Topic.id)
             .join(Competence, Topic.id == Competence.topic_id)
             .join(ClassCompetence,
                   (ClassCompetence.class_id == cl.id)
                   & (ClassCompetence.competence_id == Competence.id)
                   & (ClassCompetence.selected.is_(True)))
-            .scalar_subquery()
         )
+        custom_ids = (
+            select(CustomCompetence.topic_id)
+            .where(CustomCompetence.class_id == cl.id)
+        )
+        active_topic_ids = union(selected_ids, custom_ids)
         stmt = (
             select(Topic).join(Subject)
             .where(Subject.name == subject)
