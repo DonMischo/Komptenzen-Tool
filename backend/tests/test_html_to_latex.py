@@ -19,6 +19,99 @@ def latex(html: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Whitespace and Unicode-space sanitisation
+# ---------------------------------------------------------------------------
+
+class TestWhitespaceSanitisation:
+    """_sanitize() and the whitespace-stripping pass in latex()."""
+
+    # --- Unicode space variants normalised to plain space ---
+
+    def test_nbsp_in_text_becomes_space(self):
+        """Non-breaking space (U+00A0) inside text → regular space."""
+        out = latex("<p>Hallo Welt</p>")
+        assert "Hallo Welt" in out
+
+    def test_thin_space_in_text_becomes_space(self):
+        """Thin space (U+2009, common Word 'half space') → regular space."""
+        out = latex("<p>Hallo Welt</p>")
+        assert "Hallo Welt" in out
+
+    def test_narrow_nbsp_in_text_becomes_space(self):
+        """Narrow no-break space (U+202F) → regular space."""
+        out = latex("<p>Hallo Welt</p>")
+        assert "Hallo Welt" in out
+
+    def test_hair_space_in_text_becomes_space(self):
+        """Hair space (U+200A) → regular space."""
+        out = latex("<p>Hallo Welt</p>")
+        assert "Hallo Welt" in out
+
+    # --- Whitespace-only paragraphs → empty line → wide gap ---
+
+    def test_nbsp_only_paragraph_is_wide_gap(self):
+        r"""<p>\xa0</p> (non-breaking space only) → \newline\vspace{2em}."""
+        out = latex("<p>A</p><p> </p><p>B</p>")
+        assert "\\newline\\vspace{2em}" in out
+
+    def test_thin_space_only_paragraph_is_wide_gap(self):
+        r"""<p> </p> (thin space only) → \newline\vspace{2em}."""
+        out = latex("<p>A</p><p> </p><p>B</p>")
+        assert "\\newline\\vspace{2em}" in out
+
+    def test_multiple_spaces_only_paragraph_is_wide_gap(self):
+        r"""<p>   </p> (plain spaces only) → \newline\vspace{2em}."""
+        out = latex("<p>A</p><p>   </p><p>B</p>")
+        assert "\\newline\\vspace{2em}" in out
+
+    # --- Leading / trailing whitespace stripped ---
+
+    def test_leading_whitespace_stripped(self):
+        """Output does not start with a space or newline."""
+        out = latex("<p>Text</p>")
+        assert out == out.strip()
+
+    def test_trailing_whitespace_stripped(self):
+        """Output does not end with a space or newline."""
+        out = latex("<p>Text</p>")
+        assert out == out.strip()
+
+    def test_leading_empty_paragraph_stripped(self):
+        """An empty <p></p> at the start produces no leading separator."""
+        out = latex("<p></p><p>Text</p>")
+        assert not out.startswith("\\newline")
+
+    def test_trailing_empty_paragraph_stripped(self):
+        """An empty <p></p> at the end produces no trailing separator."""
+        out = latex("<p>Text</p><p></p>")
+        assert not out.endswith("\\newline\\vspace{2em}")
+
+    # --- Typographic characters normalised ---
+
+    def test_soft_hyphen_stripped(self):
+        """Soft hyphen (U+00AD) is removed entirely."""
+        out = latex("<p>Hallo­Welt</p>")
+        assert "HalloWelt" in out
+        assert "­" not in out
+
+    def test_zero_width_space_stripped(self):
+        """Zero-width space (U+200B) is removed entirely."""
+        out = latex("<p>Hallo​Welt</p>")
+        assert "HalloWelt" in out
+
+    def test_smart_quotes_normalised(self):
+        """Curly quotes are converted to straight ASCII equivalents."""
+        out = latex("<p>“Hallo” und ‘Welt’</p>")
+        assert '"Hallo"' in out
+        assert "'Welt'" in out
+
+    def test_ellipsis_normalised(self):
+        """Unicode ellipsis (U+2026) → three dots."""
+        out = latex("<p>und so weiter…</p>")
+        assert "..." in out
+
+
+# ---------------------------------------------------------------------------
 # Empty / non-HTML input
 # ---------------------------------------------------------------------------
 
