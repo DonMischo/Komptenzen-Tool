@@ -18,6 +18,44 @@ import re
 from html.parser import HTMLParser
 
 # ---------------------------------------------------------------------------
+# Character sanitisation (Word / copy-paste trash)
+# ---------------------------------------------------------------------------
+
+# Characters that are outright illegal in LaTeX / TeX input and should be
+# dropped silently.  Includes control chars, zero-width joiners, soft hyphen,
+# BOM, and the Unicode replacement character.
+_STRIP_RE = re.compile(
+    "["
+    "\x00-\x08\x0b\x0c\x0e-\x1f"   # C0 controls except \t \n \r
+    "­"                          # soft hyphen
+    "​-‏"                   # zero-width space / joiners / marks
+    "  "                    # line / paragraph separators (handled below)
+    "﻿"                          # BOM
+    "�"                          # replacement character
+    "]"
+)
+
+# Characters that should be normalised rather than dropped.
+_NORMALIZE = str.maketrans({
+    " ": " ",    # non-breaking space → regular space
+    "‘": "'",    # left single quotation mark
+    "’": "'",    # right single quotation mark / apostrophe
+    "“": '"',    # left double quotation mark
+    "”": '"',    # right double quotation mark
+    "–": "--",   # en dash
+    "—": "---",  # em dash
+    "…": "...",  # ellipsis
+})
+
+
+def _sanitize(t: str) -> str:
+    """Remove/normalise characters that cause problems in LuaLaTeX."""
+    t = t.translate(_NORMALIZE)
+    t = _STRIP_RE.sub("", t)
+    return t
+
+
+# ---------------------------------------------------------------------------
 # Character escaping
 # ---------------------------------------------------------------------------
 
@@ -36,7 +74,7 @@ _SPECIAL = str.maketrans({
 
 
 def _esc(t: str) -> str:
-    return t.translate(_SPECIAL)
+    return _sanitize(t).translate(_SPECIAL)
 
 
 # ---------------------------------------------------------------------------

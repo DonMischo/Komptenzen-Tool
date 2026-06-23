@@ -59,6 +59,39 @@ export function RichTextEditorModal({
     content: initialHtml,
     editorProps: {
       attributes: { class: "focus:outline-none min-h-[200px] px-1" },
+      transformPastedHTML(html) {
+        // Strip Word/Office conditional comments and namespace tags
+        let clean = html
+          .replace(/<!--\[if[^>]*>[\s\S]*?<!\[endif\]-->/gi, "")
+          .replace(/<\/?o:[^>]*>/gi, "")
+          .replace(/<\/?w:[^>]*>/gi, "")
+          .replace(/<\/?m:[^>]*>/gi, "");
+
+        // Remove mso-* inline style properties
+        clean = clean.replace(/\s*mso-[^;:"']+:[^;]+;?/gi, "");
+
+        // Strip invisible Unicode: zero-width chars, soft hyphen, BOM
+        clean = clean.replace(/[­​-‏﻿�]/g, "");
+        // Non-breaking space → regular space
+        clean = clean.replace(/ /g, " ");
+
+        // Unwrap Word frame tables: single-cell <table> → just the cell content
+        const div = document.createElement("div");
+        div.innerHTML = clean;
+        div.querySelectorAll("table").forEach((table) => {
+          const cells = Array.from(table.querySelectorAll("td, th"));
+          if (cells.length === 1) {
+            const frag = document.createDocumentFragment();
+            while (cells[0].firstChild) frag.appendChild(cells[0].firstChild);
+            table.parentNode?.replaceChild(frag, table);
+          }
+        });
+        return div.innerHTML;
+      },
+      transformPastedText(text) {
+        // Strip invisible chars from plain-text paste too
+        return text.replace(/[­​-‏﻿�]/g, "").replace(/ /g, " ");
+      },
     },
   });
 
