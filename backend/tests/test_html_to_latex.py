@@ -297,3 +297,99 @@ class TestParagraphBreakEscaping:
         # After strip+normalize: A\n\n\nB → wide gap
         out = latex("<p>A</p><p></p><p>B</p>")
         assert "\\newline\\vspace{2em}" in out
+
+
+# ---------------------------------------------------------------------------
+# Realistic Zeugnis text — 7ef student
+# ---------------------------------------------------------------------------
+
+# A realistic multi-paragraph personal text as TipTap would store it.
+# Covers:
+#   - multiple normal paragraph breaks  → \newline\vspace{1em}
+#   - empty paragraph (<p></p>)          → \newline\vspace{2em} wide gap
+#   - paragraph with only &nbsp;         → treated as empty line (wide gap)
+#   - thin/narrow Unicode spaces in text → normalised to regular spaces
+#   - single-cell table wrapper          → unwrapped (no \begin{tblr})
+#   - no bare \n in output
+#   - no leading/trailing whitespace
+_ZEUGNIS_HTML = """\
+<p>Liebe Lea,</p>
+<p>dein siebtes Schuljahr an der Evangelischen Gemeinschaftsschule Erfurt
+hast du erfolgreich abgeschlossen. Es war ein aufregendes Jahr voller neuer
+Erfahrungen, das du mit Energie und Freude gemeistert hast.</p>
+<p></p>
+<p>Im Unterricht zeigst du immer wieder, dass du über gute Fähigkeiten
+verfügst. Besonders in den Fächern, die dein Interesse wecken, arbeitest
+du engagiert mit und bringst dich mit guten Gedanken ein. Dabei nutzt du auch
+die Möglichkeit, Fragen zu stellen – das ist sehr lobenswert.</p>
+<p> </p>
+<p>Für das kommende Schuljahr wünschen wir dir, dass du deine Stärken
+noch entschlossener einsetzt. Nicht immer muss alles sofort gelingen —
+wichtig ist, den ersten Schritt zu machen.</p>
+<p>Wir freuen uns darauf, dich auf deinem weiteren Weg begleiten zu dürfen.</p>
+<p>Viele Grüße von Frau Müller und Herrn Schmidt</p>
+"""
+
+# Same content wrapped in a single-cell table (Word text-box paste).
+_ZEUGNIS_TABLE_HTML = f"<table><tbody><tr><td>{_ZEUGNIS_HTML}</td></tr></tbody></table>"
+
+
+class TestRealisticZeugnisText:
+    """html_to_latex on a realistic 7ef Zeugnis personal_text."""
+
+    def test_no_bare_newlines(self):
+        out = latex(_ZEUGNIS_HTML)
+        assert "\n" not in out
+
+    def test_no_leading_trailing_whitespace(self):
+        out = latex(_ZEUGNIS_HTML)
+        assert out == out.strip()
+
+    def test_normal_paragraph_break_present(self):
+        r"""Adjacent paragraphs produce \newline\vspace{1em}."""
+        out = latex(_ZEUGNIS_HTML)
+        assert "\\newline\\vspace{1em}" in out
+
+    def test_empty_paragraph_produces_wide_gap(self):
+        r"""<p></p> between paragraphs produces \newline\vspace{2em}."""
+        out = latex(_ZEUGNIS_HTML)
+        assert "\\newline\\vspace{2em}" in out
+
+    def test_nbsp_paragraph_produces_wide_gap(self):
+        r"""<p>&nbsp;</p> (space-only paragraph) also produces a wide gap."""
+        # The \xa0 is normalised to space → whitespace-only line → empty line
+        # so it merges with surrounding \n's to form a triple newline.
+        out = latex(_ZEUGNIS_HTML)
+        # There are two wide gaps: one from <p></p> and one from <p>&nbsp;</p>
+        assert out.count("\\newline\\vspace{2em}") >= 2
+
+    def test_en_dash_normalised(self):
+        """Unicode en-dash in text → ASCII --."""
+        out = latex(_ZEUGNIS_HTML)
+        assert "--" in out
+
+    def test_em_dash_normalised(self):
+        """Unicode em-dash → ---."""
+        out = latex(_ZEUGNIS_HTML)
+        assert "---" in out
+
+    def test_no_par_command(self):
+        r"""Output must not contain \par (causes tabularray dimension overflow)."""
+        out = latex(_ZEUGNIS_HTML)
+        assert "\\par" not in out
+
+    def test_content_present(self):
+        """Key phrases from the text survive the conversion."""
+        out = latex(_ZEUGNIS_HTML)
+        assert "Liebe Lea" in out
+        assert "Viele Gr" in out  # Grüße — ü is fine in LuaLaTeX
+
+    def test_single_cell_table_unwrapped(self):
+        r"""Single-cell table wrapper is stripped — no \begin{tblr} in output."""
+        out = latex(_ZEUGNIS_TABLE_HTML)
+        assert "\\begin{tblr}" not in out
+
+    def test_single_cell_table_content_preserved(self):
+        """Content from inside the single-cell table is still present."""
+        out = latex(_ZEUGNIS_TABLE_HTML)
+        assert "Liebe Lea" in out
