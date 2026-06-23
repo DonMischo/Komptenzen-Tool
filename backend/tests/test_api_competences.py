@@ -428,3 +428,78 @@ class TestPreviewTable:
                            params={"class_name": "prev_cls", "subject": "NoSuch"})
         assert r.status_code == 200
         assert r.json()["topics"] == []
+
+
+# ---------------------------------------------------------------------------
+# GET /api/competences/preview — custom-only topic (no selected regular comps)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def preview_custom_seed(client, sqlite_engine):
+    """Extends preview scenario with a topic 'Bio_pv' that has NO selected
+    regular competences but one CustomCompetence for the class."""
+    Base.metadata.create_all(sqlite_engine)
+    with Session(sqlite_engine) as ses:
+        cls = SchoolClass(name="prev_co_cls")
+        subj = Subject(name="Bio_pv_subj")
+        ses.add_all([cls, subj])
+        ses.flush()
+        tp = Topic(name="Bio_pv", block="5/6", subject=subj)
+        ses.add(tp)
+        ses.flush()
+        # One regular competence — NOT selected (no ClassCompetence row)
+        comp = Competence(text="Zellen beschreiben", topic=tp)
+        ses.add(comp)
+        ses.flush()
+        cc = CustomCompetence(text="Eigene Bio-Kompetenz", topic_id=tp.id, class_id=cls.id)
+        ses.add(cc)
+        ses.commit()
+        ids = {
+            "cls_id": cls.id, "subj_id": subj.id,
+            "tp_id": tp.id, "comp_id": comp.id, "cc_id": cc.id,
+        }
+    yield ids
+    with Session(sqlite_engine) as ses:
+        ses.query(CustomCompetence).filter_by(id=ids["cc_id"]).delete()
+        ses.query(Competence).filter_by(id=ids["comp_id"]).delete()
+        ses.query(Topic).filter_by(id=ids["tp_id"]).delete()
+        ses.query(Subject).filter_by(id=ids["subj_id"]).delete()
+        ses.query(SchoolClass).filter_by(id=ids["cls_id"]).delete()
+        ses.commit()
+
+
+class TestPreviewCustomOnlyTopic:
+    """Topics with only custom competences must appear in the preview."""
+
+    def _call(self, client, seed):
+        # load_topic_rows returns the regular comp as unselected
+        rows = [(seed["comp_id"], "Bio_pv", "Zellen beschreiben", False)]
+        with (
+            patch("routers.competences.get_blocks", return_value=["5/6"]),
+            patch("routers.competences.load_topic_rows", return_value=rows),
+            patch("routers.competences._get_or_create_class_id",
+                  return_value=seed["cls_id"]),
+        ):
+            return client.get("/api/competences/preview",
+                              params={"class_name": "prev_co_cls",
+                                      "subject": "Bio_pv_subj"})
+
+    def test_custom_only_topic_in_response(self, client, preview_custom_seed):
+        data = self._call(client, preview_custom_seed).json()
+        titles = [t["title"] for t in data["topics"]]
+        assert "Bio_pv" in titles
+
+    def test_custom_competence_text_present(self, client, preview_custom_seed):
+        data = self._call(client, preview_custom_seed).json()
+        bio = next(t for t in data["topics"] if t["title"] == "Bio_pv")
+        assert "Eigene Bio-Kompetenz" in bio["custom_competences"]
+
+    def test_regular_competences_list_empty(self, client, preview_custom_seed):
+        data = self._call(client, preview_custom_seed).json()
+        bio = next(t for t in data["topics"] if t["title"] == "Bio_pv")
+        assert bio["competences"] == []
+
+    def test_unselected_regular_comp_not_in_competences(self, client, preview_custom_seed):
+        data = self._call(client, preview_custom_seed).json()
+        bio = next(t for t in data["topics"] if t["title"] == "Bio_pv")
+        assert "Zellen beschreiben" not in bio["competences"]

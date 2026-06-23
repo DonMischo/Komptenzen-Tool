@@ -11,7 +11,7 @@ from db_helpers import (
     add_custom_competence, delete_custom_competence, get_custom_competences,
     _get_or_create_class_id, sync_competences_to_parallel,
 )
-from db_schema import Topic, Subject
+from db_schema import Topic, Subject, CustomCompetence
 from deps import get_db, get_current_user
 from schemas import (
     ClassListResponse, SubjectListResponse, BlockListResponse,
@@ -138,6 +138,23 @@ def preview_table(
                 }
             if text not in topic_rows[topic_name]["competences"]:
                 topic_rows[topic_name]["competences"].append(text)
+
+    # Also include topics that have custom competences but no selected regular ones
+    custom_topic_ids = db.scalars(
+        select(CustomCompetence.topic_id)
+        .where(CustomCompetence.class_id == class_id)
+        .distinct()
+    ).all()
+    for topic_id in custom_topic_ids:
+        topic = db.get(Topic, topic_id)
+        if not topic or topic.subject.name != subject:
+            continue
+        if topic.name not in topic_rows:
+            topic_rows[topic.name] = {
+                "topic_id": topic_id,
+                "block": topic.block,
+                "competences": [],
+            }
 
     # Attach custom competences
     result = []
