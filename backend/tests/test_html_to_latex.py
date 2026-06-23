@@ -271,3 +271,25 @@ class TestParagraphBreakEscaping:
         assert "\\" in out
         assert "A" in out
         assert "B" in out
+
+    def test_paragraph_break_uses_par_vspace(self):
+        r"""Double-paragraph break must use \par\vspace{.5em}, not \\ or \newline.
+
+        This ensures LuaTeX tex.print() ends the current horizontal paragraph
+        before applying \vspace (which is silently ignored in horizontal mode).
+        """
+        out = latex("<p>Erster Absatz</p><p>Zweiter Absatz</p>")
+        assert "\\par\\vspace{.5em}" in out
+
+    def test_par_vspace_not_bare_double_backslash(self):
+        r"""The separator must not be \\ alone (which would be a LaTeX line break,
+        not a paragraph end, and \vspace after it stays in horizontal mode)."""
+        out = latex("<p>A</p><p>B</p>")
+        # \par\vspace is the full separator — \\ alone should not appear
+        # (a bare \\ would be wrong here; \textbackslash{} is for escaped chars)
+        assert "\\\\" not in out
+
+    def test_three_paragraphs_two_separators(self):
+        r"""Three paragraphs produce exactly two \par\vspace{.5em} separators."""
+        out = latex("<p>A</p><p>B</p><p>C</p>")
+        assert out.count("\\par\\vspace{.5em}") == 2
