@@ -79,7 +79,7 @@ def _lua(obj: Any, ind: int = 0) -> str:
         return f"{{\n{body},\n{sp}}}"
     if isinstance(obj, str):
         esc = obj.replace("\\", "\\\\")
-        esc = esc.replace("\n", "\\\\\\\\")
+        esc = esc.replace("\n", "\\\\")
         esc = esc.replace("\r", "\\r")
         esc = esc.replace("'", "\\'")
         return f"'{esc}'"
