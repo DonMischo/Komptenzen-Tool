@@ -7,9 +7,8 @@ import { AppShell } from "@/components/layout/AppShell";
 import { adminApi, competenceApi } from "@/lib/api";
 import { QK } from "@/lib/queries";
 import { AdminStudentItem } from "@/types/api";
-import { ExportProgress } from "@/components/admin/ExportProgress";
 import { UserManagement } from "@/components/admin/UserManagement";
-import { useExportJobs } from "@/hooks/useExportJobs";
+import { useExportJobsContext } from "@/contexts/ExportJobsContext";
 import { cn } from "@/lib/utils";
 import { FileText, RefreshCw, AlertTriangle, CheckCircle } from "lucide-react";
 import { HelpButton } from "@/components/help/HelpButton";
@@ -23,7 +22,7 @@ export default function AdminPage() {
   const [selectedClass, setSelectedClass] = useState("");
   const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
 
-  const { jobs, addJob, cancelJob, dismissJob } = useExportJobs();
+  const { addJob } = useExportJobsContext();
 
   const [syncConfirmed, setSyncConfirmed] = useState(false);
 
@@ -123,11 +122,7 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Page body: tab content left, persistent jobs sidebar right */}
-        <div className={cn("gap-6", jobs.length > 0 ? "flex items-start" : "")}>
-
-          {/* Tab content */}
-          <div className="flex-1 min-w-0 space-y-6">
+        <div className="space-y-6">
 
             {/* Export tab */}
             {tab === "export" && (
@@ -302,26 +297,7 @@ export default function AdminPage() {
               </div>
             )}
 
-          </div> {/* end flex-1 tab content */}
-
-          {/* Persistent jobs sidebar — visible across all tabs */}
-          {jobs.length > 0 && (
-            <div className="w-80 shrink-0 space-y-4">
-              {jobs.map((job) => (
-                <ExportProgress
-                  key={job.id}
-                  label={job.label}
-                  events={job.events}
-                  total={job.total}
-                  isDone={job.isDone}
-                  onStop={() => cancelJob(job.id)}
-                  onClose={() => dismissJob(job.id)}
-                />
-              ))}
-            </div>
-          )}
-
-        </div> {/* end flex wrapper */}
+        </div>
       </div>
     </AppShell>
   );

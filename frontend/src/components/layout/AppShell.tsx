@@ -8,6 +8,9 @@ import { QK } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import { AuthStatusResponse } from "@/types/api";
 import { FaqModal } from "@/components/help/FaqModal";
+import { ExportProgress } from "@/components/admin/ExportProgress";
+import { ExportJobsContext } from "@/contexts/ExportJobsContext";
+import { useExportJobs } from "@/hooks/useExportJobs";
 import {
   Settings,
   CheckSquare,
@@ -53,6 +56,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isAdmin = auth?.role === "admin";
   const NAV = isAdmin ? ADMIN_NAV : LEHRER_NAV;
 
+  const { jobs, addJob, cancelJob, dismissJob } = useExportJobs();
+
   useEffect(() => {
     if (!auth) return;
     if (!auth.authenticated) { router.replace("/login"); return; }
@@ -71,6 +76,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   });
 
   return (
+    <ExportJobsContext.Provider value={{ addJob }}>
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className="w-56 bg-slate-900 text-slate-100 flex flex-col shrink-0 h-screen sticky top-0">
@@ -120,6 +126,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="flex-1 overflow-auto bg-muted/20">
         <div className="max-w-6xl mx-auto p-6">{children}</div>
       </main>
+
+      {/* Floating export jobs panel — admin only, persists across all pages */}
+      {isAdmin && jobs.length > 0 && (
+        <div className="fixed bottom-4 right-4 z-50 w-80 space-y-3">
+          {jobs.map((job) => (
+            <ExportProgress
+              key={job.id}
+              label={job.label}
+              events={job.events}
+              total={job.total}
+              isDone={job.isDone}
+              onStop={() => cancelJob(job.id)}
+              onClose={() => dismissJob(job.id)}
+            />
+          ))}
+        </div>
+      )}
     </div>
+    </ExportJobsContext.Provider>
   );
 }
