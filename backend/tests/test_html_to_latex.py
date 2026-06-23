@@ -50,19 +50,19 @@ class TestWhitespaceSanitisation:
     # --- Whitespace-only paragraphs → empty line → wide gap ---
 
     def test_nbsp_only_paragraph_is_wide_gap(self):
-        r"""<p>\xa0</p> (non-breaking space only) → \newline\vspace{2em}."""
+        r"""<p>\xa0</p> (non-breaking space only) → \vspace{2em}\newline ."""
         out = latex("<p>A</p><p> </p><p>B</p>")
-        assert "\\newline\\vspace{2em}" in out
+        assert "\\vspace{2em}\\newline " in out
 
     def test_thin_space_only_paragraph_is_wide_gap(self):
-        r"""<p> </p> (thin space only) → \newline\vspace{2em}."""
+        r"""<p> </p> (thin space only) → \vspace{2em}\newline ."""
         out = latex("<p>A</p><p> </p><p>B</p>")
-        assert "\\newline\\vspace{2em}" in out
+        assert "\\vspace{2em}\\newline " in out
 
     def test_multiple_spaces_only_paragraph_is_wide_gap(self):
-        r"""<p>   </p> (plain spaces only) → \newline\vspace{2em}."""
+        r"""<p>   </p> (plain spaces only) → \vspace{2em}\newline ."""
         out = latex("<p>A</p><p>   </p><p>B</p>")
-        assert "\\newline\\vspace{2em}" in out
+        assert "\\vspace{2em}\\newline " in out
 
     # --- Leading / trailing whitespace stripped ---
 
@@ -79,12 +79,12 @@ class TestWhitespaceSanitisation:
     def test_leading_empty_paragraph_stripped(self):
         """An empty <p></p> at the start produces no leading separator."""
         out = latex("<p></p><p>Text</p>")
-        assert not out.startswith("\\newline")
+        assert not out.startswith("\\vspace")
 
     def test_trailing_empty_paragraph_stripped(self):
         """An empty <p></p> at the end produces no trailing separator."""
         out = latex("<p>Text</p><p></p>")
-        assert not out.endswith("\\newline\\vspace{2em}")
+        assert not out.endswith("\\vspace{2em}\\newline ")
 
     # --- Typographic characters normalised ---
 
@@ -366,9 +366,9 @@ class TestParagraphBreakEscaping:
         assert "newline" in out or "\\\\" in out
 
     def test_double_newline_uses_1em(self):
-        r"""Two adjacent paragraphs → \newline\vspace{1em} (normal gap)."""
+        r"""Two adjacent paragraphs → \vspace{1em}\newline  (normal gap)."""
         out = latex("<p>A</p><p>B</p>")
-        assert "\\newline\\vspace{1em}" in out
+        assert "\\vspace{1em}\\newline " in out
 
     def test_par_not_used_as_separator(self):
         r"""The separator must NOT be \par — it causes tabularray to fail."""
@@ -376,12 +376,12 @@ class TestParagraphBreakEscaping:
         assert "\\par" not in out
 
     def test_three_paragraphs_two_separators(self):
-        r"""Three paragraphs produce exactly two \newline\vspace{1em} separators."""
+        r"""Three paragraphs produce exactly two \vspace{1em}\newline  separators."""
         out = latex("<p>A</p><p>B</p><p>C</p>")
-        assert out.count("\\newline\\vspace{1em}") == 2
+        assert out.count("\\vspace{1em}\\newline ") == 2
 
     def test_triple_newline_uses_2em(self):
-        r"""Three newlines in raw output → \newline\vspace{2em} (wide gap).
+        r"""Three newlines in raw output → \vspace{2em}\newline  (wide gap).
 
         An empty <p></p> between two paragraphs generates a triple newline
         in the raw buffer, producing a wider visual separation.
@@ -389,7 +389,7 @@ class TestParagraphBreakEscaping:
         # <p>A</p><p></p><p>B</p> → raw has \nA\n + \n\n + \nB\n = \nA\n\n\n\nB\n
         # After strip+normalize: A\n\n\nB → wide gap
         out = latex("<p>A</p><p></p><p>B</p>")
-        assert "\\newline\\vspace{2em}" in out
+        assert "\\vspace{2em}\\newline " in out
 
 
 # ---------------------------------------------------------------------------
@@ -398,8 +398,8 @@ class TestParagraphBreakEscaping:
 
 # A realistic multi-paragraph personal text as TipTap would store it.
 # Covers:
-#   - multiple normal paragraph breaks  → \newline\vspace{1em}
-#   - empty paragraph (<p></p>)          → \newline\vspace{2em} wide gap
+#   - multiple normal paragraph breaks  → \vspace{1em}\newline 
+#   - empty paragraph (<p></p>)          → \vspace{2em}\newline  wide gap
 #   - paragraph with only &nbsp;         → treated as empty line (wide gap)
 #   - thin/narrow Unicode spaces in text → normalised to regular spaces
 #   - single-cell table wrapper          → unwrapped (no \begin{tblr})
@@ -439,14 +439,14 @@ class TestRealisticZeugnisText:
         assert out == out.strip()
 
     def test_normal_paragraph_break_present(self):
-        r"""Adjacent paragraphs produce \newline\vspace{1em}."""
+        r"""Adjacent paragraphs produce \vspace{1em}\newline ."""
         out = latex(_ZEUGNIS_HTML)
-        assert "\\newline\\vspace{1em}" in out
+        assert "\\vspace{1em}\\newline " in out
 
     def test_empty_paragraph_produces_wide_gap(self):
-        r"""<p></p> between paragraphs produces \newline\vspace{2em}."""
+        r"""<p></p> between paragraphs produces \vspace{2em}\newline ."""
         out = latex(_ZEUGNIS_HTML)
-        assert "\\newline\\vspace{2em}" in out
+        assert "\\vspace{2em}\\newline " in out
 
     def test_nbsp_paragraph_produces_wide_gap(self):
         r"""<p>&nbsp;</p> (space-only paragraph) also produces a wide gap."""
@@ -454,7 +454,7 @@ class TestRealisticZeugnisText:
         # so it merges with surrounding \n's to form a triple newline.
         out = latex(_ZEUGNIS_HTML)
         # There are two wide gaps: one from <p></p> and one from <p>&nbsp;</p>
-        assert out.count("\\newline\\vspace{2em}") >= 2
+        assert out.count("\\vspace{2em}\\newline ") >= 2
 
     def test_en_dash_normalised(self):
         """Unicode en-dash in text → ASCII --."""

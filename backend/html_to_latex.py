@@ -288,18 +288,25 @@ class _Conv(HTMLParser):
 
     def latex(self) -> str:
         raw = "".join(self._out)
-        # Collapse lines that are whitespace-only (e.g. spaces from Word that
-        # _sanitize() already normalised to plain spaces) → empty lines so they
-        result = re.sub(r"^[ \t]+$", "", raw, flags=re.MULTILINE)
+        # Normalise Windows CRLF / bare CR in text content to LF so that the
+        # newline-counting logic below works regardless of source platform.
+        result = re.sub(r"\r\n?", "\n", raw)
+        # Collapse whitespace-only lines (plain spaces/tabs — _sanitize() has
+        # already normalised all Unicode space variants to regular space).
+        # These become empty lines and feed into the newline-tier logic below.
+        result = re.sub(r"^[ \t]+$", "", result, flags=re.MULTILINE)
         result = result.strip()
         # Normalise 4+ newlines to exactly 3 so the three tiers are distinct.
         result = re.sub(r"\n{4,}", "\n\n\n", result)
         # str.replace not re.sub: re.sub interprets backslashes in replacements.
         # \newline not \par: \par switches tabularray X[l] cells to vertical
         # mode and causes "Dimension too large" in cell-width measurement.
-        result = result.replace("\n\n\n", "\\newline\\vspace{2em}")   # wide gap
-        result = result.replace("\n\n",   "\\newline\\vspace{1em}")   # normal gap
-        result = result.replace("\n",     " ")                        # inline wrap
+        # \vspace BEFORE \newline: \vadjust (used by \vspace in h-mode) attaches
+        # to the current line being closed, producing space below it.  After
+        # \newline the vadjust would attach to the next line instead.
+        result = result.replace("\n\n\n", "\\vspace{2em}\\newline ")   # wide gap
+        result = result.replace("\n\n",   "\\vspace{1em}\\newline ")   # normal gap
+        result = result.replace("\n",     " ")                         # inline wrap
         return result
 
 
