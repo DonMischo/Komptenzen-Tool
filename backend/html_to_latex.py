@@ -237,7 +237,7 @@ class _Conv(HTMLParser):
         collapsed = re.sub(r"\n{3,}", "\n\n", raw).strip()
         # str.replace not re.sub: re.sub interprets \\ as one backslash in the
         # replacement, producing \ instead of \\ (the LaTeX line-break command).
-        return collapsed.replace("\n\n", "\\vspace{.5em}").replace("\n", " ")
+        return collapsed.replace("\n\n", "\\par\\vspace{.5em}").replace("\n", " ")
 
 
 # ---------------------------------------------------------------------------
