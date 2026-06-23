@@ -486,3 +486,130 @@ class TestRealisticZeugnisText:
         """Content from inside the single-cell table is still present."""
         out = latex(_ZEUGNIS_TABLE_HTML)
         assert "Liebe Lea" in out
+
+
+# ---------------------------------------------------------------------------
+# par_mode=True — document-body paragraph breaks
+# ---------------------------------------------------------------------------
+
+def par(html: str) -> str:
+    return html_to_latex(html, par_mode=True)
+
+
+class TestParModeHtmlP:
+    r"""par_mode with <p> tag input → \par instead of \newline."""
+
+    def test_single_paragraph_no_par(self):
+        r"""Single paragraph: no \par needed, just the text."""
+        out = par("<p>Hallo Welt</p>")
+        assert "Hallo Welt" in out
+        assert "\\newline" not in out
+
+    def test_two_paragraphs_produce_par(self):
+        r"""Two adjacent <p> tags → \par  between them."""
+        out = par("<p>A</p><p>B</p>")
+        assert "\\par " in out
+        assert "A" in out
+        assert "B" in out
+
+    def test_no_newline_in_output(self):
+        """par_mode output must not contain bare newlines."""
+        out = par("<p>A</p><p>B</p>")
+        assert "\n" not in out
+
+    def test_no_vspace_newline_in_par_mode(self):
+        r"""par_mode must not emit \vspace{1em}\newline (cell-mode markers)."""
+        out = par("<p>A</p><p>B</p>")
+        assert "\\vspace" not in out
+        assert "\\newline" not in out
+
+    def test_empty_paragraph_produces_bigskip(self):
+        r"""<p></p> between text paragraphs → \par\bigskip  (wide gap)."""
+        out = par("<p>A</p><p></p><p>B</p>")
+        assert "\\par\\bigskip " in out
+
+    def test_realistic_text_has_par(self):
+        r"""Realistic multi-paragraph text produces \par."""
+        out = par(_ZEUGNIS_HTML)
+        assert "\\par " in out
+        assert "Liebe Lea" in out
+
+    def test_realistic_text_no_newline(self):
+        """Realistic text in par_mode has no bare newlines."""
+        out = par(_ZEUGNIS_HTML)
+        assert "\n" not in out
+
+    def test_realistic_text_no_vspace(self):
+        r"""Realistic text in par_mode has no \vspace (cell-mode artifact)."""
+        out = par(_ZEUGNIS_HTML)
+        assert "\\vspace" not in out
+
+
+class TestParModeHtmlBr:
+    r"""par_mode with <br> tag input — \newline promoted to \par."""
+
+    def test_br_becomes_par(self):
+        r"""<br> inside a <p> in par_mode → \par  (not \newline)."""
+        out = par("<p>A<br/>B</p>")
+        assert "\\par " in out
+        assert "\\newline" not in out
+
+    def test_br_content_preserved(self):
+        out = par("<p>Line one<br/>Line two</p>")
+        assert "Line one" in out
+        assert "Line two" in out
+
+
+class TestParModeLegacyPlainText:
+    r"""par_mode with legacy plain-text input (no leading '<')."""
+
+    def test_single_newline_becomes_par(self):
+        r"""Single \n → \par  in par_mode."""
+        out = par("A\nB")
+        assert "\\par " in out
+        assert "A" in out
+        assert "B" in out
+
+    def test_multi_newline_becomes_par_medskip(self):
+        r"""Two or more \n → \par\medskip  in par_mode."""
+        out = par("A\n\nB")
+        assert "\\par\\medskip " in out
+
+    def test_no_bare_newlines(self):
+        out = par("A\nB\n\nC")
+        assert "\n" not in out
+
+    def test_no_vspace_newline_in_par_mode(self):
+        r"""Legacy plain-text par_mode must not emit \vspace or \newline."""
+        out = par("A\nB\n\nC")
+        assert "\\vspace" not in out
+        assert "\\newline" not in out
+
+    def test_empty_input_returns_empty(self):
+        assert par("") == ""
+
+
+class TestParModeVsCellMode:
+    r"""Cross-check: same input, opposite mode, produces opposite markers."""
+
+    def test_p_tags_cell_mode_uses_newline(self):
+        r"""Default (cell) mode: adjacent <p> → \vspace{1em}\newline ."""
+        out = latex("<p>A</p><p>B</p>")
+        assert "\\vspace{1em}\\newline " in out
+
+    def test_p_tags_par_mode_uses_par(self):
+        r"""par_mode: adjacent <p> → \par ."""
+        out = par("<p>A</p><p>B</p>")
+        assert "\\par " in out
+        assert "\\vspace" not in out
+
+    def test_plain_text_cell_mode_uses_newline_backslash(self):
+        r"""Default mode, plain text: \n → \\ ."""
+        out = latex("A\nB")
+        assert "\\\\" in out
+
+    def test_plain_text_par_mode_uses_par(self):
+        r"""par_mode, plain text: \n → \par ."""
+        out = par("A\nB")
+        assert "\\par " in out
+        assert "\\\\" not in out
