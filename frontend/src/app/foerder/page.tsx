@@ -7,7 +7,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { competenceApi, stammdatenApi, studentsApi } from "@/lib/api";
 import { NiveauSelect, isNiveauCustom, NIVEAU_OPTIONS } from "@/components/schuelerdaten/NiveauSelect";
 import { RichTextEditorModal } from "@/components/stammdaten/RichTextEditorModal";
-import { Save, Pencil } from "lucide-react";
+import { Save, Pencil, ChevronDown, ChevronRight } from "lucide-react";
 
 const GRADE_OPTS = ["", "1", "2", "3", "4", "ne"];
 
@@ -135,6 +135,39 @@ function SubjectBlock({
         <p className="text-xs text-muted-foreground italic">
           Freitext-Modus — Themenurteile werden nicht erfasst.
         </p>
+      )}
+    </div>
+  );
+}
+
+function CollapsibleSubjectBlock({
+  subj, studentType, state, onChange,
+}: {
+  subj: LbSubject;
+  studentType: "lb" | "gb";
+  state: SubjectState;
+  onChange: (next: SubjectState) => void;
+}) {
+  const hasData = !!state.niveau || Object.values(state.grades).some((g) => g !== "");
+  const [open, setOpen] = useState(hasData);
+
+  return (
+    <div className={`border rounded-xl overflow-hidden ${hasData ? "border-primary/50 bg-primary/5" : ""}`}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium hover:bg-muted/40 transition-colors"
+      >
+        <span className={hasData ? "text-primary" : "text-muted-foreground"}>{subj.name}</span>
+        <span className="flex items-center gap-2">
+          {hasData && <span className="text-xs text-primary font-normal">Daten vorhanden</span>}
+          {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+        </span>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1 border-t">
+          <SubjectBlock subj={subj} studentType={studentType} state={state} onChange={onChange} />
+        </div>
       )}
     </div>
   );
@@ -285,16 +318,35 @@ export default function FoerderPage() {
             </div>
 
             <div className="space-y-3">
-              {profile.subjects.map((subj) => (
-                <SubjectBlock
-                  key={subj.name}
-                  subj={subj}
-                  studentType={profile.student_type}
-                  state={subjectStates[subj.name] ?? { niveau: subj.niveau, grades: {} }}
-                  onChange={(next) => handleSubjectChange(subj.name, next)}
-                />
-              ))}
+              {profile.subjects
+                .filter((s) => !s.name.startsWith("Wahlpflichtbereich"))
+                .map((subj) => (
+                  <SubjectBlock
+                    key={subj.name}
+                    subj={subj}
+                    studentType={profile.student_type}
+                    state={subjectStates[subj.name] ?? { niveau: subj.niveau, grades: {} }}
+                    onChange={(next) => handleSubjectChange(subj.name, next)}
+                  />
+                ))}
             </div>
+
+            {profile.subjects.some((s) => s.name.startsWith("Wahlpflichtbereich")) && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Wahlpflichtbereich</h4>
+                {profile.subjects
+                  .filter((s) => s.name.startsWith("Wahlpflichtbereich"))
+                  .map((subj) => (
+                    <CollapsibleSubjectBlock
+                      key={subj.name}
+                      subj={subj}
+                      studentType={profile.student_type}
+                      state={subjectStates[subj.name] ?? { niveau: subj.niveau, grades: {} }}
+                      onChange={(next) => handleSubjectChange(subj.name, next)}
+                    />
+                  ))}
+              </div>
+            )}
 
             <SaveButton onClick={() => saveMutation.mutate()} isPending={saveMutation.isPending} />
           </>

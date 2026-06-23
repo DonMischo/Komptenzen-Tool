@@ -183,6 +183,8 @@ _LB_RELEVANT: dict[str, list[str]] = {
         "Deutsch", "Mathematik", "Englisch", "Evangelische Religionslehre",
         "MNT - Projekt Lutherpark", "Physik", "Chemie",
         "Geschichte", "Geografie", "Werkstätten", "Technisches Werken", "Sport",
+        "Wahlpflichtbereich - Französisch", "Wahlpflichtbereich - Spanisch",
+        "Wahlpflichtbereich - Darstellen und Gestalten", "Wahlpflichtbereich - Natur und Technik",
         "Lebenspraxis",
     ],
 }

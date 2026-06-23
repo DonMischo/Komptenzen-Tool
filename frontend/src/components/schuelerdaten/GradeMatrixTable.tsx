@@ -65,12 +65,8 @@ export function GradeMatrixTable({ classNameValue, subject }: Props) {
   const [rows, setRows] = useState<GradeMatrixRow[]>([]);
   const [dirty, setDirty] = useState(false);
 
-  const NO_NIVEAU_SUBJECTS = new Set([
-    "Sport",
-    "Werkstätten",
-    "Wahlpflichtbereich - Darstellen und Gestalten",
-  ]);
-  const defaultNiveau = NO_NIVEAU_SUBJECTS.has(subject) ? "" : "2";
+  const noNiveau = subject === "Sport" || subject === "Werkstätten" || subject.startsWith("Wahlpflichtbereich");
+  const defaultNiveau = noNiveau ? "" : "2";
 
   useEffect(() => {
     if (data) {
