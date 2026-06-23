@@ -9,8 +9,7 @@ import { cn } from "@/lib/utils";
 import { AuthStatusResponse } from "@/types/api";
 import { FaqModal } from "@/components/help/FaqModal";
 import { ExportProgress } from "@/components/admin/ExportProgress";
-import { ExportJobsContext } from "@/contexts/ExportJobsContext";
-import { useExportJobs } from "@/hooks/useExportJobs";
+import { useExportJobsContext } from "@/contexts/ExportJobsContext";
 import {
   Settings,
   CheckSquare,
@@ -56,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isAdmin = auth?.role === "admin";
   const NAV = isAdmin ? ADMIN_NAV : LEHRER_NAV;
 
-  const { jobs, addJob, cancelJob, dismissJob } = useExportJobs();
+  const { jobs, cancelJob, dismissJob } = useExportJobsContext();
 
   useEffect(() => {
     if (!auth) return;
@@ -76,7 +75,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   });
 
   return (
-    <ExportJobsContext.Provider value={{ addJob }}>
     <div className="flex min-h-screen">
       {/* Sidebar */}
       <aside className="w-56 bg-slate-900 text-slate-100 flex flex-col shrink-0 h-screen sticky top-0">
@@ -144,6 +142,5 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
     </div>
-    </ExportJobsContext.Provider>
   );
 }
