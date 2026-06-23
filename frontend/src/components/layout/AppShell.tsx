@@ -125,21 +125,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="max-w-6xl mx-auto p-6">{children}</div>
       </main>
 
-      {/* Floating export jobs panel — admin only, persists across all pages */}
+      {/* Export jobs sidebar — admin only, persists across all pages */}
       {isAdmin && jobs.length > 0 && (
-        <div className="fixed bottom-4 right-4 z-50 w-80 space-y-3">
-          {jobs.map((job) => (
-            <ExportProgress
-              key={job.id}
-              label={job.label}
-              events={job.events}
-              total={job.total}
-              isDone={job.isDone}
-              onStop={() => cancelJob(job.id)}
-              onClose={() => dismissJob(job.id)}
-            />
-          ))}
-        </div>
+        <aside className="w-72 shrink-0 border-l bg-muted/10 h-screen sticky top-0 overflow-y-auto">
+          <div className="p-4 space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Exporte</h2>
+            {jobs.map((job) => (
+              <ExportProgress
+                key={job.id}
+                label={job.label}
+                events={job.events}
+                total={job.total}
+                isDone={job.isDone}
+                onStop={() => cancelJob(job.id)}
+                onClose={() => dismissJob(job.id)}
+              />
+            ))}
+          </div>
+        </aside>
       )}
     </div>
   );
