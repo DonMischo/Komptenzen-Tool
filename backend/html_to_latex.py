@@ -37,14 +37,23 @@ _STRIP_RE = re.compile(
 
 # Characters that should be normalised rather than dropped.
 _NORMALIZE = str.maketrans({
-    " ": " ",    # non-breaking space → regular space
-    "‘": "'",    # left single quotation mark
-    "’": "'",    # right single quotation mark / apostrophe
-    "“": '"',    # left double quotation mark
-    "”": '"',    # right double quotation mark
-    "–": "--",   # en dash
-    "—": "---",  # em dash
-    "…": "...",  # ellipsis
+    # Space variants → plain space (whitespace-only lines are then stripped
+    # in latex() so these become empty-line paragraph signals)
+    " ": " ",   # non-breaking space
+    " ": " ",   # figure space
+    " ": " ",   # punctuation space
+    " ": " ",   # thin space  ("half space" in Word)
+    " ": " ",   # hair space
+    " ": " ",   # narrow no-break space
+    " ": " ",   # medium mathematical space
+    # Typographic punctuation → ASCII equivalents
+    "‘": "'",  # left single quotation mark
+    "’": "'",  # right single quotation mark / apostrophe
+    "“": '"',  # left double quotation mark
+    "”": '"',  # right double quotation mark
+    "–": "--",  # en dash
+    "—": "---", # em dash
+    "…": "...", # ellipsis
 })
 
 
@@ -279,7 +288,10 @@ class _Conv(HTMLParser):
 
     def latex(self) -> str:
         raw = "".join(self._out)
-        result = raw.strip()
+        # Collapse lines that are whitespace-only (e.g. spaces from Word that
+        # _sanitize() already normalised to plain spaces) → empty lines so they
+        result = re.sub(r"^[ \t]+$", "", raw, flags=re.MULTILINE)
+        result = result.strip()
         # Normalise 4+ newlines to exactly 3 so the three tiers are distinct.
         result = re.sub(r"\n{4,}", "\n\n\n", result)
         # str.replace not re.sub: re.sub interprets backslashes in replacements.
