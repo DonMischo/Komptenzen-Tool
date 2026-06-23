@@ -275,7 +275,10 @@ class _Conv(HTMLParser):
         collapsed = re.sub(r"\n{3,}", "\n\n", raw).strip()
         # str.replace not re.sub: re.sub interprets \\ as one backslash in the
         # replacement, producing \ instead of \\ (the LaTeX line-break command).
-        return collapsed.replace("\n\n", "\\par\\vspace{.5em}").replace("\n", " ")
+        # \newline not \par: \par switches tabularray X[l] cells to vertical
+        # mode and causes "Dimension too large" in the cell-width measurement.
+        # \newline stays in horizontal mode; \vspace in h-mode uses \vadjust.
+        return collapsed.replace("\n\n", "\\newline\\vspace{.5em}").replace("\n", " ")
 
 
 # ---------------------------------------------------------------------------

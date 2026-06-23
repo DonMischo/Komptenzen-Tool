@@ -266,30 +266,28 @@ class TestParagraphBreakEscaping:
         assert "\n" not in out
 
     def test_double_backslash_present_for_para_break(self):
-        """Two paragraphs must produce \\ (LaTeX line break) in output for LuaTeX."""
+        """Two paragraphs must produce a line break command in output for LuaTeX."""
         out = latex("<p>A</p><p>B</p>")
-        assert "\\" in out
         assert "A" in out
         assert "B" in out
+        assert "newline" in out or "\\\\" in out
 
-    def test_paragraph_break_uses_par_vspace(self):
-        r"""Double-paragraph break must use \par\vspace{.5em}, not \\ or \newline.
+    def test_paragraph_break_uses_newline_vspace(self):
+        r"""Double-paragraph break must use \newline\vspace{.5em}.
 
-        This ensures LuaTeX tex.print() ends the current horizontal paragraph
-        before applying \vspace (which is silently ignored in horizontal mode).
+        \par inside tabularray X[l] cells switches TeX to vertical mode and
+        causes "Dimension too large" in cell-width measurement.  \newline stays
+        in horizontal mode; \vspace in h-mode uses \vadjust which is safe.
         """
         out = latex("<p>Erster Absatz</p><p>Zweiter Absatz</p>")
-        assert "\\par\\vspace{.5em}" in out
+        assert "\\newline\\vspace{.5em}" in out
 
-    def test_par_vspace_not_bare_double_backslash(self):
-        r"""The separator must not be \\ alone (which would be a LaTeX line break,
-        not a paragraph end, and \vspace after it stays in horizontal mode)."""
+    def test_par_not_used_as_separator(self):
+        r"""The separator must NOT be \par — it causes tabularray to fail."""
         out = latex("<p>A</p><p>B</p>")
-        # \par\vspace is the full separator — \\ alone should not appear
-        # (a bare \\ would be wrong here; \textbackslash{} is for escaped chars)
-        assert "\\\\" not in out
+        assert "\\par" not in out
 
     def test_three_paragraphs_two_separators(self):
-        r"""Three paragraphs produce exactly two \par\vspace{.5em} separators."""
+        r"""Three paragraphs produce exactly two \newline\vspace{.5em} separators."""
         out = latex("<p>A</p><p>B</p><p>C</p>")
-        assert out.count("\\par\\vspace{.5em}") == 2
+        assert out.count("\\newline\\vspace{.5em}") == 2
