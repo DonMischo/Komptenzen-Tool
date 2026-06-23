@@ -5,6 +5,7 @@ import { CheckCircle, XCircle, Square, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Props {
+  label: string;
   events: ExportProgressEvent[];
   total: number;
   isDone: boolean;
@@ -12,7 +13,7 @@ interface Props {
   onClose: () => void;
 }
 
-export function ExportProgress({ events, total, isDone, onStop, onClose }: Props) {
+export function ExportProgress({ label, events, total, isDone, onStop, onClose }: Props) {
   const progressEvents = events.filter((e) => e.type === "progress");
   const current = progressEvents.length;
   const pct = total > 0 ? Math.round((current / total) * 100) : 0;
@@ -23,7 +24,7 @@ export function ExportProgress({ events, total, isDone, onStop, onClose }: Props
   return (
     <div className="bg-white border rounded-xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Zeugnisse erstellen</h3>
+        <h3 className="font-semibold">Klasse {label}</h3>
         {isDone && (
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />

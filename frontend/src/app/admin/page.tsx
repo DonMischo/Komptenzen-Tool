@@ -9,7 +9,7 @@ import { QK } from "@/lib/queries";
 import { AdminStudentItem } from "@/types/api";
 import { ExportProgress } from "@/components/admin/ExportProgress";
 import { UserManagement } from "@/components/admin/UserManagement";
-import { useExportSSE } from "@/hooks/useExportSSE";
+import { useExportJobs } from "@/hooks/useExportJobs";
 import { cn } from "@/lib/utils";
 import { FileText, RefreshCw, AlertTriangle, CheckCircle } from "lucide-react";
 import { HelpButton } from "@/components/help/HelpButton";
@@ -22,8 +22,8 @@ export default function AdminPage() {
   // Export state
   const [selectedClass, setSelectedClass] = useState("");
   const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [jobTotal, setJobTotal] = useState(0);
+
+  const { jobs, addJob, cancelJob, dismissJob } = useExportJobs();
 
   const [syncConfirmed, setSyncConfirmed] = useState(false);
 
@@ -63,13 +63,10 @@ export default function AdminPage() {
     mutationFn: (ids: number[]) =>
       adminApi.prepareExport(ids, selectedClass).then((r) => r.data),
     onSuccess: (data) => {
-      setJobTotal(data.total);
-      setJobId(data.job_id);
+      addJob(data.job_id, selectedClass, data.total);
     },
     onError: () => toast.error("Export-Vorbereitung fehlgeschlagen"),
   });
-
-  const { events, isDone, stop } = useExportSSE(jobId);
 
   const classes: string[] = classesData?.classes ?? [];
   const studentList: AdminStudentItem[] = students ?? [];
@@ -91,15 +88,7 @@ export default function AdminPage() {
     }
   };
 
-  const startExport = (ids: number[]) => {
-    setJobId(null);
-    prepareMutation.mutate(ids);
-  };
-
-  const closeExport = () => {
-    stop();
-    setJobId(null);
-  };
+  const startExport = (ids: number[]) => prepareMutation.mutate(ids);
 
   return (
     <AppShell>
@@ -134,119 +123,108 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Export tab */}
-        {tab === "export" && (
-          <div className="space-y-6">
-            {/* Class selector */}
-            <div className="flex gap-3 items-center">
-              <label className="text-sm font-medium">Klasse:</label>
-              <select
-                value={selectedClass}
-                onChange={(e) => {
-                  setSelectedClass(e.target.value);
-                  setCheckedIds(new Set());
-                  setJobId(null);
-                }}
-                className="border rounded-md px-2 py-1.5 text-sm"
-              >
-                <option value="">– Klasse –</option>
-                {classes.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
+        {/* Page body: tab content left, persistent jobs sidebar right */}
+        <div className={cn("gap-6", jobs.length > 0 ? "flex items-start" : "")}>
 
-            {selectedClass && isLoading && (
-              <p className="text-sm text-muted-foreground animate-pulse">Laden…</p>
-            )}
+          {/* Tab content */}
+          <div className="flex-1 min-w-0 space-y-6">
 
-            {studentList.length > 0 && (
-              <div className={cn("gap-6", jobId ? "flex items-start" : "space-y-6")}>
-                {/* Left: student list + buttons */}
-                <div className="flex-1 space-y-4 min-w-0">
-                  <div className="border rounded-xl overflow-hidden">
-                    <table className="text-sm w-full border-collapse">
-                      <thead>
-                        <tr className="bg-muted/50">
-                          <th className="px-3 py-2 border-b">
-                            <input
-                              type="checkbox"
-                              checked={checkedIds.size === studentList.length}
-                              onChange={toggleAll}
-                              className="h-4 w-4"
-                            />
-                          </th>
-                          <th className="text-left px-3 py-2 border-b font-medium">Nachname</th>
-                          <th className="text-left px-3 py-2 border-b font-medium">Vorname</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {studentList.map((stu, ri) => (
-                          <tr
-                            key={stu.id}
-                            className={`cursor-pointer ${ri % 2 === 0 ? "bg-white" : "bg-muted/20"} hover:bg-blue-50`}
-                            onClick={() => toggleCheck(stu.id)}
-                          >
-                            <td className="px-3 py-2 border-b text-center">
-                              <input
-                                type="checkbox"
-                                checked={checkedIds.has(stu.id)}
-                                onChange={() => toggleCheck(stu.id)}
-                                onClick={(e) => e.stopPropagation()}
-                                className="h-4 w-4"
-                              />
-                            </td>
-                            <td className="px-3 py-2 border-b font-medium">{stu.last_name}</td>
-                            <td className="px-3 py-2 border-b">{stu.first_name}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => startExport(Array.from(checkedIds))}
-                      disabled={checkedIds.size === 0 || prepareMutation.isPending}
-                      className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 disabled:opacity-40"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Ausgewählte erstellen ({checkedIds.size})
-                    </button>
-                    <button
-                      onClick={() => startExport(studentList.map((s) => s.id))}
-                      disabled={prepareMutation.isPending}
-                      className="flex items-center gap-2 border px-4 py-2 rounded-md text-sm hover:bg-muted"
-                    >
-                      <FileText className="h-4 w-4" />
-                      Alle erstellen ({studentList.length})
-                    </button>
-                  </div>
+            {/* Export tab */}
+            {tab === "export" && (
+              <div className="space-y-6">
+                {/* Class selector */}
+                <div className="flex gap-3 items-center">
+                  <label className="text-sm font-medium">Klasse:</label>
+                  <select
+                    value={selectedClass}
+                    onChange={(e) => {
+                      setSelectedClass(e.target.value);
+                      setCheckedIds(new Set());
+                    }}
+                    className="border rounded-md px-2 py-1.5 text-sm"
+                  >
+                    <option value="">– Klasse –</option>
+                    {classes.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* Right sidebar: export progress */}
-                {jobId && (
-                  <div className="w-80 shrink-0">
-                    <ExportProgress
-                      events={events}
-                      total={jobTotal}
-                      isDone={isDone}
-                      onStop={stop}
-                      onClose={closeExport}
-                    />
+                {selectedClass && isLoading && (
+                  <p className="text-sm text-muted-foreground animate-pulse">Laden…</p>
+                )}
+
+                {studentList.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="border rounded-xl overflow-hidden">
+                      <table className="text-sm w-full border-collapse">
+                        <thead>
+                          <tr className="bg-muted/50">
+                            <th className="px-3 py-2 border-b">
+                              <input
+                                type="checkbox"
+                                checked={checkedIds.size === studentList.length}
+                                onChange={toggleAll}
+                                className="h-4 w-4"
+                              />
+                            </th>
+                            <th className="text-left px-3 py-2 border-b font-medium">Nachname</th>
+                            <th className="text-left px-3 py-2 border-b font-medium">Vorname</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {studentList.map((stu, ri) => (
+                            <tr
+                              key={stu.id}
+                              className={`cursor-pointer ${ri % 2 === 0 ? "bg-white" : "bg-muted/20"} hover:bg-blue-50`}
+                              onClick={() => toggleCheck(stu.id)}
+                            >
+                              <td className="px-3 py-2 border-b text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={checkedIds.has(stu.id)}
+                                  onChange={() => toggleCheck(stu.id)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="h-4 w-4"
+                                />
+                              </td>
+                              <td className="px-3 py-2 border-b font-medium">{stu.last_name}</td>
+                              <td className="px-3 py-2 border-b">{stu.first_name}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => startExport(Array.from(checkedIds))}
+                        disabled={checkedIds.size === 0 || prepareMutation.isPending}
+                        className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md text-sm hover:bg-primary/90 disabled:opacity-40"
+                      >
+                        <FileText className="h-4 w-4" />
+                        Ausgewählte erstellen ({checkedIds.size})
+                      </button>
+                      <button
+                        onClick={() => startExport(studentList.map((s) => s.id))}
+                        disabled={prepareMutation.isPending}
+                        className="flex items-center gap-2 border px-4 py-2 rounded-md text-sm hover:bg-muted"
+                      >
+                        <FileText className="h-4 w-4" />
+                        Alle erstellen ({studentList.length})
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
             )}
-          </div>
-        )}
 
-        {/* Users tab */}
-        {tab === "users" && <UserManagement />}
+            {/* Users tab */}
+            {tab === "users" && <UserManagement />}
 
-        {/* Kompetenzdaten tab */}
-        {tab === "kompetenzdaten" && (
-          <div className="space-y-4 max-w-xl">
+            {/* Kompetenzdaten tab */}
+            {tab === "kompetenzdaten" && (
+              <div className="space-y-4 max-w-xl">
             <p className="text-sm text-muted-foreground">
               Vergleicht die Kompetenzdaten in <code>competence_data.py</code> mit der Datenbank und zeigt an, was sich geändert hat.
             </p>
@@ -321,8 +299,29 @@ export default function AdminPage() {
                 )}
               </div>
             )}
-          </div>
-        )}
+              </div>
+            )}
+
+          </div> {/* end flex-1 tab content */}
+
+          {/* Persistent jobs sidebar — visible across all tabs */}
+          {jobs.length > 0 && (
+            <div className="w-80 shrink-0 space-y-4">
+              {jobs.map((job) => (
+                <ExportProgress
+                  key={job.id}
+                  label={job.label}
+                  events={job.events}
+                  total={job.total}
+                  isDone={job.isDone}
+                  onStop={() => cancelJob(job.id)}
+                  onClose={() => dismissJob(job.id)}
+                />
+              ))}
+            </div>
+          )}
+
+        </div> {/* end flex wrapper */}
       </div>
     </AppShell>
   );

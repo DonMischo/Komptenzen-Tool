@@ -286,7 +286,7 @@ class _Conv(HTMLParser):
 
     # ---- result ------------------------------------------------------------
 
-    def latex(self) -> str:
+    def latex(self, par_mode: bool = False) -> str:
         raw = "".join(self._out)
         # Normalise Windows CRLF / bare CR in text content to LF so that the
         # newline-counting logic below works regardless of source platform.
@@ -299,14 +299,21 @@ class _Conv(HTMLParser):
         # Normalise 4+ newlines to exactly 3 so the three tiers are distinct.
         result = re.sub(r"\n{4,}", "\n\n\n", result)
         # str.replace not re.sub: re.sub interprets backslashes in replacements.
-        # \newline not \par: \par switches tabularray X[l] cells to vertical
-        # mode and causes "Dimension too large" in cell-width measurement.
-        # \vspace BEFORE \newline: \vadjust (used by \vspace in h-mode) attaches
-        # to the current line being closed, producing space below it.  After
-        # \newline the vadjust would attach to the next line instead.
-        result = result.replace("\n\n\n", "\\vspace{2em}\\newline ")   # wide gap
-        result = result.replace("\n\n",   "\\vspace{1em}\\newline ")   # normal gap
-        result = result.replace("\n",     " ")                         # inline wrap
+        if par_mode:
+            # Document-body context: real \par boundaries let TeX apply widow/
+            # orphan penalties across page breaks.
+            # <br> tags emit \newline\n — promote to paragraph break so \par
+            # replaces them too (single \n would otherwise become a space).
+            result = result.replace("\\newline\n", "\n\n")
+            result = result.replace("\n\n\n", "\\par\\bigskip ")   # wide gap
+            result = result.replace("\n\n",   "\\par ")            # normal gap
+        else:
+            # Tabularray cell context: \par switches cells to vertical mode and
+            # causes "Dimension too large"; use \newline instead.
+            # \vspace BEFORE \newline: \vadjust attaches to the current line.
+            result = result.replace("\n\n\n", "\\vspace{2em}\\newline ")   # wide gap
+            result = result.replace("\n\n",   "\\vspace{1em}\\newline ")   # normal gap
+        result = result.replace("\n", " ")                         # inline wrap
         return result
 
 
@@ -314,8 +321,12 @@ class _Conv(HTMLParser):
 # Public API
 # ---------------------------------------------------------------------------
 
-def html_to_latex(html: str) -> str:
+def html_to_latex(html: str, par_mode: bool = False) -> str:
     """Convert TipTap HTML to LaTeX safe for tabularray cells and document flow.
+
+    par_mode=True: emit \\par for paragraph breaks (document body — allows
+    widow/orphan protection across page breaks).
+    par_mode=False (default): emit \\newline (safe inside tabularray cells).
 
     If *html* does not look like HTML (legacy plain text stored before the
     rich-text editor was introduced) it is escaped and paragraph/line breaks
@@ -324,11 +335,17 @@ def html_to_latex(html: str) -> str:
     if not html:
         return ""
     if not html.strip().startswith("<"):
-        # Legacy plain-text path
+        # Legacy plain-text path (plain text stored before rich-text editor)
         import textwrap
         txt = textwrap.dedent(html).strip()
+        if par_mode:
+            # Use str.replace not re.sub: re.sub interprets \p as bad escape.
+            # Temporarily replace multi-newlines with a sentinel first.
+            txt = re.sub(r"\n{2,}", "\x00", txt)
+            txt = txt.replace("\x00", "\\par\\medskip ")
+            return txt.replace("\n", "\\par ")
         txt = re.sub(r"\n{2,}", r"\\vspace{1em}", txt)
         return txt.replace("\n", r"\\")
     c = _Conv()
     c.feed(html)
-    return c.latex()
+    return c.latex(par_mode=par_mode)

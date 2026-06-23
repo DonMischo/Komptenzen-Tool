@@ -56,7 +56,7 @@ MAIN_SUBJECTS = [
     "Mitarbeit und Verhalten",
 ]
 
-FEMALE_FIRST_NAMES = {"Emma", "Mia", "Leonie", "Clara", "Marie"}
+FEMALE_FIRST_NAMES = {"Emma", "Mia", "Leonie", "Clara", "Marie", "Miya"}
 
 # ---------------------------------------------------------------------------
 # Student definitions
@@ -121,6 +121,10 @@ STUDENTS_DEF: list[dict] = [
         "last": "Schulz",     "first": "Anna",  "bday": date(2012,  7, 19),
         "wp": 3, "type": "lb",
     },
+    # par_mode test students — one per html_to_latex input path
+    {"last": "Tepes",    "first": "Miya", "bday": date(2012, 11, 17), "wp": 0, "type": "par_html_p"},
+    {"last": "Amalthea", "first": "Miya", "bday": date(2012, 11, 17), "wp": 1, "type": "par_html_br"},
+    {"last": "Solair",   "first": "Miya", "bday": date(2012, 11, 17), "wp": 2, "type": "par_plain"},
 ]
 
 # ---------------------------------------------------------------------------
@@ -171,6 +175,35 @@ individuellen Förderplans mit dem Förderschwerpunkt geistige Entwicklung.
 {vorname} nimmt aktiv am Unterrichtsgeschehen teil und zeigt Freude am \
 gemeinsamen Lernen. Wir freuen uns über {vorname}s Entwicklung.\
 """
+
+MIYA_PARAS = [
+    "Liebe {vorname},",
+    "dein drittes Schuljahr an der Evangelischen Gemeinschaftsschule Erfurt hast du erfolgreich gemeistert.",
+    "Es war ein aufregendes Schuljahr, in dem wir viel erlebt haben. Mit unserer Klassenfahrt im September nach Oberhof starteten wir gemeinsam in das neue Schuljahr und hatten viel Spaß zusammen. Im BOx-Projekt konntet ihr eure Fähigkeiten besser kennenlernen und in der Berufsfelderkundung das erste Mal in die Berufswelt schnuppern. Zum Weihnachtsbasar war unser Stand ein voller Erfolg und unsere kleine Weihnachtsfeier sehr gemütlich.",
+    "{vorname}, du bist eine freundliche und höfliche Schülerin, die mit ihrer offenen und angenehmen Art zu einem guten Miteinander in unserer Klasse beiträgt. Im Umgang mit deinen Mitschüler*innen und Lehrkräften begegnest du anderen respektvoll und hilfsbereit. Durch deine nette Art wirst du von vielen geschätzt und trägst dazu bei, dass sich andere in deiner Gegenwart wohlfühlen.",
+    "Im Unterricht zeigst du immer wieder, dass du über gute Fähigkeiten verfügst und durchaus in der Lage bist, Aufgaben erfolgreich zu bewältigen. Besonders bei Themen, die dein Interesse wecken, arbeitest du engagiert mit und bringst dich mit guten Gedanken und Ideen ein. In diesen Momenten wird deutlich, welches Potenzial in dir steckt.",
+    "Gleichzeitig fällt es dir nicht immer leicht, dich auf alle Aufgaben mit der gleichen Ausdauer einzulassen. Manchmal benötigst du etwas Zeit, um ins Arbeiten zu kommen, und nicht jedes Thema kann dich gleichermaßen begeistern. Es wäre schön, wenn du dich noch häufiger darauf einlassen würdest, Herausforderungen anzunehmen und auch bei weniger spannenden Aufgaben dranzubleiben.",
+    "Für das kommende Schuljahr wünschen wir dir, dass du deine Motivation noch stärker aus dir selbst heraus entwickelst und Schule zunehmend als Chance begreifst, Neues zu entdecken und eigene Stärken weiter auszubauen. Du besitzt viele Fähigkeiten und darfst darauf vertrauen, dass sich Anstrengung und Durchhaltevermögen lohnen.",
+    "In diesem Schuljahr hast du interessiert und freudig an den Werkstätten Salsa, Schach, Hip-Hop, Dot Painting, Schmuckgestaltung und Mandala teilgenommen.",
+    "Jetzt hast du dir erholsame, aber auch spannende Sommerferien verdient! Genieße die freie Zeit, tanke neue Energie und erlebe schöne Momente mit Familie und Freunden. Wir freuen uns sehr darauf, dich nach den Ferien gesund und gut gelaunt im neuen Schuljahr wiederzusehen.",
+    "Viele Grüße von Herrn Lachmann und Frau Reschke",
+]
+
+
+def _miya_text_html_p(vorname: str) -> str:
+    """HTML <p> paragraphs — proper TipTap output path."""
+    return "".join(f"<p>{p.format(vorname=vorname)}</p>" for p in MIYA_PARAS)
+
+
+def _miya_text_html_br(vorname: str) -> str:
+    """HTML <br> line breaks — text pasted as one block with <br> separators."""
+    return "<p>" + "<br><br>".join(p.format(vorname=vorname) for p in MIYA_PARAS) + "</p>"
+
+
+def _miya_text_plain(vorname: str) -> str:
+    """Legacy plain text — stored before rich-text editor existed."""
+    return "\n\n".join(p.format(vorname=vorname) for p in MIYA_PARAS)
+
 
 LP_LB_HTML = (
     "<p>{vorname} besucht das Fach <strong>Lebenspraxis</strong> auf Grundlage "
@@ -406,6 +439,12 @@ def _fill_student(ses: Session, stu: Student, sdef: dict,
         stu.report_text = REPORT_LB.format(vorname=vorname, **p)
     elif stype == "gb":
         stu.report_text = REPORT_GB.format(vorname=vorname, **p)
+    elif stype == "par_html_p":
+        stu.report_text = _miya_text_html_p(vorname)
+    elif stype == "par_html_br":
+        stu.report_text = _miya_text_html_br(vorname)
+    elif stype == "par_plain":
+        stu.report_text = _miya_text_plain(vorname)
     else:
         stu.report_text = REPORT_TEMPLATE.format(vorname=vorname, **p)
 
