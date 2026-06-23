@@ -279,13 +279,16 @@ class _Conv(HTMLParser):
 
     def latex(self) -> str:
         raw = "".join(self._out)
-        collapsed = re.sub(r"\n{3,}", "\n\n", raw).strip()
-        # str.replace not re.sub: re.sub interprets \\ as one backslash in the
-        # replacement, producing \ instead of \\ (the LaTeX line-break command).
+        result = raw.strip()
+        # Normalise 4+ newlines to exactly 3 so the three tiers are distinct.
+        result = re.sub(r"\n{4,}", "\n\n\n", result)
+        # str.replace not re.sub: re.sub interprets backslashes in replacements.
         # \newline not \par: \par switches tabularray X[l] cells to vertical
-        # mode and causes "Dimension too large" in the cell-width measurement.
-        # \newline stays in horizontal mode; \vspace in h-mode uses \vadjust.
-        return collapsed.replace("\n\n", "\\newline\\vspace{.5em}").replace("\n", " ")
+        # mode and causes "Dimension too large" in cell-width measurement.
+        result = result.replace("\n\n\n", "\\newline\\vspace{2em}")   # wide gap
+        result = result.replace("\n\n",   "\\newline\\vspace{1em}")   # normal gap
+        result = result.replace("\n",     " ")                        # inline wrap
+        return result
 
 
 # ---------------------------------------------------------------------------

@@ -272,15 +272,10 @@ class TestParagraphBreakEscaping:
         assert "B" in out
         assert "newline" in out or "\\\\" in out
 
-    def test_paragraph_break_uses_newline_vspace(self):
-        r"""Double-paragraph break must use \newline\vspace{.5em}.
-
-        \par inside tabularray X[l] cells switches TeX to vertical mode and
-        causes "Dimension too large" in cell-width measurement.  \newline stays
-        in horizontal mode; \vspace in h-mode uses \vadjust which is safe.
-        """
-        out = latex("<p>Erster Absatz</p><p>Zweiter Absatz</p>")
-        assert "\\newline\\vspace{.5em}" in out
+    def test_double_newline_uses_1em(self):
+        r"""Two adjacent paragraphs → \newline\vspace{1em} (normal gap)."""
+        out = latex("<p>A</p><p>B</p>")
+        assert "\\newline\\vspace{1em}" in out
 
     def test_par_not_used_as_separator(self):
         r"""The separator must NOT be \par — it causes tabularray to fail."""
@@ -288,6 +283,17 @@ class TestParagraphBreakEscaping:
         assert "\\par" not in out
 
     def test_three_paragraphs_two_separators(self):
-        r"""Three paragraphs produce exactly two \newline\vspace{.5em} separators."""
+        r"""Three paragraphs produce exactly two \newline\vspace{1em} separators."""
         out = latex("<p>A</p><p>B</p><p>C</p>")
-        assert out.count("\\newline\\vspace{.5em}") == 2
+        assert out.count("\\newline\\vspace{1em}") == 2
+
+    def test_triple_newline_uses_2em(self):
+        r"""Three newlines in raw output → \newline\vspace{2em} (wide gap).
+
+        An empty <p></p> between two paragraphs generates a triple newline
+        in the raw buffer, producing a wider visual separation.
+        """
+        # <p>A</p><p></p><p>B</p> → raw has \nA\n + \n\n + \nB\n = \nA\n\n\n\nB\n
+        # After strip+normalize: A\n\n\nB → wide gap
+        out = latex("<p>A</p><p></p><p>B</p>")
+        assert "\\newline\\vspace{2em}" in out
