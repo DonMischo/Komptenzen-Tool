@@ -4,12 +4,18 @@ Covers:
 - _slug: ASCII normalisation, lowercase, spaces → underscores
 - _lua: dict/list/str/bool/int/float/None serialisation, string escaping
 - _numeric_or_str: grade coercion, 0-9 only int-cast, comma decimal
+- _student_to_lua: topic inclusion for custom-only competences
 """
 from __future__ import annotations
 
+import datetime
 import pytest
 
-from export import _slug, _lua, _numeric_or_str
+from export import _slug, _lua, _numeric_or_str, _student_to_lua
+from db_schema import (
+    SchoolClass, SchoolYear, Student, Subject, Topic,
+    StudentSubject, Competence, ClassCompetence, CustomCompetence,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -203,3 +209,75 @@ class TestNumericOrStr:
         result = _numeric_or_str("-1")
         assert result == "-1"
         assert isinstance(result, str)
+
+
+# ---------------------------------------------------------------------------
+# _student_to_lua — custom-only topic inclusion
+# ---------------------------------------------------------------------------
+
+class TestStudentToLuaCustomOnlyTopic:
+    """Topics with only custom competences (no selected regular ones) must appear in Lua output."""
+
+    def _build(self, db_session):
+        """Seed: subject 'Kunst' with topic 'Gestaltung' that has one regular
+        competence (not selected) and one CustomCompetence."""
+        sc = SchoolClass(name="7x")
+        db_session.add(sc)
+        db_session.flush()
+
+        sy = SchoolYear(name="2025/2026", endjahr=True,
+                        report_day=datetime.date(2026, 7, 3))
+        db_session.add(sy)
+
+        subj = Subject(name="Kunst")
+        db_session.add(subj)
+        db_session.flush()
+
+        tp = Topic(name="Gestaltung", block="7/8", subject_id=subj.id)
+        db_session.add(tp)
+        db_session.flush()
+
+        # One regular competence that is NOT selected for this class
+        comp = Competence(text="Kann Farben mischen", topic_id=tp.id)
+        db_session.add(comp)
+        db_session.flush()
+
+        # No ClassCompetence row → comp is not in sel_comp
+
+        # One custom competence for this class/topic
+        cc = CustomCompetence(text="Mit Puppen gespielt", topic_id=tp.id, class_id=sc.id)
+        db_session.add(cc)
+
+        stu = Student(
+            last_name="Muster", first_name="Anna",
+            birthday=datetime.date(2012, 1, 1),
+            class_id=sc.id, lb=False, gb=False,
+        )
+        db_session.add(stu)
+        db_session.flush()
+
+        ss = StudentSubject(student_id=stu.id, subject_id=subj.id, niveau="2")
+        db_session.add(ss)
+        db_session.flush()
+
+        return stu, sy, comp.id
+
+    def test_custom_only_topic_included(self, db_session):
+        stu, sy, comp_id = self._build(db_session)
+        # sel_comp is non-empty but does NOT contain comp_id (simulates another
+        # subject having selected competences while Kunst/Gestaltung has none)
+        sel_comp = {comp_id + 1000}
+        result = _student_to_lua(stu, sy, sel_comp, db_session)
+        assert "Gestaltung" in result
+
+    def test_custom_competence_text_included(self, db_session):
+        stu, sy, comp_id = self._build(db_session)
+        sel_comp = {comp_id + 1000}
+        result = _student_to_lua(stu, sy, sel_comp, db_session)
+        assert "Mit Puppen gespielt" in result
+
+    def test_regular_unselected_competence_excluded(self, db_session):
+        stu, sy, comp_id = self._build(db_session)
+        sel_comp = {comp_id + 1000}
+        result = _student_to_lua(stu, sy, sel_comp, db_session)
+        assert "Kann Farben mischen" not in result

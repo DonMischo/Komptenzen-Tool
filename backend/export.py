@@ -223,7 +223,7 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
         topics_out: List[Dict[str, Any]] = []
         if export_comp:
             for tp in subj.topics:
-                if sel_comp and all(c.id not in sel_comp for c in tp.competences):
+                if sel_comp and all(c.id not in sel_comp for c in tp.competences) and tp.id not in custom_by_topic:
                     continue
                 competences_list = [
                     {"description": c.text} for c in tp.competences
