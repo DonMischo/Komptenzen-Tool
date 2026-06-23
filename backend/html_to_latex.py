@@ -248,6 +248,13 @@ class _Conv(HTMLParser):
             return
         cols = self._tcols or max((len(r) for r in all_rows), default=1)
 
+        # Single-cell table (Word frame / text-box) → unwrap to plain content.
+        # Nesting a tblr inside another tblr X[l] cell causes "Dimension too
+        # large" in tabularray's cell-width measurement.
+        if len(all_rows) == 1 and cols == 1:
+            self._out.append(f"\n{all_rows[0][0] if all_rows[0] else ''}\n")
+            return
+
         # Build tblr (tabularray) — safe for nesting; avoids \begin{tabular}
         # which conflicts with \\ row separators in the outer tabularray scan.
         colspec = " ".join(["X[l]"] * cols)
