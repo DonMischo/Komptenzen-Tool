@@ -88,8 +88,7 @@ export function NiveauSelect({ value, studentName, onChange }: Props) {
         initialHtml={isCustom ? value : ""}
         open={modalOpen}
         onSave={(html) => {
-          // Empty editor → revert to default "2"
-          onChange(html && html !== "<p></p>" ? html : "2");
+          onChange(html && html !== "<p></p>" ? html : "");
           setModalOpen(false);
         }}
         onClose={() => setModalOpen(false)}

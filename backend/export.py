@@ -140,6 +140,13 @@ def _has_grade(subj: Subject, grade_map: Dict[int, Any]) -> bool:
     return any(grade_map.get(tp.id) not in (None, "", " ") for tp in subj.topics)
 
 
+WP_SUBJECTS = {
+    "Wahlpflichtbereich - Französisch",
+    "Wahlpflichtbereich - Spanisch",
+    "Wahlpflichtbereich - Darstellen und Gestalten",
+    "Wahlpflichtbereich - Natur und Technik",
+}
+
 SUBJECT_ORDER = [
     "Deutsch",
     "Mathematik",
@@ -216,8 +223,15 @@ def _student_to_lua(stu: Student, sy: SchoolYear, sel_comp: Set[int], ses: Sessi
             level_val = _numeric_or_str(raw_level)
         has_grade = _has_grade(subj, grade_map)
 
-        if want_wp and not (has_grade or raw_level):
-            continue
+        if want_wp:
+            is_wp = subj.name in WP_SUBJECTS
+            if is_wp:
+                # LB/GB: niveau holds the WP text; regular: grades are the signal
+                attended = bool(raw_level) if (stu.lb or stu.gb) else has_grade
+                if not attended:
+                    continue
+            elif not (has_grade or raw_level):
+                continue
 
         export_comp = not stu.gb and not long_level_text
         topics_out: List[Dict[str, Any]] = []
